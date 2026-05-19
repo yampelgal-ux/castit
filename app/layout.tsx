@@ -1,0 +1,52 @@
+import type { Metadata, Viewport } from "next";
+import { Inter, Playfair_Display } from "next/font/google";
+import "./globals.css";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "CastIt — Where talent meets opportunity",
+  description: "The social platform for actors, models, and casting professionals.",
+  applicationName: "CastIt",
+  openGraph: {
+    title: "CastIt — Where talent meets opportunity",
+    description: "Discover talent. Cast roles. Practice scenes with AI. Built for the next era of casting.",
+    type: "website",
+  },
+  formatDetection: { telephone: false },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0A0A0B",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <body className="font-sans">
+        <a href="#main-content" className="skip-link">Skip to content</a>
+        <div className="device-frame">
+          <div className="device-screen">
+            <main id="main-content">
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </main>
+          </div>
+        </div>
+      </body>
+    </html>
+  );
+}
