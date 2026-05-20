@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, Share2, MessageCircle, Languages, Ruler, Globe, X, Camera, Check, Flame, Eye, Lock } from "lucide-react";
+import { Settings, Share2, MessageCircle, Languages, Ruler, Globe, X, Camera, Check, Flame, Eye, Lock, Send } from "lucide-react";
+import { SendAuditionSheet } from "@/components/SendAuditionSheet";
 import { TALENTS, REELS } from "@/lib/mock-data";
 import { Header } from "@/components/Header";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
@@ -59,6 +60,8 @@ export default function ProfilePage() {
 
   const [tab, setTab] = useState<typeof TABS[number]>("Reels");
   const [showEdit, setShowEdit] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const isPro = myProfile.role === "Casting Pro";
   const myReels = REELS.filter((r) => r.talentId === talent.id);
 
   function handleMessage() {
@@ -199,6 +202,21 @@ export default function ProfilePage() {
                   Calendar
                 </button>
               </>
+            ) : isPro ? (
+              <>
+                <button
+                  onClick={() => setShowInvite(true)}
+                  className="flex-1 h-11 rounded-full bg-gold text-bg text-sm font-semibold inline-flex items-center justify-center gap-1.5"
+                >
+                  <Send className="w-4 h-4" /> Send audition
+                </button>
+                <button
+                  onClick={handleMessage}
+                  className="h-11 px-4 rounded-full bg-bg-elevated border border-border text-sm font-semibold inline-flex items-center gap-1.5"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                </button>
+              </>
             ) : (
               <>
                 <button className="flex-1 h-11 rounded-full bg-gold text-bg text-sm font-semibold">Follow</button>
@@ -275,6 +293,12 @@ export default function ProfilePage() {
           userId={userId}
         />
       )}
+
+      <SendAuditionSheet
+        open={showInvite}
+        onClose={() => setShowInvite(false)}
+        talent={{ id: talent.id, name: talent.name, photo: talent.photo }}
+      />
     </div>
   );
 }

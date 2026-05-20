@@ -3,8 +3,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Filter, X, Search, Users, Sparkles, ChevronDown, MessageCircle,
+  Filter, X, Search, Users, Sparkles, ChevronDown, MessageCircle, Send,
 } from "lucide-react";
+import { SendAuditionSheet } from "@/components/SendAuditionSheet";
 import { Header } from "@/components/Header";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { TALENTS, type BodyType, type VoiceType, type UnionStatus, type ExperienceLevel } from "@/lib/mock-data";
@@ -57,6 +58,7 @@ const LOCATIONS = ["Tel Aviv", "Jerusalem", "Haifa", "Eilat", "Berlin", "London"
 export default function ProSearchPage() {
   const [f, setF] = useState<Filters>(EMPTY);
   const [openPanel, setOpenPanel] = useState(false);
+  const [inviteFor, setInviteFor] = useState<{ id: string; name: string; photo: string } | null>(null);
 
   const ranked = useMemo(() => {
     const anySoft =
@@ -203,16 +205,25 @@ export default function ProSearchPage() {
                   </div>
                 </div>
               </Link>
-              <div className="flex items-center justify-between px-3 py-2.5 border-t border-border bg-bg/40 text-[11px]">
-                <span className="text-text-muted">
+              <div className="flex items-center justify-between px-3 py-2.5 border-t border-border bg-bg/40 text-[11px] gap-2">
+                <span className="text-text-muted truncate">
                   <span className="text-text font-semibold tnum">{formatNumber(talent.followers)}</span> followers
                 </span>
-                <Link
-                  href={`/messages?with=${talent.id}&name=${encodeURIComponent(talent.name)}`}
-                  className="h-7 px-3 rounded-full bg-gold text-bg text-[11px] font-semibold inline-flex items-center gap-1"
-                >
-                  <MessageCircle className="w-3 h-3" /> Reach out
-                </Link>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Link
+                    href={`/messages?with=${talent.id}&name=${encodeURIComponent(talent.name)}`}
+                    className="h-7 w-7 rounded-full bg-bg border border-border text-text grid place-items-center"
+                    aria-label="Message"
+                  >
+                    <MessageCircle className="w-3 h-3" />
+                  </Link>
+                  <button
+                    onClick={(e) => { e.preventDefault(); setInviteFor({ id: talent.id, name: talent.name, photo: talent.photo }); }}
+                    className="h-7 px-3 rounded-full bg-gold text-bg text-[11px] font-semibold inline-flex items-center gap-1"
+                  >
+                    <Send className="w-3 h-3" /> Invite
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))
@@ -229,6 +240,12 @@ export default function ProSearchPage() {
           />
         )}
       </AnimatePresence>
+
+      <SendAuditionSheet
+        open={!!inviteFor}
+        onClose={() => setInviteFor(null)}
+        talent={inviteFor ?? { id: "", name: "", photo: "" }}
+      />
     </div>
   );
 }

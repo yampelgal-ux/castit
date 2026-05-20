@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Sparkles, MessageCircle, User, Bell, Megaphone, Users, PlayCircle } from "lucide-react";
+import { Home, Search, Sparkles, MessageCircle, User, Bell, Megaphone, Users, PlayCircle, FolderOpen } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
@@ -17,10 +17,9 @@ const talentItems = [
 
 const proItems = [
   { href: "/pro/dashboard", icon: Home, label: "Studio" },
+  { href: "/pro/projects", icon: FolderOpen, label: "Projects" },
+  { href: "/pro/search", icon: Users, label: "Search" },
   { href: "/pro/reels", icon: PlayCircle, label: "Reels" },
-  { href: "/pro/search", icon: Users, label: "Talent" },
-  { href: "/messages", icon: MessageCircle, label: "Messages" },
-  { href: "/notifications", icon: Bell, label: "Alerts" },
   { href: "/profile/me", icon: User, label: "Profile" },
 ];
 

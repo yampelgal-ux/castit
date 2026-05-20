@@ -2,30 +2,41 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Search, Megaphone, Users, Eye, Plus, Briefcase, ArrowRight, Clock, MapPin, PlayCircle, Bookmark, Wand2, Rocket } from "lucide-react";
+import {
+  Search, FolderOpen, PlayCircle, Bell, Users, ArrowRight,
+  Clock, CheckCircle2, XCircle, Send, Plus, Wand2, Calendar, TrendingUp,
+} from "lucide-react";
 import { Header } from "@/components/Header";
-import { Avatar } from "@/components/Avatar";
-import { EmptyState } from "@/components/EmptyState";
 import { useStore } from "@/lib/store";
-import { loadAuditions } from "@/lib/auditions-store";
-import { TALENTS, type Audition } from "@/lib/mock-data";
-import { matchTalent } from "@/lib/matching";
+import {
+  loadProjects, loadSubmissions, loadRoles, type Project, type Submission,
+} from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
 
 export default function ProDashboardPage() {
   const { profile } = useStore();
-  const [auditions, setAuditions] = useState<Audition[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
 
-  useEffect(() => { setAuditions(loadAuditions()); }, []);
+  useEffect(() => {
+    setProjects(loadProjects());
+    setSubmissions(loadSubmissions());
+  }, []);
 
   const stats = useMemo(() => {
-    const totalApps = auditions.reduce((s, a) => s + a.applicants, 0);
+    const activeProjects = projects.filter((p) => p.status !== "closed").length;
     return {
-      open: auditions.length,
-      applicants: totalApps,
-      views: 284 + auditions.length * 18,
+      projects: activeProjects,
+      pending: submissions.filter((s) => s.status === "pending").length,
+      invited: submissions.filter((s) => s.status === "invited").length,
+      callbacks: submissions.filter((s) => s.status === "callback").length,
     };
-  }, [auditions]);
+  }, [projects, submissions]);
+
+  const todo = submissions
+    .filter((s) => s.status === "pending")
+    .sort((a, b) => +new Date(b.submittedAt) - +new Date(a.submittedAt))
+    .slice(0, 4);
 
   return (
     <div className="min-h-dvh bg-bg pb-24">
@@ -37,8 +48,8 @@ export default function ProDashboardPage() {
           </span>
         }
         right={
-          <Link href="/profile/me" className="flex items-center gap-2">
-            <Avatar seed={profile.avatarSeed || "pro"} size={28} />
+          <Link href="/notifications" className="p-2 -mr-2 text-text-muted">
+            <Bell className="w-5 h-5" />
           </Link>
         }
       />
@@ -49,212 +60,164 @@ export default function ProDashboardPage() {
           <h1 className="font-display text-3xl tracking-editorial">
             Good to see you, <em className="text-gold-gradient not-italic">{profile.name?.split(" ")[0] || "there"}</em>.
           </h1>
-          <p className="text-text-muted text-sm mt-1">Cast your next role.</p>
+          <p className="text-text-muted text-sm mt-1">Your casting workspace.</p>
         </div>
 
-        {/* Hero: Discover reels */}
+        {/* KPI grid */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <KPI
+            icon={FolderOpen} label="Active projects" value={stats.projects}
+            tone="gold" href="/pro/projects"
+          />
+          <KPI
+            icon={Clock} label="Tapes to review" value={stats.pending}
+            tone="plum" href="/pro/projects" urgent={stats.pending > 0}
+          />
+          <KPI
+            icon={Send} label="Open invites" value={stats.invited}
+            tone="sage" href="/pro/projects"
+          />
+          <KPI
+            icon={CheckCircle2} label="Callbacks sent" value={stats.callbacks}
+            tone="success" href="/pro/projects"
+          />
+        </div>
+
+        {/* Quick actions row */}
+        <div className="grid grid-cols-3 gap-2">
+          <QuickAction icon={Search} label="Find talent" tone="gold" href="/pro/search" />
+          <QuickAction icon={Wand2} label="AI sourcing" tone="violet" href="/pro/sourcing" />
+          <QuickAction icon={PlayCircle} label="Reels" tone="plum" href="/pro/reels" />
+        </div>
+
+        {/* Projects hero */}
         <Link
-          href="/pro/reels"
-          className="block rounded-3xl p-5 bg-gradient-to-br from-wine/30 via-plum/20 to-bg-elevated border border-gold/20 relative overflow-hidden"
+          href="/pro/projects"
+          className="block rounded-3xl p-5 bg-gradient-to-br from-gold/15 via-bg-elevated to-bg-elevated border border-gold/30 relative overflow-hidden"
         >
           <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-gold/15 blur-2xl" />
           <div className="relative flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-gold/20 grid place-items-center shrink-0">
-              <PlayCircle className="w-7 h-7 text-gold" />
+              <FolderOpen className="w-7 h-7 text-gold" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">New today</div>
-              <div className="font-display text-xl leading-tight mt-0.5">Discover talent in motion</div>
-              <div className="text-[11px] text-text-muted mt-0.5">Swipe through reels — shortlist, invite, message.</div>
+              <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">Workspace</div>
+              <div className="font-display text-xl leading-tight mt-0.5">Projects & Auditions</div>
+              <div className="text-[11px] text-text-muted mt-0.5">
+                Organize tapes by project and role — decide callbacks.
+              </div>
             </div>
             <ArrowRight className="w-4 h-4 text-gold shrink-0" />
           </div>
         </Link>
 
-        {/* AI Sourcing hero — describe the role in plain English */}
-        <Link
-          href="/pro/sourcing"
-          className="block rounded-2xl p-4 bg-gradient-to-br from-violet/20 via-plum/15 to-bg-elevated border border-violet/40 relative overflow-hidden group"
-        >
-          <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-violet/20 blur-2xl" />
-          <div className="relative flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-violet/25 grid place-items-center shrink-0">
-              <Wand2 className="w-5 h-5 text-violet" />
+        {/* To review */}
+        {todo.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-2.5 px-1">
+              <h2 className="text-xs uppercase tracking-widest text-text-muted">
+                Awaiting your call <span className="text-text font-semibold tnum">({stats.pending})</span>
+              </h2>
+              <Link href="/pro/projects" className="text-[11px] text-gold font-semibold">See all →</Link>
             </div>
-            <div className="flex-1">
-              <div className="text-[10px] uppercase tracking-widest text-violet font-semibold">AI Sourcing</div>
-              <div className="font-display text-base leading-tight mt-0.5">Describe the role. Aria finds them.</div>
-              <div className="text-[10px] text-text-muted mt-0.5">Skip filters — write a brief, get ranked talent.</div>
+            <div className="space-y-2">
+              {todo.map((s, i) => <PendingRow key={s.id} s={s} i={i} />)}
             </div>
-            <ArrowRight className="w-4 h-4 text-violet shrink-0" />
-          </div>
-        </Link>
+          </section>
+        )}
 
-        {/* Primary actions */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <Link
-            href="/pro/search"
-            className="rounded-2xl p-4 bg-gradient-to-br from-gold/15 to-bg-elevated border border-gold/30 group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-gold/20 grid place-items-center mb-2.5">
-              <Search className="w-5 h-5 text-gold" />
+        {/* Empty state */}
+        {projects.length === 0 && (
+          <section className="rounded-2xl border border-border bg-bg-elevated p-5 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-gold/10 text-gold grid place-items-center mx-auto mb-3">
+              <FolderOpen className="w-6 h-6" />
             </div>
-            <div className="text-sm font-semibold">Search talent</div>
-            <div className="text-[10px] text-text-muted mt-0.5">Filter by typecast</div>
-          </Link>
-
-          <Link
-            href="/pro/audition/new"
-            className="rounded-2xl p-4 bg-gradient-to-br from-plum/20 to-bg-elevated border border-plum-light/30"
-          >
-            <div className="w-10 h-10 rounded-xl bg-plum/30 grid place-items-center mb-2.5">
-              <Megaphone className="w-5 h-5 text-plum-light" />
-            </div>
-            <div className="text-sm font-semibold">Post audition</div>
-            <div className="text-[10px] text-text-muted mt-0.5">Open call or targeted</div>
-          </Link>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-2">
-          <Stat icon={Briefcase} label="Open" value={stats.open} tone="gold" />
-          <Stat icon={Users} label="Applicants" value={stats.applicants} tone="plum" />
-          <Stat icon={Eye} label="Views" value={stats.views} tone="sage" />
-        </div>
-
-        {/* Shortlist link */}
-        <Link
-          href="/pro/shortlist"
-          className="flex items-center gap-3 p-3.5 rounded-2xl bg-bg-elevated border border-border hover:border-border-strong"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gold/10 text-gold grid place-items-center">
-            <Bookmark className="w-5 h-5" />
-          </div>
-          <div className="flex-1">
-            <div className="text-sm font-semibold">Your shortlist</div>
-            <div className="text-[11px] text-text-muted">Talent you saved while browsing reels</div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-text-muted" />
-        </Link>
-
-        {/* Live auditions */}
-        <section>
-          <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-xs uppercase tracking-widest text-text-muted">Your auditions</h2>
-            <Link href="/pro/audition/new" className="text-[11px] text-gold font-semibold inline-flex items-center gap-1">
-              <Plus className="w-3 h-3" /> New
+            <h3 className="font-display text-lg">Start your first project</h3>
+            <p className="text-xs text-text-muted max-w-[280px] mx-auto mt-1">
+              Create a casting folder, add roles, then send audition invites to talents you find via search or reels.
+            </p>
+            <Link
+              href="/pro/projects"
+              className="inline-flex items-center gap-2 mt-4 px-5 h-11 rounded-full bg-gold text-bg text-sm font-semibold"
+            >
+              <Plus className="w-4 h-4" /> Create project
             </Link>
-          </div>
-
-          {auditions.length === 0 ? (
-            <EmptyState
-              icon={Megaphone}
-              tone="gold"
-              title="Post your first audition"
-              description="Reach the entire talent pool — or only profiles that match your brief."
-              ctaLabel="Create one"
-              ctaHref="/pro/audition/new"
-            />
-          ) : (
-            <div className="space-y-2.5">
-              {auditions.map((a, i) => <AuditionCard key={a.id} a={a} i={i} />)}
-            </div>
-          )}
-        </section>
-
-        {/* Inspiration: top matches */}
-        {auditions.length > 0 && <TopMatchesPanel a={auditions[0]} />}
+          </section>
+        )}
       </div>
     </div>
   );
 }
 
-function Stat({ icon: Icon, label, value, tone }: { icon: any; label: string; value: number; tone: "gold" | "plum" | "sage" }) {
-  const colors = {
-    gold: "bg-gold/10 text-gold",
-    plum: "bg-plum/20 text-plum-light",
-    sage: "bg-sage/15 text-sage",
+function KPI({
+  icon: Icon, label, value, tone, href, urgent,
+}: { icon: any; label: string; value: number; tone: "gold" | "plum" | "sage" | "success"; href: string; urgent?: boolean }) {
+  const color = {
+    gold:    { bg: "bg-gold/12",    fg: "text-gold" },
+    plum:    { bg: "bg-plum/20",    fg: "text-plum-light" },
+    sage:    { bg: "bg-sage/15",    fg: "text-sage" },
+    success: { bg: "bg-success/15", fg: "text-success" },
   }[tone];
   return (
-    <div className="rounded-2xl bg-bg-elevated border border-border p-3">
-      <div className={cn("w-8 h-8 rounded-lg grid place-items-center mb-2", colors)}>
-        <Icon className="w-4 h-4" />
+    <Link href={href} className="rounded-2xl bg-bg-elevated border border-border p-4 relative">
+      <div className={cn("w-9 h-9 rounded-xl grid place-items-center mb-2", color.bg)}>
+        <Icon className={cn("w-4 h-4", color.fg)} />
       </div>
-      <div className="text-xl font-display tnum">{value}</div>
-      <div className="text-[10px] text-text-muted uppercase tracking-wider">{label}</div>
-    </div>
+      <div className="flex items-baseline gap-1.5">
+        <span className="font-display text-2xl tnum">{value}</span>
+        {urgent && value > 0 && <span className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />}
+      </div>
+      <div className="text-[10px] text-text-muted uppercase tracking-wider mt-0.5">{label}</div>
+    </Link>
   );
 }
 
-function AuditionCard({ a, i }: { a: Audition; i: number }) {
+function QuickAction({ icon: Icon, label, tone, href }: { icon: any; label: string; tone: "gold" | "violet" | "plum"; href: string }) {
+  const color = {
+    gold:   "bg-gold/10 text-gold border-gold/30",
+    violet: "bg-violet/15 text-violet border-violet/30",
+    plum:   "bg-plum/15 text-plum-light border-plum-light/30",
+  }[tone];
+  return (
+    <Link
+      href={href}
+      className={cn("flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl border", color)}
+    >
+      <Icon className="w-5 h-5" />
+      <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
+    </Link>
+  );
+}
+
+function PendingRow({ s, i }: { s: Submission; i: number }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
+      initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: i * 0.04 }}
     >
-      <Link href={`/pro/audition/${a.id}`} className="block rounded-2xl bg-bg-elevated border border-border p-4 hover:border-border-strong">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="text-[10px] uppercase tracking-widest text-gold">{a.type}</div>
-            <div className="font-display text-lg leading-tight mt-0.5 truncate">{a.title}</div>
-            <div className="flex items-center gap-3 text-[11px] text-text-muted mt-1.5">
-              <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {a.location}</span>
-              <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> {a.deadline}</span>
-              {a.paid && <span className="text-success font-semibold">PAID</span>}
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="font-display text-lg tnum text-gold">{a.applicants}</div>
-            <div className="text-[9px] uppercase tracking-wider text-text-muted">applied</div>
-          </div>
+      <Link
+        href={`/pro/projects/${s.roleId}`}
+        className="flex items-center gap-3 p-2.5 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40"
+      >
+        <img src={s.talentPhoto} alt={s.talentName} className="w-10 h-10 rounded-xl object-cover" />
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-semibold truncate">{s.talentName}</div>
+          <div className="text-[10px] text-text-muted">{timeAgo(s.submittedAt)}</div>
         </div>
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 font-semibold uppercase tracking-wider">
+          Review
+        </span>
       </Link>
     </motion.div>
   );
 }
 
-function TopMatchesPanel({ a }: { a: Audition }) {
-  const matches = TALENTS
-    .map((t) => ({ t, m: matchTalent(t, a.targetTypecast) }))
-    .filter((r) => r.m.passes)
-    .sort((x, y) => y.m.score - x.m.score)
-    .slice(0, 4);
-
-  if (matches.length === 0) return null;
-
-  return (
-    <section className="rounded-2xl bg-gold/8 border border-gold/20 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">Top matches</div>
-          <p className="text-[11px] text-text-muted mt-0.5 truncate">for {a.title}</p>
-        </div>
-        <Link href="/pro/search" className="text-[11px] text-gold font-semibold inline-flex items-center gap-1">
-          See all <ArrowRight className="w-3 h-3" />
-        </Link>
-      </div>
-
-      <div className="space-y-2">
-        {matches.map(({ t, m }) => (
-          <Link
-            key={t.id}
-            href={`/profile/${t.username}`}
-            className="flex items-center gap-3 p-2.5 rounded-xl bg-bg-elevated border border-border"
-          >
-            <img src={t.photo} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold truncate">{t.name}</div>
-              <div className="text-[10px] text-text-muted truncate">
-                {t.typecast.gender} · {t.typecast.ageRange[0]}–{t.typecast.ageRange[1]} · {t.typecast.location}
-              </div>
-            </div>
-            <span className="text-[10px] tnum font-semibold px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 whitespace-nowrap">
-              {m.score}%
-            </span>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
+function timeAgo(iso: string) {
+  const ms = Date.now() - new Date(iso).getTime();
+  const d = Math.floor(ms / 86400000);
+  const h = Math.floor(ms / 3600000);
+  if (d > 0) return `${d}d ago`;
+  if (h > 0) return `${h}h ago`;
+  return "just now";
 }
