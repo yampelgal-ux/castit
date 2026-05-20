@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  FileVideo, Calendar, DollarSign, ChevronRight, ScrollText, Clock, Edit3,
+  FileVideo, Calendar, DollarSign, ChevronRight, ScrollText, Clock, Edit3, Columns,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
@@ -111,6 +111,23 @@ export default function RoleDetailPage() {
             </details>
           )}
         </div>
+
+        {/* Optional: compare tapes */}
+        {subs.length >= 2 && (
+          <Link
+            href={`/pro/projects/${id}/role/${roleId}/compare`}
+            className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40 text-sm"
+          >
+            <div className="w-8 h-8 rounded-lg bg-plum/20 text-plum-light grid place-items-center shrink-0">
+              <Columns className="w-4 h-4" />
+            </div>
+            <div className="flex-1">
+              <div className="font-semibold">Compare tapes</div>
+              <div className="text-[10px] text-text-muted">Optional — view 2–4 talents side-by-side</div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-text-muted" />
+          </Link>
+        )}
 
         {/* Pipeline summary */}
         <div className="grid grid-cols-4 gap-2">

@@ -9,6 +9,7 @@ import {
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
+import { TalentNotes } from "@/components/TalentNotes";
 import {
   getSubmission, getRole, addTape,
   moveToCallback, moveToHold, moveToAvailCheck, sendOffer, confirmBooked,
@@ -145,6 +146,9 @@ export default function SubmissionPage() {
             </div>
           </details>
         )}
+
+        {/* Optional private notes & tags */}
+        <TalentNotes talentId={sub.talentId} talentName={sub.talentName} />
 
         {/* Most recent pro → talent message */}
         {sub.proMessage && sub.stage !== "invited" && (

@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { Plus, ArrowRight, Users, FileVideo, Trash2, ChevronRight } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
+import { ProjectInsights } from "@/components/ProjectInsights";
+import { ProjectTeam } from "@/components/ProjectTeam";
 import {
   getProject, getRolesByProject, addRole, deleteRole, roleCounts, deleteProject,
   type Project, type Role,
@@ -101,6 +103,12 @@ export default function ProjectDetailPage() {
             ))}
           </div>
         )}
+
+        {/* Optional add-on panels — all collapsed by default */}
+        <div className="space-y-2 pt-2">
+          <ProjectInsights projectId={project.id} />
+          <ProjectTeam projectId={project.id} />
+        </div>
 
         <button
           onClick={removeProject}

@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings, Share2, MessageCircle, Languages, Ruler, Globe, X, Camera, Check, Flame, Eye, Lock, Send } from "lucide-react";
 import { SendAuditionSheet } from "@/components/SendAuditionSheet";
+import { TalentNotes } from "@/components/TalentNotes";
 import { TALENTS, REELS } from "@/lib/mock-data";
 import { Header } from "@/components/Header";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
@@ -299,6 +300,13 @@ export default function ProfilePage() {
         onClose={() => setShowInvite(false)}
         talent={{ id: talent.id, name: talent.name, photo: talent.photo }}
       />
+
+      {/* Optional pro-only notes panel — appears on talent profile when viewed by a pro */}
+      {isPro && !isMe && (
+        <div className="px-5 pb-6 pt-2">
+          <TalentNotes talentId={talent.id} talentName={talent.name} />
+        </div>
+      )}
     </div>
   );
 }

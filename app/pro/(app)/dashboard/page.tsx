@@ -85,10 +85,11 @@ export default function ProDashboardPage() {
         </div>
 
         {/* Quick actions row */}
-        <div className="grid grid-cols-3 gap-2">
-          <QuickAction icon={Search} label="Find talent" tone="gold" href="/pro/search" />
-          <QuickAction icon={Wand2} label="AI sourcing" tone="violet" href="/pro/sourcing" />
+        <div className="grid grid-cols-4 gap-2">
+          <QuickAction icon={Search} label="Find" tone="gold" href="/pro/search" />
+          <QuickAction icon={Wand2} label="AI" tone="violet" href="/pro/sourcing" />
           <QuickAction icon={PlayCircle} label="Reels" tone="plum" href="/pro/reels" />
+          <QuickAction icon={Calendar} label="Calendar" tone="sage" href="/pro/calendar" />
         </div>
 
         {/* Projects hero */}
@@ -173,8 +174,9 @@ function KPI({
   );
 }
 
-function QuickAction({ icon: Icon, label, tone, href }: { icon: any; label: string; tone: "gold" | "violet" | "plum"; href: string }) {
+function QuickAction({ icon: Icon, label, tone, href }: { icon: any; label: string; tone: "gold" | "violet" | "plum" | "sage"; href: string }) {
   const color = {
+    sage:   "bg-sage/15 text-sage border-sage/30",
     gold:   "bg-gold/10 text-gold border-gold/30",
     violet: "bg-violet/15 text-violet border-violet/30",
     plum:   "bg-plum/15 text-plum-light border-plum-light/30",
