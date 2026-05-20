@@ -27,15 +27,16 @@ export default function ProDashboardPage() {
     const activeProjects = projects.filter((p) => p.status !== "closed").length;
     return {
       projects: activeProjects,
-      pending: submissions.filter((s) => s.status === "pending").length,
-      invited: submissions.filter((s) => s.status === "invited").length,
-      callbacks: submissions.filter((s) => s.status === "callback").length,
+      toReview: submissions.filter((s) => s.stage === "submitted").length,
+      invited: submissions.filter((s) => s.stage === "invited").length,
+      callbacks: submissions.filter((s) => s.stage === "callback").length,
+      booked: submissions.filter((s) => s.stage === "booked").length,
     };
   }, [projects, submissions]);
 
   const todo = submissions
-    .filter((s) => s.status === "pending")
-    .sort((a, b) => +new Date(b.submittedAt) - +new Date(a.submittedAt))
+    .filter((s) => s.stage === "submitted")
+    .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
     .slice(0, 4);
 
   return (
@@ -70,15 +71,15 @@ export default function ProDashboardPage() {
             tone="gold" href="/pro/projects"
           />
           <KPI
-            icon={Clock} label="Tapes to review" value={stats.pending}
-            tone="plum" href="/pro/projects" urgent={stats.pending > 0}
+            icon={Clock} label="Tapes to review" value={stats.toReview}
+            tone="plum" href="/pro/projects" urgent={stats.toReview > 0}
           />
           <KPI
             icon={Send} label="Open invites" value={stats.invited}
             tone="sage" href="/pro/projects"
           />
           <KPI
-            icon={CheckCircle2} label="Callbacks sent" value={stats.callbacks}
+            icon={CheckCircle2} label="Booked" value={stats.booked}
             tone="success" href="/pro/projects"
           />
         </div>
@@ -116,7 +117,7 @@ export default function ProDashboardPage() {
           <section>
             <div className="flex items-center justify-between mb-2.5 px-1">
               <h2 className="text-xs uppercase tracking-widest text-text-muted">
-                Awaiting your call <span className="text-text font-semibold tnum">({stats.pending})</span>
+                Awaiting your call <span className="text-text font-semibold tnum">({stats.toReview})</span>
               </h2>
               <Link href="/pro/projects" className="text-[11px] text-gold font-semibold">See all →</Link>
             </div>
@@ -197,13 +198,13 @@ function PendingRow({ s, i }: { s: Submission; i: number }) {
       transition={{ delay: i * 0.04 }}
     >
       <Link
-        href={`/pro/projects/${s.roleId}`}
+        href={`/pro/projects`}
         className="flex items-center gap-3 p-2.5 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40"
       >
         <img src={s.talentPhoto} alt={s.talentName} className="w-10 h-10 rounded-xl object-cover" />
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold truncate">{s.talentName}</div>
-          <div className="text-[10px] text-text-muted">{timeAgo(s.submittedAt)}</div>
+          <div className="text-[10px] text-text-muted">{timeAgo(s.createdAt)}</div>
         </div>
         <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 font-semibold uppercase tracking-wider">
           Review

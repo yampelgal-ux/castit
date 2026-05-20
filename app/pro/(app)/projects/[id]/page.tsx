@@ -141,12 +141,13 @@ function RoleCard({ role, i, onDelete }: { role: Role; i: number; onDelete: () =
               <ChevronRight className="w-4 h-4 text-text-muted shrink-0" />
             </div>
             <p className="text-[11px] text-text-muted leading-relaxed line-clamp-2 mt-0.5">{role.description}</p>
-            <div className="flex items-center gap-3 mt-2 text-[10px]">
+            <div className="flex items-center gap-3 mt-2 text-[10px] flex-wrap">
               <span className="inline-flex items-center gap-1 text-text-muted">
-                <FileVideo className="w-3 h-3" /> {c.total} tapes
+                <FileVideo className="w-3 h-3" /> {c.total} {c.total === 1 ? "submission" : "submissions"}
               </span>
-              {c.pending > 0 && <span className="text-gold font-semibold">{c.pending} to review</span>}
-              {c.callbacks > 0 && <span className="text-success font-semibold">{c.callbacks} callback{c.callbacks > 1 ? "s" : ""}</span>}
+              {c.submitted > 0 && <span className="text-gold font-semibold">{c.submitted} to review</span>}
+              {c.callback > 0 && <span className="text-success font-semibold">{c.callback} callback{c.callback > 1 ? "s" : ""}</span>}
+              {c.booked > 0 && <span className="text-success font-semibold">{c.booked} booked</span>}
             </div>
           </div>
         </div>
@@ -164,10 +165,24 @@ function RoleCard({ role, i, onDelete }: { role: Role; i: number; onDelete: () =
 function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; onClose: () => void; onCreated: () => void }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [sides, setSides] = useState("");
+  const [instructions, setInstructions] = useState("Slate first (name + height). Vertical, well-lit. Two takes max.");
+  const [deadline, setDeadline] = useState("");
+  const [shootDates, setShootDates] = useState("");
+  const [payRange, setPayRange] = useState("");
 
   function submit() {
     if (!name.trim()) return;
-    addRole({ projectId, name: name.trim(), description: description.trim() });
+    addRole({
+      projectId,
+      name: name.trim(),
+      description: description.trim(),
+      sides: sides.trim() || undefined,
+      selfTapeInstructions: instructions.trim() || undefined,
+      deadline: deadline || undefined,
+      shootDates: shootDates.trim() || undefined,
+      payRange: payRange.trim() || undefined,
+    });
     onCreated();
   }
 
@@ -177,31 +192,72 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
-        className="relative w-full bg-bg-elevated border-t border-border rounded-t-3xl p-5"
+        className="relative w-full bg-bg-elevated border-t border-border rounded-t-3xl p-5 max-h-[90dvh] overflow-y-auto"
       >
         <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
         <h2 className="font-display text-2xl mb-4">Add a role</h2>
 
         <div className="space-y-3">
-          <div>
-            <div className="text-[10px] uppercase tracking-widest text-text-muted">Role name</div>
+          <Sect label="Role name">
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Maya — Lead"
-              className="w-full mt-1 h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
+              className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
             />
-          </div>
-          <div>
-            <div className="text-[10px] uppercase tracking-widest text-text-muted">Brief</div>
+          </Sect>
+          <Sect label="Character brief">
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Age, gender, languages, key traits…"
-              className="w-full mt-1 px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
+              className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
             />
+          </Sect>
+          <Sect label="Sides (scene text)" hint="Paste the scene or instructions for what they should perform">
+            <textarea
+              value={sides}
+              onChange={(e) => setSides(e.target.value)}
+              rows={4}
+              placeholder="INT. KITCHEN — NIGHT&#10;MAYA: I told you I'm not doing it…"
+              className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60 font-mono"
+            />
+          </Sect>
+          <Sect label="Self-tape instructions">
+            <textarea
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
+            />
+          </Sect>
+          <div className="grid grid-cols-2 gap-2.5">
+            <Sect label="Tape deadline">
+              <input
+                type="date"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
+              />
+            </Sect>
+            <Sect label="Shoot dates">
+              <input
+                value={shootDates}
+                onChange={(e) => setShootDates(e.target.value)}
+                placeholder="Aug 12 – Sep 25"
+                className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
+              />
+            </Sect>
           </div>
+          <Sect label="Pay / Rate (optional)">
+            <input
+              value={payRange}
+              onChange={(e) => setPayRange(e.target.value)}
+              placeholder="$1.5–2K/day + travel"
+              className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
+            />
+          </Sect>
         </div>
 
         <button
@@ -215,6 +271,16 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
           Add role <ArrowRight className="w-4 h-4" />
         </button>
       </motion.div>
+    </div>
+  );
+}
+
+function Sect({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-widest text-text-muted">{label}</div>
+      {hint && <div className="text-[10px] text-text-subtle mt-0.5">{hint}</div>}
+      <div className="mt-1">{children}</div>
     </div>
   );
 }

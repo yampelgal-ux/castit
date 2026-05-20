@@ -105,9 +105,9 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
 
           <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-border">
             <Stat label="Roles" value={counts.roles} />
-            <Stat label="Subs" value={counts.submissions} />
-            <Stat label="New" value={counts.pending} tone="gold" />
+            <Stat label="To review" value={counts.toReview} tone="gold" />
             <Stat label="Callbacks" value={counts.callbacks} tone="success" />
+            <Stat label="Booked" value={counts.booked} tone="success" />
           </div>
         </div>
       </Link>

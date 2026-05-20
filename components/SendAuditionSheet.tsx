@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, FolderOpen, Users, CheckCircle2, ArrowRight, X } from "lucide-react";
 import {
-  loadProjects, getRolesByProject, inviteTalent,
+  loadProjects, getRolesByProject, getRole, inviteTalent,
   type Project, type Role,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,7 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [roleId, setRoleId] = useState<string>("");
   const [message, setMessage] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [sent, setSent] = useState(false);
 
   useEffect(() => {
@@ -28,7 +29,8 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
     setProject(null);
     setRoles([]);
     setRoleId("");
-    setMessage(`Hi ${talent.name.split(" ")[0]} — we'd love you to read for a role we're casting. Can you submit a self-tape this week?`);
+    setDeadline("");
+    setMessage(`Hi ${talent.name.split(" ")[0]} — we'd love you to read for a role we're casting. Sides + instructions attached. Please submit your self-tape by the deadline.`);
     setSent(false);
   }, [open, talent.name]);
 
@@ -39,9 +41,16 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
     setRoleId(r[0]?.id ?? "");
   }, [project]);
 
+  // Pre-fill deadline from the role's own deadline (if any)
+  useEffect(() => {
+    if (!roleId) return;
+    const r = getRole(roleId);
+    if (r?.deadline) setDeadline(r.deadline);
+  }, [roleId]);
+
   function submit() {
     if (!roleId) return;
-    inviteTalent(roleId, talent, message.trim());
+    inviteTalent(roleId, talent, { message: message.trim(), deadline: deadline || undefined });
     setSent(true);
     setTimeout(() => { onClose(); }, 1400);
   }
@@ -125,6 +134,14 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
                             ))}
                           </div>
                         )}
+
+                        <Label className="mt-4">Tape deadline</Label>
+                        <input
+                          type="date"
+                          value={deadline}
+                          onChange={(e) => setDeadline(e.target.value)}
+                          className="w-full mt-1.5 h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
+                        />
 
                         <Label className="mt-4">Personal note</Label>
                         <textarea
