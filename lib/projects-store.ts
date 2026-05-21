@@ -30,6 +30,15 @@ export const STAGE_META: Record<Stage, { label: string; tone: "gold" | "plum" | 
   rejected:    { label: "Passed",           tone: "muted" },
 };
 
+// Time-coded comment on a tape (e.g. "0:34 — great pause")
+export type TapeComment = {
+  id: string;
+  tapeRound: number;
+  timeSec: number;          // playback time when the comment was anchored
+  text: string;
+  createdAt: string;
+};
+
 // One tape per round in the audition pipeline
 export type Tape = {
   round: number;
@@ -47,11 +56,13 @@ export type Submission = {
   talentPhoto: string;
   stage: Stage;
   tapes: Tape[];              // round 1 → callback round 2 → etc.
+  comments?: TapeComment[];   // pro's time-coded notes on tapes
   inviteMessage?: string;     // pro's note when first inviting
   inviteDeadline?: string;    // ISO — when self-tape is due
   proMessage?: string;        // most recent message to talent
   shootDates?: string;
   payOffered?: string;
+  holdUntil?: string;         // ISO — auto-expiring hold (1st refusal)
   decidedAt?: string;
   createdAt: string;
 };
@@ -207,8 +218,11 @@ function patchSubmission(id: string, patch: Partial<Submission>) {
 export function moveToCallback(id: string, message?: string) {
   patchSubmission(id, { stage: "callback", proMessage: message });
 }
-export function moveToHold(id: string, message?: string) {
-  patchSubmission(id, { stage: "hold", proMessage: message });
+export function moveToHold(id: string, message?: string, holdHours?: number) {
+  const holdUntil = holdHours && holdHours > 0
+    ? new Date(Date.now() + holdHours * 3600000).toISOString()
+    : undefined;
+  patchSubmission(id, { stage: "hold", proMessage: message, holdUntil });
 }
 export function moveToAvailCheck(id: string, shootDates?: string, message?: string) {
   patchSubmission(id, { stage: "avail_check", shootDates, proMessage: message });
@@ -227,6 +241,42 @@ export function reopenSubmission(id: string) {
   if (!sub) return;
   const target: Stage = sub.tapes.length > 0 ? "submitted" : "invited";
   patchSubmission(id, { stage: target });
+}
+
+// === Tape comments (time-coded notes) ===
+export function addTapeComment(submissionId: string, tapeRound: number, timeSec: number, text: string) {
+  const list = loadSubmissions();
+  const idx = list.findIndex((s) => s.id === submissionId);
+  if (idx === -1) return;
+  const comment: TapeComment = {
+    id: uid("c"),
+    tapeRound,
+    timeSec,
+    text,
+    createdAt: new Date().toISOString(),
+  };
+  list[idx] = { ...list[idx], comments: [...(list[idx].comments ?? []), comment] };
+  safeSave(KEY_S, list);
+}
+export function removeTapeComment(submissionId: string, commentId: string) {
+  const list = loadSubmissions();
+  const idx = list.findIndex((s) => s.id === submissionId);
+  if (idx === -1) return;
+  list[idx] = { ...list[idx], comments: (list[idx].comments ?? []).filter((c) => c.id !== commentId) };
+  safeSave(KEY_S, list);
+}
+
+// === Talent-side helpers ===
+// Audition inbox: every submission for a given talent, joined with role + project info.
+export function getAuditionsForTalent(talentId: string) {
+  const subs = loadSubmissions().filter((s) => s.talentId === talentId);
+  const rolesById: Record<string, Role> = Object.fromEntries(loadRoles().map((r) => [r.id, r]));
+  const projsById: Record<string, Project> = Object.fromEntries(loadProjects().map((p) => [p.id, p]));
+  return subs.map((s) => ({
+    submission: s,
+    role: rolesById[s.roleId],
+    project: rolesById[s.roleId] ? projsById[rolesById[s.roleId].projectId] : undefined,
+  })).filter((x) => x.role && x.project);
 }
 
 // Add a tape for the next round (called when talent submits a self-tape,

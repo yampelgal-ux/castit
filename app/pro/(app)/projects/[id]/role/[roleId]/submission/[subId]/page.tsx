@@ -10,6 +10,7 @@ import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
 import { TalentNotes } from "@/components/TalentNotes";
+import { TapeCommentsViewer } from "@/components/TapeCommentsViewer";
 import {
   getSubmission, getRole, addTape,
   moveToCallback, moveToHold, moveToAvailCheck, sendOffer, confirmBooked,
@@ -47,6 +48,7 @@ export default function SubmissionPage() {
   const [message, setMessage] = useState("");
   const [shootDates, setShootDates] = useState("");
   const [payOffered, setPayOffered] = useState("");
+  const [holdHours, setHoldHours] = useState(48);
   const [confirmed, setConfirmed] = useState(false);
 
   function reload() {
@@ -83,7 +85,7 @@ export default function SubmissionPage() {
     const msg = message.trim() || undefined;
     switch (action.kind) {
       case "callback":     moveToCallback(subId, msg); break;
-      case "hold":         moveToHold(subId, msg); break;
+      case "hold":         moveToHold(subId, msg, holdHours); break;
       case "avail":        moveToAvailCheck(subId, shootDates.trim() || undefined, msg); break;
       case "offer":        sendOffer(subId, payOffered.trim() || undefined, msg); break;
       case "book":         confirmBooked(subId, msg); break;
@@ -123,7 +125,11 @@ export default function SubmissionPage() {
 
         {/* Latest tape (or invited placeholder) */}
         {sub.tapes.length > 0 ? (
-          <TapeViewer tape={sub.tapes[sub.tapes.length - 1]} total={sub.tapes.length} />
+          <TapeCommentsViewer
+            submissionId={sub.id}
+            tape={sub.tapes[sub.tapes.length - 1]}
+            onChange={reload}
+          />
         ) : (
           <InvitedCard sub={sub} role={role} onSimulate={simulateTape} />
         )}
@@ -146,6 +152,9 @@ export default function SubmissionPage() {
             </div>
           </details>
         )}
+
+        {/* Active hold countdown (1st refusal) */}
+        {sub.stage === "hold" && sub.holdUntil && <HoldCountdown until={sub.holdUntil} />}
 
         {/* Optional private notes & tags */}
         <TalentNotes talentId={sub.talentId} talentName={sub.talentName} />
@@ -196,6 +205,37 @@ export default function SubmissionPage() {
               <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
               <h2 className="font-display text-2xl mb-1">{actionTitle(action.kind, sub.talentName)}</h2>
               <p className="text-sm text-text-muted mb-4">{actionSubtitle(action.kind)}</p>
+
+              {action.kind === "hold" && (
+                <Field label="Hold duration (1st refusal)">
+                  <div className="flex gap-1.5 flex-wrap">
+                    {[24, 48, 72, 168].map((h) => (
+                      <button
+                        key={h}
+                        onClick={() => setHoldHours(h)}
+                        className={cn(
+                          "h-9 px-3 rounded-full text-xs font-semibold border",
+                          holdHours === h ? "bg-gold text-bg border-gold" : "bg-bg text-text border-border"
+                        )}
+                      >
+                        {h === 168 ? "1 week" : h === 24 ? "24h" : `${h}h`}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setHoldHours(0)}
+                      className={cn(
+                        "h-9 px-3 rounded-full text-xs font-semibold border",
+                        holdHours === 0 ? "bg-gold text-bg border-gold" : "bg-bg text-text border-border"
+                      )}
+                    >
+                      No timer
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-text-muted mt-1.5">
+                    The talent is asked to stay available for this window. They see a countdown on their end.
+                  </p>
+                </Field>
+              )}
 
               {action.kind === "avail" && (
                 <Field label="Shoot dates">
@@ -271,25 +311,33 @@ export default function SubmissionPage() {
   );
 }
 
-function TapeViewer({ tape, total }: { tape: { round: number; videoUrl?: string; posterUrl?: string; note?: string; submittedAt: string }; total: number }) {
+
+function HoldCountdown({ until }: { until: string }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const i = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(i);
+  }, []);
+  const ms = +new Date(until) - now;
+  const expired = ms <= 0;
+  const hours = Math.floor(ms / 3600000);
+  const mins = Math.floor((ms % 3600000) / 60000);
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2 px-1">
-        <div className="text-[11px] uppercase tracking-widest text-gold">
-          Round {tape.round}{total > 1 && ` of ${total}`} · latest tape
+    <div className={cn(
+      "rounded-2xl border p-3 flex items-center gap-3",
+      expired ? "bg-bg-elevated border-border" : "bg-sage/10 border-sage/30"
+    )}>
+      <div className={cn("w-8 h-8 rounded-lg grid place-items-center shrink-0", expired ? "bg-bg text-text-muted" : "bg-sage/20 text-sage")}>
+        <PauseCircle className="w-4 h-4" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-semibold">{expired ? "Hold expired" : "Held — 1st refusal"}</div>
+        <div className="text-[11px] text-text-muted">
+          {expired
+            ? `Expired on ${fmtDate(until)}`
+            : <>Releases in <span className="font-semibold tnum">{hours > 0 ? `${hours}h ` : ""}{mins}m</span></>}
         </div>
-        <div className="text-[10px] text-text-muted">{fmtDate(tape.submittedAt)}</div>
       </div>
-      <div className="rounded-2xl overflow-hidden bg-black aspect-[9/16] max-h-[65dvh] relative">
-        {tape.videoUrl ? (
-          <video src={tape.videoUrl} poster={tape.posterUrl} controls playsInline className="w-full h-full object-cover" />
-        ) : (
-          <div className="absolute inset-0 grid place-items-center text-text-muted">
-            <FileVideo className="w-10 h-10" />
-          </div>
-        )}
-      </div>
-      {tape.note && <p className="text-xs text-text-muted mt-2 px-1">{tape.note}</p>}
     </div>
   );
 }
