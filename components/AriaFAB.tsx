@@ -18,6 +18,8 @@ export function AriaFAB() {
 
   if (HIDDEN.some((p) => pathname.startsWith(p))) return null;
   if (pathname.startsWith("/pro")) return null;
+  // Aria is a talent-only assistant — don't show it to Casting Pros
+  if (role === "Casting Pro") return null;
 
   const lowCredits = ariaCredits <= 5;
 
@@ -47,7 +49,7 @@ export function AriaFAB() {
               <div>
                 <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">Quick actions</div>
                 <div className="font-display text-sm">
-                  What does {role === "Casting Pro" ? "your team" : "your agent"} need?
+                  What does your agent need?
                 </div>
               </div>
               <button

@@ -3,10 +3,18 @@
 // Private notes + tags about a talent — visible ONLY to the pro who wrote them.
 // Tags are arbitrary strings the pro creates ("Hold list", "Strong reader", "July avail").
 
+export type AgentContact = {
+  name: string;
+  email?: string;
+  phone?: string;
+  agency?: string;
+};
+
 export type TalentNote = {
   talentId: string;
   note: string;
   tags: string[];
+  agent?: AgentContact;
   updatedAt: string;
 };
 
@@ -31,7 +39,20 @@ export function getTalentNote(talentId: string): TalentNote {
 
 export function setTalentNote(talentId: string, note: string, tags: string[]) {
   const all = safeLoad();
-  all[talentId] = { talentId, note, tags, updatedAt: new Date().toISOString() };
+  const existing = all[talentId] ?? { talentId, note: "", tags: [], updatedAt: "" };
+  all[talentId] = { ...existing, talentId, note, tags, updatedAt: new Date().toISOString() };
+  safeSave(all);
+}
+
+export function setTalentAgent(talentId: string, agent: AgentContact | null) {
+  const all = safeLoad();
+  const existing = all[talentId] ?? { talentId, note: "", tags: [], updatedAt: "" };
+  all[talentId] = {
+    ...existing,
+    talentId,
+    agent: agent ?? undefined,
+    updatedAt: new Date().toISOString(),
+  };
   safeSave(all);
 }
 

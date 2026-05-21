@@ -19,6 +19,7 @@ const proItems = [
   { href: "/pro/projects", icon: FolderOpen, label: "Projects" },
   { href: "/pro/search", icon: Users, label: "Search" },
   { href: "/pro/reels", icon: PlayCircle, label: "Reels" },
+  { href: "/messages", icon: MessageCircle, label: "Messages" },
   { href: "/profile/me", icon: User, label: "Profile" },
 ];
 

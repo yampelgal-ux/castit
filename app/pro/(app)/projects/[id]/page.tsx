@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Plus, ArrowRight, Users, FileVideo, Trash2, ChevronRight } from "lucide-react";
+import { Plus, ArrowRight, Users, FileVideo, Trash2, ChevronRight, Heart } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { ProjectInsights } from "@/components/ProjectInsights";
@@ -102,6 +102,23 @@ export default function ProjectDetailPage() {
               />
             ))}
           </div>
+        )}
+
+        {/* Chemistry mode — only when there are 2+ roles */}
+        {roles.length >= 2 && (
+          <Link
+            href={`/pro/projects/${project.id}/chemistry`}
+            className="flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-br from-gold/10 via-bg-elevated to-plum/10 border border-gold/30"
+          >
+            <div className="w-10 h-10 rounded-xl bg-gold/20 text-gold grid place-items-center shrink-0">
+              <Heart className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-semibold">Chemistry mode</div>
+              <div className="text-[10px] text-text-muted">Pair tapes from two roles side-by-side to test the match.</div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-gold" />
+          </Link>
         )}
 
         {/* Optional add-on panels — all collapsed by default */}

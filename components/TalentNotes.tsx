@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { StickyNote, Tag, X, Check, Plus, Lock } from "lucide-react";
-import { getTalentNote, setTalentNote, getAllTags } from "@/lib/talent-notes-store";
+import { StickyNote, Tag, X, Check, Plus, Lock, UserRound, Mail, Phone } from "lucide-react";
+import { getTalentNote, setTalentNote, getAllTags, setTalentAgent, type AgentContact } from "@/lib/talent-notes-store";
 import { cn } from "@/lib/utils";
 
 // Optional pro-only notes & tags about a talent.
@@ -14,19 +14,26 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
   const [existingTags, setExistingTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [saved, setSaved] = useState(false);
+  const [agent, setAgent] = useState<AgentContact | null>(null);
 
   useEffect(() => {
     const n = getTalentNote(talentId);
     setNote(n.note);
     setTags(n.tags);
+    setAgent(n.agent ?? null);
     setExistingTags(getAllTags());
   }, [talentId]);
 
   function save() {
     setTalentNote(talentId, note, tags);
+    setTalentAgent(talentId, agent);
     setExistingTags(getAllTags());
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
+  }
+
+  function updateAgent(patch: Partial<AgentContact>) {
+    setAgent({ ...(agent ?? { name: "" }), ...patch });
   }
 
   function addTag(t: string) {
@@ -133,6 +140,58 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Agent contact */}
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5 flex items-center gap-1">
+                  <UserRound className="w-3 h-3" /> Agent contact
+                </div>
+                <div className="space-y-1.5">
+                  <input
+                    value={agent?.name ?? ""}
+                    onChange={(e) => updateAgent({ name: e.target.value })}
+                    placeholder="Agent name"
+                    className="w-full h-9 px-3 rounded-xl bg-bg border border-border text-xs outline-none focus:border-gold/60"
+                  />
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input
+                      value={agent?.email ?? ""}
+                      onChange={(e) => updateAgent({ email: e.target.value })}
+                      placeholder="email"
+                      type="email"
+                      className="h-9 px-3 rounded-xl bg-bg border border-border text-xs outline-none focus:border-gold/60"
+                    />
+                    <input
+                      value={agent?.phone ?? ""}
+                      onChange={(e) => updateAgent({ phone: e.target.value })}
+                      placeholder="phone"
+                      className="h-9 px-3 rounded-xl bg-bg border border-border text-xs outline-none focus:border-gold/60"
+                    />
+                  </div>
+                  <input
+                    value={agent?.agency ?? ""}
+                    onChange={(e) => updateAgent({ agency: e.target.value })}
+                    placeholder="Agency"
+                    className="w-full h-9 px-3 rounded-xl bg-bg border border-border text-xs outline-none focus:border-gold/60"
+                  />
+                  {agent && (agent.email || agent.phone) && (
+                    <div className="flex gap-1.5 mt-1">
+                      {agent.email && (
+                        <a href={`mailto:${agent.email}`}
+                          className="flex-1 h-8 rounded-full bg-gold/10 text-gold border border-gold/30 text-[11px] font-semibold inline-flex items-center justify-center gap-1">
+                          <Mail className="w-3 h-3" /> Email
+                        </a>
+                      )}
+                      {agent.phone && (
+                        <a href={`tel:${agent.phone}`}
+                          className="flex-1 h-8 rounded-full bg-success/10 text-success border border-success/30 text-[11px] font-semibold inline-flex items-center justify-center gap-1">
+                          <Phone className="w-3 h-3" /> Call
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Note */}

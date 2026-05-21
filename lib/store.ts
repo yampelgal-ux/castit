@@ -1,6 +1,14 @@
 "use client";
 import { create } from "zustand";
 
+// Pro-only public profile fields (visible to talents browsing a pro)
+export type ProPublicCredit = {
+  id: string;
+  title: string;       // "After the Rain"
+  year?: string;       // "2024"
+  role?: string;       // "Casting Director"
+};
+
 type Profile = {
   name: string;
   email: string;
@@ -23,6 +31,12 @@ type Profile = {
     genres: string[];
   }>;
   avatarSeed: string;
+  // Pro-only public profile
+  studio?: string;
+  specialization?: ("Film" | "TV" | "Commercial" | "Theater" | "Music Video" | "Short Film")[];
+  yearsActive?: number;
+  filmography?: ProPublicCredit[];
+  showBookingsCount?: boolean;
 };
 
 export type SavedSearch = {

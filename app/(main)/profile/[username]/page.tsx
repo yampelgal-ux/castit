@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Settings, Share2, MessageCircle, Languages, Ruler, Globe, X, Camera, Check, Flame, Eye, Lock, Send } from "lucide-react";
 import { SendAuditionSheet } from "@/components/SendAuditionSheet";
 import { TalentNotes } from "@/components/TalentNotes";
+import { ProProfileView } from "@/components/ProProfileView";
 import { TALENTS, REELS } from "@/lib/mock-data";
 import { Header } from "@/components/Header";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
@@ -30,6 +31,18 @@ export default function ProfilePage() {
   const router = useRouter();
   const { profile: myProfile, userId, setProfile, streak } = useStore();
   const isMe = username === "me";
+
+  // Pro looking at their own profile (or another pro) → distinct industry-focused view
+  if (isMe && myProfile.role === "Casting Pro") {
+    return (
+      <ProProfileView
+        isMe={true}
+        displayName={myProfile.name || "You"}
+        photoUrl={myProfile.photoUrl}
+        bio={myProfile.bio}
+      />
+    );
+  }
   const talent = isMe
     ? {
         id: "me",
