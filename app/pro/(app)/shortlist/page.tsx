@@ -1,10 +1,12 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Bookmark, MessageCircle, Megaphone, X } from "lucide-react";
+import { Bookmark, MessageCircle, Megaphone, X, Share2 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { CreateShareLinkSheet } from "@/components/CreateShareLinkSheet";
 import { TALENTS } from "@/lib/mock-data";
 import { useStore } from "@/lib/store";
 import { haptic } from "@/lib/haptics";
@@ -13,10 +15,22 @@ import { formatNumber } from "@/lib/utils";
 export default function ShortlistPage() {
   const { shortlist, toggleShortlist } = useStore();
   const saved = TALENTS.filter((t) => shortlist.has(t.id));
+  const [shareOpen, setShareOpen] = useState(false);
 
   return (
     <div className="min-h-dvh bg-bg pb-8">
-      <Header back title={`Shortlist (${saved.length})`} />
+      <Header
+        back
+        title={`Shortlist (${saved.length})`}
+        right={saved.length > 0 && (
+          <button
+            onClick={() => { setShareOpen(true); haptic("light"); }}
+            className="text-[11px] text-gold font-semibold inline-flex items-center gap-1"
+          >
+            <Share2 className="w-3 h-3" /> Share
+          </button>
+        )}
+      />
 
       {saved.length === 0 ? (
         <EmptyState
@@ -79,6 +93,12 @@ export default function ShortlistPage() {
           ))}
         </div>
       )}
+
+      <CreateShareLinkSheet
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        talentIds={saved.map((t) => t.id)}
+      />
     </div>
   );
 }
