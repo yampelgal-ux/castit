@@ -1,14 +1,20 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Image as ImageIcon, FileText, Sparkles, Loader2,
   Mic, Volume2, VolumeX, RotateCcw, Play,
-  Send, AlertCircle, Wand2,
+  Send, AlertCircle, Wand2, Library, Disc, Square, Save,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptics";
+import {
+  upsertScene, touchScenePracticed, addTake, newId,
+  type SavedScene,
+} from "@/lib/coach-store";
+import { saveAudio } from "@/lib/coach-recordings";
 
 type ScriptLine = { character: string; text: string; direction?: string };
 type ParsedScene = {
@@ -122,6 +128,19 @@ export default function CoachPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Recording
+  const [recording, setRecording] = useState(false);
+  const [recordingEnabled, setRecordingEnabled] = useState(false);
+  const [savingTake, setSavingTake] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordChunksRef = useRef<Blob[]>([]);
+  const recordStartRef = useRef<number>(0);
+  const recordStreamRef = useRef<MediaStream | null>(null);
+
+  // Current saved scene id (for linking recordings + revisits)
+  const [savedSceneId, setSavedSceneId] = useState<string | null>(null);
+  const [showTakeSaved, setShowTakeSaved] = useState(false);
+
   // Voice synthesis voices
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   useEffect(() => {
@@ -130,6 +149,31 @@ export default function CoachPage() {
     load();
     window.speechSynthesis.onvoiceschanged = load;
     return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
+
+  // Resume scene from library (sessionStorage hand-off)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const resumeId = window.sessionStorage.getItem("castit_coach_resume_scene");
+    if (!resumeId) return;
+    window.sessionStorage.removeItem("castit_coach_resume_scene");
+    import("@/lib/coach-store").then(({ getScene }) => {
+      const s = getScene(resumeId);
+      if (!s) return;
+      setScene({
+        title: s.title,
+        summary: s.summary,
+        characters: s.characters,
+        lines: s.lines,
+      });
+      setSavedSceneId(s.id);
+      if (s.yourCharacter) setYourCharacter(s.yourCharacter);
+      if (s.partnerVoice) setVoiceProfile(s.partnerVoice);
+      if (s.partnerTone) setTone(s.partnerTone);
+      if (s.intensity) setIntensity(s.intensity);
+      if (s.context) setContext(s.context);
+      setStep("configure");
+    });
   }, []);
 
   // Pick best voice for profile
@@ -324,6 +368,93 @@ export default function CoachPage() {
     setSpeaking(false);
   }
 
+  // ── Recording ───────────────────────────────────────
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recordStreamRef.current = stream;
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/mp4")
+        ? "audio/mp4"
+        : "audio/webm";
+      const mr = new MediaRecorder(stream, { mimeType: mime });
+      mediaRecorderRef.current = mr;
+      recordChunksRef.current = [];
+      recordStartRef.current = Date.now();
+      mr.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) recordChunksRef.current.push(e.data);
+      };
+      mr.start(1000);
+      setRecording(true);
+      haptic("light");
+    } catch (e) {
+      alert("לא הצלחתי לקבל גישה למיקרופון. אפשר אישור בדפדפן ונסה שוב.");
+      setRecordingEnabled(false);
+    }
+  }
+
+  async function stopRecordingAndSave(): Promise<void> {
+    const mr = mediaRecorderRef.current;
+    if (!mr || mr.state === "inactive") {
+      cleanupRecording();
+      return;
+    }
+    setSavingTake(true);
+    await new Promise<void>((resolve) => {
+      mr.onstop = async () => {
+        const mime = mr.mimeType || "audio/webm";
+        const blob = new Blob(recordChunksRef.current, { type: mime });
+        const duration = Date.now() - recordStartRef.current;
+
+        if (blob.size > 0 && savedSceneId && scene) {
+          const takeId = newId("take_");
+          try {
+            await saveAudio(takeId, blob);
+            addTake({
+              id: takeId,
+              sceneId: savedSceneId,
+              recordedAt: new Date().toISOString(),
+              durationMs: duration,
+              yourCharacter,
+              partnerVoice: voiceProfile,
+              partnerTone: tone,
+              intensity,
+              audioMime: mime,
+            });
+            setShowTakeSaved(true);
+            setTimeout(() => setShowTakeSaved(false), 2500);
+            haptic("light");
+          } catch (err) {
+            console.error("save take failed", err);
+          }
+        }
+        cleanupRecording();
+        resolve();
+      };
+      mr.stop();
+    });
+    setSavingTake(false);
+  }
+
+  function cleanupRecording() {
+    recordStreamRef.current?.getTracks().forEach((t) => t.stop());
+    recordStreamRef.current = null;
+    mediaRecorderRef.current = null;
+    recordChunksRef.current = [];
+    setRecording(false);
+  }
+
+  // Stop recording on unmount
+  useEffect(() => {
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
+      }
+      cleanupRecording();
+    };
+  }, []);
+
   // Parse scene from text or image
   async function parseScene(payload: { text?: string; imageBase64?: string; imageMediaType?: string }) {
     setParsing(true);
@@ -421,8 +552,35 @@ export default function CoachPage() {
     setTurns([]);
     setCurrentLineIdx(0);
     setStep("practice");
+
+    // Persist scene to library (or update existing entry)
+    const sceneId = savedSceneId ?? newId("scene_");
+    const saved: SavedScene = {
+      id: sceneId,
+      title: scene.title || "סצנה ללא שם",
+      summary: scene.summary,
+      characters: scene.characters,
+      lines: scene.lines,
+      yourCharacter,
+      partnerVoice: voiceProfile,
+      partnerTone: tone,
+      intensity,
+      context,
+      createdAt: savedSceneId ? new Date().toISOString() : new Date().toISOString(),
+      lastPracticedAt: new Date().toISOString(),
+    };
+    upsertScene(saved);
+    if (!savedSceneId) setSavedSceneId(sceneId);
+    touchScenePracticed(sceneId);
+
+    // Start audio recording if enabled
+    if (recordingEnabled) {
+      await startRecording();
+    }
+
     // Fetch coach hints in parallel (non-blocking for UX)
     loadHints(scene, yourCharacter);
+
     // If the very first lines are the partner's, play ALL of them
     const opening = getPartnerBlock(0);
     if (opening.length > 0) {
@@ -523,8 +681,9 @@ export default function CoachPage() {
     window.speechSynthesis.speak(u);
   }
 
-  function restart() {
+  async function restart() {
     stopSpeaking();
+    if (recording) await stopRecordingAndSave();
     setTurns([]);
     setCurrentLineIdx(0);
     startPractice();
@@ -551,19 +710,41 @@ export default function CoachPage() {
       <Header
         back
         title="מאמן AI"
-        right={step !== "upload" && (
-          <button
-            onClick={() => {
-              stopSpeaking();
-              setStep("upload");
-              setScene(null);
-              setTurns([]);
-              setCurrentLineIdx(0);
-            }}
-            className="text-[11px] text-text-muted"
-          >סצנה חדשה</button>
-        )}
+        right={
+          step === "upload" ? (
+            <Link href="/studio/coach/library" className="text-[11px] text-gold font-semibold inline-flex items-center gap-1">
+              <Library className="w-3 h-3" /> ספרייה
+            </Link>
+          ) : (
+            <button
+              onClick={async () => {
+                stopSpeaking();
+                if (recording) await stopRecordingAndSave();
+                setStep("upload");
+                setScene(null);
+                setTurns([]);
+                setCurrentLineIdx(0);
+                setSavedSceneId(null);
+              }}
+              className="text-[11px] text-text-muted"
+            >סצנה חדשה</button>
+          )
+        }
       />
+
+      {/* Toast: take saved */}
+      <AnimatePresence>
+        {showTakeSaved && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-success/95 text-bg text-xs font-semibold inline-flex items-center gap-1.5 shadow-lg"
+          >
+            <Save className="w-3.5 h-3.5" /> טייק נשמר בספרייה
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Step indicator */}
       <div className="px-4 mt-2 flex items-center gap-1.5">
@@ -797,6 +978,32 @@ export default function CoachPage() {
                 </div>
               </div>
               <div className="flex items-center gap-1">
+                {/* Record toggle / stop */}
+                {recording ? (
+                  <button
+                    onClick={stopRecordingAndSave}
+                    disabled={savingTake}
+                    className="h-8 px-2.5 rounded-full bg-danger text-white text-[10px] font-bold inline-flex items-center gap-1.5 animate-pulse disabled:opacity-60"
+                    title="עצור והקלט טייק"
+                  >
+                    {savingTake ? <Loader2 className="w-3 h-3 animate-spin" /> : <Square className="w-3 h-3 fill-white" />}
+                    REC
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { setRecordingEnabled((v) => !v); haptic("light"); }}
+                    className={cn(
+                      "w-8 h-8 rounded-full grid place-items-center",
+                      recordingEnabled
+                        ? "bg-danger/15 text-danger border border-danger/40"
+                        : "bg-bg-elevated border border-border text-text-muted"
+                    )}
+                    title={recordingEnabled ? "הקלטה דרוכה — מתחילה עם התחל מחדש" : "הפעל הקלטה"}
+                  >
+                    <Disc className="w-4 h-4" />
+                  </button>
+                )}
+
                 <button
                   onClick={() => { setUsePremiumVoice((v) => !v); haptic("light"); }}
                   className={cn(
