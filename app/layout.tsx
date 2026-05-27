@@ -17,12 +17,26 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "CastIt — Where talent meets opportunity",
-  description: "The social platform for actors, models, and casting professionals.",
+  description: "The social platform for actors, models, and casting professionals. Discover talent, cast roles, and practice scenes with AI.",
   applicationName: "CastIt",
+  keywords: ["casting", "actors", "talent", "auditions", "self-tape", "AI", "scene partner"],
+  authors: [{ name: "CastIt" }],
+  creator: "CastIt",
+  appleWebApp: {
+    capable: true,
+    title: "CastIt",
+    statusBarStyle: "black-translucent",
+  },
   openGraph: {
     title: "CastIt — Where talent meets opportunity",
     description: "Discover talent. Cast roles. Practice scenes with AI. Built for the next era of casting.",
     type: "website",
+    siteName: "CastIt",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CastIt — Where talent meets opportunity",
+    description: "Discover talent. Cast roles. Practice scenes with AI.",
   },
   formatDetection: { telephone: false },
 };
@@ -32,6 +46,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
