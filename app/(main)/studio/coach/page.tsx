@@ -2,9 +2,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Upload, Image as ImageIcon, FileText, Sparkles, Loader2, X,
-  Mic, MicOff, Volume2, VolumeX, RotateCcw, Play, Pause,
-  ChevronRight, ChevronLeft, Send, AlertCircle,
+  Image as ImageIcon, FileText, Sparkles, Loader2,
+  Mic, Volume2, VolumeX, RotateCcw, Play,
+  Send, AlertCircle, Wand2,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { cn } from "@/lib/utils";
@@ -68,6 +68,26 @@ type Turn = {
   scriptLineIdx?: number;
 };
 
+type CoachHint = {
+  lineIdx: number;
+  intent: string;
+  physicality: string;
+  note: string;
+};
+
+// SpeechRecognition cross-browser typing
+type AnyRecognition = {
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((e: { results: { [k: number]: { [k: number]: { transcript: string } }; length: number; isFinal?: boolean }, resultIndex: number }) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((e: { error?: string }) => void) | null;
+};
+
 export default function CoachPage() {
   const [step, setStep] = useState<Step>("upload");
 
@@ -94,6 +114,12 @@ export default function CoachPage() {
   const [userInput, setUserInput] = useState("");
   const [speakEnabled, setSpeakEnabled] = useState(true);
   const [speaking, setSpeaking] = useState(false);
+  const [usePremiumVoice, setUsePremiumVoice] = useState(false);
+  const [hints, setHints] = useState<Record<number, CoachHint>>({});
+  const [hintsLoading, setHintsLoading] = useState(false);
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef<AnyRecognition | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Voice synthesis voices
@@ -121,6 +147,142 @@ export default function CoachPage() {
     return pool.find((v) => matcher.test(v.name)) ?? pool[0] ?? voices[0];
   }, [voices, voiceProfile, scene]);
 
+  // Detect script language (he vs en) for STT
+  const scriptLang = useMemo(() => {
+    const sample = scene?.lines.slice(0, 3).map((l) => l.text).join(" ") ?? "";
+    return /[א-ת]/.test(sample) ? "he-IL" : "en-US";
+  }, [scene]);
+
+  // ── Speech-to-Text ──────────────────────────────────
+  function startListening() {
+    if (typeof window === "undefined") return;
+    const w = window as unknown as { webkitSpeechRecognition?: new () => AnyRecognition; SpeechRecognition?: new () => AnyRecognition };
+    const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+    if (!SR) {
+      alert("הדפדפן לא תומך בזיהוי קול. נסה Safari או Chrome.");
+      return;
+    }
+    stopSpeaking();
+    const r = new SR();
+    r.lang = scriptLang;
+    r.continuous = false;
+    r.interimResults = true;
+    let finalText = "";
+    r.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const transcript = e.results[i][0].transcript;
+        if ((e.results[i] as { isFinal?: boolean }).isFinal) finalText += transcript;
+        else interim += transcript;
+      }
+      setUserInput((finalText + " " + interim).trim());
+    };
+    r.onerror = () => { setListening(false); };
+    r.onend = () => { setListening(false); };
+    recognitionRef.current = r;
+    setListening(true);
+    haptic("light");
+    try { r.start(); } catch { setListening(false); }
+  }
+
+  function stopListening() {
+    recognitionRef.current?.stop();
+    setListening(false);
+  }
+
+  // ── ElevenLabs playback ─────────────────────────────
+  async function speakViaElevenLabs(text: string): Promise<void> {
+    const clean = text.replace(/^\[[^\]]+\]\s*/, "").trim();
+    if (!clean) return;
+    try {
+      const res = await fetch("/api/aria/speak", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: clean, voiceProfile, tone, intensity }),
+      });
+      if (!res.ok) {
+        // Fall back to device voice silently
+        return new Promise((resolve) => speakDevice(clean, resolve));
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      setSpeaking(true);
+      return new Promise<void>((resolve) => {
+        audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); resolve(); };
+        audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); resolve(); };
+        audio.play().catch(() => { setSpeaking(false); resolve(); });
+      });
+    } catch {
+      return new Promise((resolve) => speakDevice(clean, resolve));
+    }
+  }
+
+  // ── Device SpeechSynthesis (fallback) ───────────────
+  function speakDevice(text: string, onEnd?: () => void) {
+    if (!speakEnabled || typeof window === "undefined") { onEnd?.(); return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if (ttsVoice) u.voice = ttsVoice;
+    const toneMap: Record<Tone, { rate: number; pitch: number }> = {
+      neutral: { rate: 1.0, pitch: 1.0 },
+      excited: { rate: 1.15, pitch: 1.2 },
+      happy: { rate: 1.05, pitch: 1.15 },
+      sad: { rate: 0.85, pitch: 0.85 },
+      scared: { rate: 1.1, pitch: 1.25 },
+      worried: { rate: 0.95, pitch: 1.05 },
+      angry: { rate: 1.1, pitch: 0.95 },
+      tender: { rate: 0.9, pitch: 1.05 },
+      sarcastic: { rate: 1.0, pitch: 0.95 },
+      tense: { rate: 0.95, pitch: 0.95 },
+      flirtatious: { rate: 0.95, pitch: 1.1 },
+      cold: { rate: 0.95, pitch: 0.9 },
+    };
+    if (voiceProfile === "boy" || voiceProfile === "girl") u.pitch = toneMap[tone].pitch + 0.4;
+    else if (voiceProfile === "old_man" || voiceProfile === "old_woman") u.rate = toneMap[tone].rate - 0.15;
+    else { u.rate = toneMap[tone].rate; u.pitch = toneMap[tone].pitch; }
+    u.onstart = () => setSpeaking(true);
+    u.onend = () => { setSpeaking(false); onEnd?.(); };
+    u.onerror = () => { setSpeaking(false); onEnd?.(); };
+    window.speechSynthesis.speak(u);
+  }
+
+  // Wraps the right TTS source based on usePremiumVoice toggle
+  async function speakLine(text: string): Promise<void> {
+    if (!speakEnabled) return;
+    if (usePremiumVoice) return speakViaElevenLabs(text);
+    return new Promise<void>((resolve) => speakDevice(text, resolve));
+  }
+
+  // ── Fetch coach hints for user lines ────────────────
+  async function loadHints(forScene: ParsedScene, character: string) {
+    setHintsLoading(true);
+    try {
+      const res = await fetch("/api/aria/coach-directions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scene: {
+            title: forScene.title,
+            summary: forScene.summary,
+            context,
+            yourCharacter: character,
+            lines: forScene.lines.map((l) => ({ character: l.character, text: l.text })),
+          },
+        }),
+      });
+      if (!res.ok) return;
+      const data: { hints: CoachHint[] } = await res.json();
+      const byIdx: Record<number, CoachHint> = {};
+      for (const h of data.hints) byIdx[h.lineIdx] = h;
+      setHints(byIdx);
+    } finally {
+      setHintsLoading(false);
+    }
+  }
+
+  // Legacy device-only speak (kept for note-only "cut" replies)
   function speak(text: string) {
     if (!speakEnabled || typeof window === "undefined") return;
     const clean = text.replace(/^\[[^\]]+\]\s*/, "").trim();
@@ -155,6 +317,10 @@ export default function CoachPage() {
 
   function stopSpeaking() {
     if (typeof window !== "undefined") window.speechSynthesis.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
     setSpeaking(false);
   }
 
@@ -234,39 +400,8 @@ export default function CoachPage() {
       const display = scene && scene.characters.length > 2 ? `[${l.character}] ${l.text}` : l.text;
       acc = [...acc, { role: "assistant", text: display }];
       setTurns(acc);
-      // Speak and wait for utterance to complete before moving on
-      await new Promise<void>((resolve) => {
-        if (!speakEnabled || typeof window === "undefined") {
-          setTimeout(resolve, 600);
-          return;
-        }
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(l.text);
-        if (ttsVoice) u.voice = ttsVoice;
-        const toneMap: Record<Tone, { rate: number; pitch: number }> = {
-          neutral: { rate: 1.0, pitch: 1.0 },
-          excited: { rate: 1.15, pitch: 1.2 },
-          happy: { rate: 1.05, pitch: 1.15 },
-          sad: { rate: 0.85, pitch: 0.85 },
-          scared: { rate: 1.1, pitch: 1.25 },
-          worried: { rate: 0.95, pitch: 1.05 },
-          angry: { rate: 1.1, pitch: 0.95 },
-          tender: { rate: 0.9, pitch: 1.05 },
-          sarcastic: { rate: 1.0, pitch: 0.95 },
-          tense: { rate: 0.95, pitch: 0.95 },
-          flirtatious: { rate: 0.95, pitch: 1.1 },
-          cold: { rate: 0.95, pitch: 0.9 },
-        };
-        if (voiceProfile === "boy" || voiceProfile === "girl") u.pitch = toneMap[tone].pitch + 0.4;
-        else if (voiceProfile === "old_man" || voiceProfile === "old_woman") u.rate = toneMap[tone].rate - 0.15;
-        else { u.rate = toneMap[tone].rate; u.pitch = toneMap[tone].pitch; }
-        u.onstart = () => setSpeaking(true);
-        u.onend = () => { setSpeaking(false); resolve(); };
-        u.onerror = () => { setSpeaking(false); resolve(); };
-        window.speechSynthesis.speak(u);
-      });
-      // brief pause between lines
-      await new Promise((r) => setTimeout(r, 250));
+      await speakLine(l.text);
+      await new Promise((r) => setTimeout(r, 220));
     }
     return acc;
   }
@@ -286,10 +421,11 @@ export default function CoachPage() {
     setTurns([]);
     setCurrentLineIdx(0);
     setStep("practice");
+    // Fetch coach hints in parallel (non-blocking for UX)
+    loadHints(scene, yourCharacter);
     // If the very first lines are the partner's, play ALL of them
     const opening = getPartnerBlock(0);
     if (opening.length > 0) {
-      // Wait for state to settle, then auto-play partner opening block
       setTimeout(async () => {
         const acc = await performPartnerBlock(opening, []);
         setTurns(acc);
@@ -662,6 +798,18 @@ export default function CoachPage() {
               </div>
               <div className="flex items-center gap-1">
                 <button
+                  onClick={() => { setUsePremiumVoice((v) => !v); haptic("light"); }}
+                  className={cn(
+                    "h-8 px-2.5 rounded-full grid place-items-center text-[9px] font-bold uppercase tracking-wider transition",
+                    usePremiumVoice
+                      ? "bg-gold text-bg"
+                      : "bg-bg-elevated border border-border text-text-muted"
+                  )}
+                  title={usePremiumVoice ? "קול AI פרימיום" : "קול מכשיר"}
+                >
+                  {usePremiumVoice ? "AI ✓" : "AI"}
+                </button>
+                <button
                   onClick={() => setSpeakEnabled((v) => !v)}
                   className={cn(
                     "w-8 h-8 rounded-full grid place-items-center",
@@ -737,20 +885,56 @@ export default function CoachPage() {
             )}
           </div>
 
-          {/* Next line hint */}
-          {nextUserLine && (
-            <div className="px-4 py-2 border-t border-border bg-gold/5">
-              <div className="text-[9px] text-gold uppercase tracking-widest font-semibold mb-0.5">
-                השורה הבאה שלך · {yourCharacter}
-              </div>
-              <p className="text-xs text-text-muted leading-relaxed">
-                {nextUserLine.direction && (
-                  <span className="text-text-subtle italic">({nextUserLine.direction}) </span>
+          {/* Next line hint + coach direction */}
+          {nextUserLine && (() => {
+            const idx = scene.lines.indexOf(nextUserLine);
+            const hint = hints[idx];
+            return (
+              <div className="px-4 py-3 border-t border-border bg-gold/5">
+                <div className="text-[9px] text-gold uppercase tracking-widest font-semibold mb-1.5">
+                  השורה הבאה שלך · {yourCharacter}
+                </div>
+
+                {hint && (
+                  <div className="mb-2.5 space-y-1.5">
+                    <div className="flex items-start gap-2">
+                      <Wand2 className="w-3 h-3 text-gold shrink-0 mt-0.5" />
+                      <div className="text-[10px] leading-snug">
+                        <span className="text-gold font-semibold">כוונה:</span>{" "}
+                        <span className="text-text">{hint.intent}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Wand2 className="w-3 h-3 text-plum-light shrink-0 mt-0.5" />
+                      <div className="text-[10px] leading-snug">
+                        <span className="text-plum-light font-semibold">גוף:</span>{" "}
+                        <span className="text-text">{hint.physicality}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Wand2 className="w-3 h-3 text-sage shrink-0 mt-0.5" />
+                      <div className="text-[10px] leading-snug">
+                        <span className="text-sage font-semibold">טיפ:</span>{" "}
+                        <span className="text-text">{hint.note}</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
-                {nextUserLine.text}
-              </p>
-            </div>
-          )}
+                {!hint && hintsLoading && (
+                  <div className="text-[10px] text-text-subtle inline-flex items-center gap-1.5 mb-2">
+                    <Loader2 className="w-3 h-3 animate-spin" /> מכין הוראות בימוי...
+                  </div>
+                )}
+
+                <p className="text-xs text-text-muted leading-relaxed">
+                  {nextUserLine.direction && (
+                    <span className="text-text-subtle italic">({nextUserLine.direction}) </span>
+                  )}
+                  {nextUserLine.text}
+                </p>
+              </div>
+            );
+          })()}
 
           {/* Input */}
           <div className="px-4 py-3 border-t border-border bg-bg">
@@ -761,10 +945,24 @@ export default function CoachPage() {
               }}
               className="flex items-center gap-2"
             >
+              <button
+                type="button"
+                onClick={() => listening ? stopListening() : startListening()}
+                className={cn(
+                  "w-11 h-11 rounded-full grid place-items-center shrink-0 transition",
+                  listening
+                    ? "bg-danger text-white animate-pulse"
+                    : "bg-bg-elevated border border-border text-text-muted"
+                )}
+                aria-label={listening ? "עצור הקלטה" : "התחל הקלטה"}
+                title={listening ? "עצור" : "דבר את השורה שלך"}
+              >
+                <Mic className="w-4 h-4" />
+              </button>
               <input
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                placeholder="כתוב את השורה שלך..."
+                placeholder={listening ? "מקליט..." : "דבר או הקלד את השורה שלך..."}
                 className="flex-1 h-11 px-4 rounded-full bg-bg-elevated border border-border text-sm"
                 dir="auto"
               />
