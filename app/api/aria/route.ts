@@ -34,6 +34,13 @@ const BodySchema = z.object({
     voiceProfile: z.enum(['man', 'woman', 'boy', 'girl', 'old_man', 'old_woman', 'teen_male', 'teen_female']).optional(),
     tone: z.enum(['neutral', 'excited', 'happy', 'sad', 'scared', 'worried', 'angry', 'tender', 'sarcastic', 'tense', 'flirtatious', 'cold']).optional(),
     intensity: z.enum(['subtle', 'moderate', 'strong']).optional(),
+    // Multi-line turn support: the consecutive partner lines that should be delivered now
+    upcomingLines: z.array(z.object({
+      character: z.string(),
+      text: z.string(),
+      direction: z.string().optional(),
+    })).max(20).optional(),
+    expectedUserLine: z.string().max(2000).optional(),
   }).optional(),
   tools: z.array(z.string()).optional(),
 })
@@ -159,6 +166,10 @@ Respond in the language the user is using.${profileBlock}`
     const tone = b.scene.tone ? TONE_LABELS[b.scene.tone] : 'natural'
     const intensity = b.scene.intensity || 'moderate'
 
+    const upcomingBlock = b.scene.upcomingLines?.length
+      ? `\nThe next ${b.scene.upcomingLines.length} consecutive partner line(s) to deliver NOW:\n${b.scene.upcomingLines.map((l, i) => `${i + 1}. [${l.character}]${l.direction ? ` (${l.direction})` : ''} ${l.text}`).join('\n')}\n\nExpected user line that just came (for matching): "${b.scene.expectedUserLine ?? '—'}"`
+      : ''
+
     return `You are Aria — an acting scene partner. The user is rehearsing a scene and you are playing ALL characters EXCEPT "${b.scene.yourCharacter}".
 
 Scene: "${b.scene.title}"
@@ -167,17 +178,18 @@ ${b.scene.context ? `Context: ${b.scene.context}` : ''}
 ${voice ? `Voice profile: you sound like ${voice}.` : ''}
 Tone: ${tone}. Intensity: ${intensity}.
 
-${b.scene.script ? `Full scene script (use it to know what comes next):\n---\n${b.scene.script}\n---\n` : ''}
+${b.scene.script ? `Full scene script:\n---\n${b.scene.script}\n---\n` : ''}${upcomingBlock}
 
 Rules:
-- Deliver ONE line at a time, exactly as written in the script when possible.
+- Deliver the upcoming partner line(s) above, in order, AS WRITTEN — preserve original wording.
+- If multiple lines are listed, output EACH ONE on its own row, separated by the delimiter "|||" (three pipes). The client splits on this delimiter.
+- Format every output line as: [CHARACTER_NAME] line text
 - Stay strictly in character. NEVER narrate stage directions or break the fourth wall.
-- Match the requested voice profile and emotional tone consistently.
-- If the user improvises or strays slightly, react in character — don't correct them mid-scene.
-- If the user says "cut", "stop", "break", or "פסק זמן": drop character and give ONE specific acting note (breath, eye-line, subtext, pace, button). Then ask if they want to continue.
-- If the scene has multiple non-user characters, label each line with the character name in brackets: [CHARACTER NAME] line text.
+- Apply the requested voice/tone through word choice and rhythm (NOT by adding emotion labels).
+- If the user clearly improvised or said something off-script, adapt naturally — stay close to the script's beats, but you may modify wording to react to what they actually said.
+- If the user says "cut", "stop", "break", or "פסק זמן": drop character, give ONE specific acting note (breath, eye-line, subtext, pace, button), ask if they want to continue. Do NOT use [CHARACTER] format in that case.
 - Respond in the same language as the script.
-- Keep replies short — 1-2 sentences max per line.${profileBlock}`
+- After delivering all upcoming lines, STOP. Wait for the user's next line.${profileBlock}`
   }
 
   if (b.mode === 'coach') {
@@ -215,6 +227,13 @@ export async function POST(req: Request) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey || apiKey.startsWith('YOUR_')) {
     // graceful demo fallback per mode
+    if (body.mode === 'custom_scene' && body.scene?.upcomingLines?.length) {
+      // Demo fallback: just echo the script's upcoming lines verbatim
+      const text = body.scene.upcomingLines
+        .map((l) => `[${l.character}] ${l.text}`)
+        .join(' ||| ')
+      return Response.json({ text })
+    }
     if ((body.mode === 'scene_partner' || body.mode === 'custom_scene') && body.scene) {
       return Response.json({
         text: `I hear you. But that doesn't change what I have to do.`,
@@ -230,7 +249,7 @@ export async function POST(req: Request) {
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: body.mode === 'scene_partner' || body.mode === 'custom_scene' ? 220 : 512,
+      max_tokens: body.mode === 'scene_partner' ? 220 : body.mode === 'custom_scene' ? 600 : 512,
       tools: body.mode === 'scene_partner' || body.mode === 'custom_scene' ? undefined : TOOLS,
       system: buildSystemPrompt(body),
       messages: body.messages,

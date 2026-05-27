@@ -215,21 +215,85 @@ export default function CoachPage() {
     return scene.characters.filter((c) => c !== yourCharacter).join(", ") || scene.characters[0];
   }, [scene, yourCharacter]);
 
-  function startPractice() {
+  // Find consecutive partner lines starting at `from`, until we hit a user line or scene end.
+  function getPartnerBlock(from: number): ScriptLine[] {
+    if (!scene) return [];
+    const block: ScriptLine[] = [];
+    for (let i = from; i < scene.lines.length; i++) {
+      if (scene.lines[i].character === yourCharacter) break;
+      block.push(scene.lines[i]);
+    }
+    return block;
+  }
+
+  // Sequentially display + speak a list of partner lines.
+  async function performPartnerBlock(lines: { character: string; text: string }[], baseTurns: Turn[]) {
+    let acc = baseTurns;
+    for (let i = 0; i < lines.length; i++) {
+      const l = lines[i];
+      const display = scene && scene.characters.length > 2 ? `[${l.character}] ${l.text}` : l.text;
+      acc = [...acc, { role: "assistant", text: display }];
+      setTurns(acc);
+      // Speak and wait for utterance to complete before moving on
+      await new Promise<void>((resolve) => {
+        if (!speakEnabled || typeof window === "undefined") {
+          setTimeout(resolve, 600);
+          return;
+        }
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(l.text);
+        if (ttsVoice) u.voice = ttsVoice;
+        const toneMap: Record<Tone, { rate: number; pitch: number }> = {
+          neutral: { rate: 1.0, pitch: 1.0 },
+          excited: { rate: 1.15, pitch: 1.2 },
+          happy: { rate: 1.05, pitch: 1.15 },
+          sad: { rate: 0.85, pitch: 0.85 },
+          scared: { rate: 1.1, pitch: 1.25 },
+          worried: { rate: 0.95, pitch: 1.05 },
+          angry: { rate: 1.1, pitch: 0.95 },
+          tender: { rate: 0.9, pitch: 1.05 },
+          sarcastic: { rate: 1.0, pitch: 0.95 },
+          tense: { rate: 0.95, pitch: 0.95 },
+          flirtatious: { rate: 0.95, pitch: 1.1 },
+          cold: { rate: 0.95, pitch: 0.9 },
+        };
+        if (voiceProfile === "boy" || voiceProfile === "girl") u.pitch = toneMap[tone].pitch + 0.4;
+        else if (voiceProfile === "old_man" || voiceProfile === "old_woman") u.rate = toneMap[tone].rate - 0.15;
+        else { u.rate = toneMap[tone].rate; u.pitch = toneMap[tone].pitch; }
+        u.onstart = () => setSpeaking(true);
+        u.onend = () => { setSpeaking(false); resolve(); };
+        u.onerror = () => { setSpeaking(false); resolve(); };
+        window.speechSynthesis.speak(u);
+      });
+      // brief pause between lines
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    return acc;
+  }
+
+  // Parse AI response: "[CHAR] line ||| [CHAR] line" → array of lines
+  function parseAILines(text: string): { character: string; text: string }[] {
+    const segments = text.split(/\s*\|\|\|\s*/).map((s) => s.trim()).filter(Boolean);
+    return segments.map((seg) => {
+      const m = seg.match(/^\[([^\]]+)\]\s*(.+)$/);
+      if (m) return { character: m[1].trim(), text: m[2].trim() };
+      return { character: partnerCharacter, text: seg };
+    });
+  }
+
+  async function startPractice() {
     if (!scene) return;
     setTurns([]);
     setCurrentLineIdx(0);
     setStep("practice");
-    // If the very first line in the script is the partner's, play it immediately
-    const firstLine = scene.lines[0];
-    if (firstLine && firstLine.character !== yourCharacter) {
-      const text = scene.characters.length > 2
-        ? `[${firstLine.character}] ${firstLine.text}`
-        : firstLine.text;
-      setTimeout(() => {
-        setTurns([{ role: "assistant", text, scriptLineIdx: 0 }]);
-        setCurrentLineIdx(1);
-        speak(text);
+    // If the very first lines are the partner's, play ALL of them
+    const opening = getPartnerBlock(0);
+    if (opening.length > 0) {
+      // Wait for state to settle, then auto-play partner opening block
+      setTimeout(async () => {
+        const acc = await performPartnerBlock(opening, []);
+        setTurns(acc);
+        setCurrentLineIdx(opening.length);
       }, 400);
     }
   }
@@ -238,16 +302,33 @@ export default function CoachPage() {
     if (!text.trim() || !scene) return;
     stopSpeaking();
     setUserInput("");
-    const nextTurns: Turn[] = [...turns, { role: "user", text, scriptLineIdx: currentLineIdx }];
-    setTurns(nextTurns);
-    setCurrentLineIdx((i) => i + 1);
-    setLoading(true);
 
-    // Compose context for AI: rest of script + scene metadata
+    // Where does the user's line sit? The next user-line idx ≥ currentLineIdx
+    let userLineIdx = currentLineIdx;
+    while (userLineIdx < scene.lines.length && scene.lines[userLineIdx].character !== yourCharacter) {
+      userLineIdx++;
+    }
+    const expectedUserLine = scene.lines[userLineIdx]?.text;
+
+    const userTurn: Turn = { role: "user", text, scriptLineIdx: userLineIdx };
+    let acc: Turn[] = [...turns, userTurn];
+    setTurns(acc);
+
+    // Find the next partner block (after the user's line)
+    const nextPartnerStart = userLineIdx + 1;
+    const upcoming = getPartnerBlock(nextPartnerStart);
+
+    if (upcoming.length === 0) {
+      // End of scene
+      setCurrentLineIdx(scene.lines.length);
+      return;
+    }
+
+    setLoading(true);
     try {
-      const messages = nextTurns.map((t) => ({
+      const messages = acc.map((t) => ({
         role: t.role,
-        content: t.text,
+        content: t.text.replace(/^\[[^\]]+\]\s*/, ""),
       }));
       const res = await fetch("/api/aria", {
         method: "POST",
@@ -264,20 +345,46 @@ export default function CoachPage() {
             voiceProfile,
             tone,
             intensity,
+            upcomingLines: upcoming,
+            expectedUserLine,
           },
         }),
       });
       if (!res.ok) throw new Error("Aria error");
       const data: { text: string } = await res.json();
       const aiText = data.text || "...";
-      setTurns([...nextTurns, { role: "assistant", text: aiText, scriptLineIdx: currentLineIdx + 1 }]);
-      setCurrentLineIdx((i) => i + 1);
-      speak(aiText);
+
+      // Detect if Aria broke character (no [CHAR] format, contains "cut/stop/break" feedback)
+      const looksLikeNote = !/\[/.test(aiText) && aiText.length < 400;
+      if (looksLikeNote) {
+        acc = [...acc, { role: "assistant", text: aiText }];
+        setTurns(acc);
+        speakSimple(aiText);
+        setLoading(false);
+        return;
+      }
+
+      const aiLines = parseAILines(aiText);
+      setLoading(false);
+      acc = await performPartnerBlock(aiLines, acc);
+      setTurns(acc);
+      setCurrentLineIdx(nextPartnerStart + upcoming.length);
     } catch {
-      setTurns([...nextTurns, { role: "assistant", text: "(Aria לא זמינה כרגע — נסה שוב)", scriptLineIdx: currentLineIdx + 1 }]);
-    } finally {
+      setTurns([...acc, { role: "assistant", text: "(Aria לא זמינה כרגע — נסה שוב)" }]);
       setLoading(false);
     }
+  }
+
+  // Simple single-line TTS (for acting notes)
+  function speakSimple(text: string) {
+    if (!speakEnabled || typeof window === "undefined") return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if (ttsVoice) u.voice = ttsVoice;
+    u.onstart = () => setSpeaking(true);
+    u.onend = () => setSpeaking(false);
+    u.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(u);
   }
 
   function restart() {
