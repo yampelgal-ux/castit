@@ -54,11 +54,25 @@ function Scenes() {
   return (
     <>
       <Link
-        href="/studio/upload"
-        className="block w-full p-4 rounded-2xl bg-gradient-to-br from-gold/15 to-bg-elevated border border-gold/20 text-left flex items-center gap-4"
+        href="/studio/coach"
+        className="block w-full p-4 rounded-2xl bg-gradient-to-br from-gold/20 via-violet/10 to-bg-elevated border border-gold/30 text-left flex items-center gap-4"
       >
         <div className="w-12 h-12 rounded-xl bg-gold/20 grid place-items-center">
-          <Plus className="w-5 h-5 text-gold" />
+          <Sparkles className="w-5 h-5 text-gold" />
+        </div>
+        <div className="flex-1">
+          <div className="text-sm font-semibold">Practice with AI Coach</div>
+          <div className="text-[11px] text-text-muted">Upload your sides — Aria plays the scene with you.</div>
+        </div>
+        <ChevronRight className="w-4 h-4 text-text-muted" />
+      </Link>
+
+      <Link
+        href="/studio/upload"
+        className="block w-full p-4 mt-2 rounded-2xl bg-bg-elevated border border-border text-left flex items-center gap-4"
+      >
+        <div className="w-12 h-12 rounded-xl bg-bg grid place-items-center">
+          <Plus className="w-5 h-5 text-text-muted" />
         </div>
         <div className="flex-1">
           <div className="text-sm font-semibold">Upload a reel</div>

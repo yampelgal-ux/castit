@@ -24,12 +24,16 @@ const BodySchema = z.object({
   })).min(1).max(40),
   userName: z.string().max(80).optional(),
   userTypecast: TypecastSchema,
-  mode: z.enum(['agent', 'scene_partner', 'coach']).optional(),
+  mode: z.enum(['agent', 'scene_partner', 'coach', 'custom_scene']).optional(),
   scene: z.object({
     title: z.string(),
     yourCharacter: z.string(),
     partnerCharacter: z.string(),
     context: z.string().optional(),
+    script: z.string().max(20_000).optional(),
+    voiceProfile: z.enum(['man', 'woman', 'boy', 'girl', 'old_man', 'old_woman', 'teen_male', 'teen_female']).optional(),
+    tone: z.enum(['neutral', 'excited', 'happy', 'sad', 'scared', 'worried', 'angry', 'tender', 'sarcastic', 'tense', 'flirtatious', 'cold']).optional(),
+    intensity: z.enum(['subtle', 'moderate', 'strong']).optional(),
   }).optional(),
   tools: z.array(z.string()).optional(),
 })
@@ -126,6 +130,56 @@ If the user says "cut", "stop", or "break character", drop character and give a 
 Respond in the language the user is using.${profileBlock}`
   }
 
+  if (b.mode === 'custom_scene' && b.scene) {
+    const VOICE_LABELS: Record<string, string> = {
+      man: 'an adult man (deep, mature)',
+      woman: 'an adult woman (warm, mature)',
+      boy: 'a young boy (~8-12 years old)',
+      girl: 'a young girl (~8-12 years old)',
+      old_man: 'an elderly man (frail, weathered)',
+      old_woman: 'an elderly woman (frail, weathered)',
+      teen_male: 'a teenage boy (~14-18 years old)',
+      teen_female: 'a teenage girl (~14-18 years old)',
+    }
+    const TONE_LABELS: Record<string, string> = {
+      neutral: 'neutral and grounded',
+      excited: 'excited and energetic',
+      happy: 'happy and warm',
+      sad: 'sad, with a heavy heart',
+      scared: 'scared and shaky',
+      worried: 'worried and uncertain',
+      angry: 'angry, with controlled fury',
+      tender: 'tender and gentle',
+      sarcastic: 'sarcastic with sharp edges',
+      tense: 'tense, holding things back',
+      flirtatious: 'flirtatious and playful',
+      cold: 'cold and emotionally distant',
+    }
+    const voice = b.scene.voiceProfile ? VOICE_LABELS[b.scene.voiceProfile] : null
+    const tone = b.scene.tone ? TONE_LABELS[b.scene.tone] : 'natural'
+    const intensity = b.scene.intensity || 'moderate'
+
+    return `You are Aria — an acting scene partner. The user is rehearsing a scene and you are playing ALL characters EXCEPT "${b.scene.yourCharacter}".
+
+Scene: "${b.scene.title}"
+The user plays: "${b.scene.yourCharacter}"
+${b.scene.context ? `Context: ${b.scene.context}` : ''}
+${voice ? `Voice profile: you sound like ${voice}.` : ''}
+Tone: ${tone}. Intensity: ${intensity}.
+
+${b.scene.script ? `Full scene script (use it to know what comes next):\n---\n${b.scene.script}\n---\n` : ''}
+
+Rules:
+- Deliver ONE line at a time, exactly as written in the script when possible.
+- Stay strictly in character. NEVER narrate stage directions or break the fourth wall.
+- Match the requested voice profile and emotional tone consistently.
+- If the user improvises or strays slightly, react in character — don't correct them mid-scene.
+- If the user says "cut", "stop", "break", or "פסק זמן": drop character and give ONE specific acting note (breath, eye-line, subtext, pace, button). Then ask if they want to continue.
+- If the scene has multiple non-user characters, label each line with the character name in brackets: [CHARACTER NAME] line text.
+- Respond in the same language as the script.
+- Keep replies short — 1-2 sentences max per line.${profileBlock}`
+  }
+
   if (b.mode === 'coach') {
     return `You are Aria, an acting coach for ${b.userName || 'a talent'}.
 Give specific, actionable, kind feedback. Reference concrete craft elements: breath, eye-line, pace, subtext, stakes, button.
@@ -161,9 +215,9 @@ export async function POST(req: Request) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey || apiKey.startsWith('YOUR_')) {
     // graceful demo fallback per mode
-    if (body.mode === 'scene_partner' && body.scene) {
+    if ((body.mode === 'scene_partner' || body.mode === 'custom_scene') && body.scene) {
       return Response.json({
-        text: `(${body.scene.partnerCharacter}) I hear you. But that doesn't change what I have to do.`,
+        text: `I hear you. But that doesn't change what I have to do.`,
       })
     }
     return Response.json({
@@ -176,8 +230,8 @@ export async function POST(req: Request) {
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: body.mode === 'scene_partner' ? 200 : 512,
-      tools: body.mode === 'scene_partner' ? undefined : TOOLS,
+      max_tokens: body.mode === 'scene_partner' || body.mode === 'custom_scene' ? 220 : 512,
+      tools: body.mode === 'scene_partner' || body.mode === 'custom_scene' ? undefined : TOOLS,
       system: buildSystemPrompt(body),
       messages: body.messages,
     })
