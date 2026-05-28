@@ -5,18 +5,21 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   FileVideo, Calendar, DollarSign, ChevronRight, ScrollText, Clock, Edit3, Columns,
+  Check, X, Zap,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
 import {
-  getRole, getSubmissionsByRole, roleCounts, updateRole,
-  type Role, type Submission, type Stage, STAGE_META,
+  getRole, getProject, getSubmissionsByRole, roleCounts, updateRole,
+  confirmBooked, rejectSubmission,
+  type Role, type Project, type Submission, type Stage, STAGE_META,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { haptic } from "@/lib/haptics";
 
-// Pipeline columns (Kanban-style filter chips)
-const PIPELINE: { id: "all" | Stage; label: string }[] = [
+// Pipeline columns — full mode has all 8 stages, quick mode has 3
+const PIPELINE_FULL: { id: "all" | Stage; label: string }[] = [
   { id: "all",         label: "All" },
   { id: "invited",     label: STAGE_META.invited.label },
   { id: "submitted",   label: STAGE_META.submitted.label },
@@ -28,19 +31,32 @@ const PIPELINE: { id: "all" | Stage; label: string }[] = [
   { id: "rejected",    label: STAGE_META.rejected.label },
 ];
 
+const PIPELINE_QUICK: { id: "all" | Stage; label: string }[] = [
+  { id: "all",       label: "All" },
+  { id: "invited",   label: "Invited" },
+  { id: "submitted", label: "לסקירה" },
+  { id: "booked",    label: "נבחר" },
+  { id: "rejected",  label: "נדחה" },
+];
+
 export default function RoleDetailPage() {
   const { id, roleId } = useParams<{ id: string; roleId: string }>();
   const [role, setRole] = useState<Role | null>(null);
+  const [project, setProject] = useState<Project | null>(null);
   const [subs, setSubs] = useState<Submission[]>([]);
   const [stage, setStage] = useState<"all" | Stage>("all");
   const [editingBrief, setEditingBrief] = useState(false);
 
   function reload() {
     setRole(getRole(roleId) ?? null);
+    setProject(getProject(id) ?? null);
     setSubs(getSubmissionsByRole(roleId));
   }
 
-  useEffect(() => { reload(); }, [roleId]);
+  useEffect(() => { reload(); }, [roleId, id]);
+
+  const isQuick = project?.mode === "quick";
+  const PIPELINE = isQuick ? PIPELINE_QUICK : PIPELINE_FULL;
 
   if (!role) {
     return (
@@ -130,12 +146,20 @@ export default function RoleDetailPage() {
         )}
 
         {/* Pipeline summary */}
-        <div className="grid grid-cols-4 gap-2">
-          <PipeStat label="To review" value={counts.submitted} tone="gold" />
-          <PipeStat label="Callbacks" value={counts.callback} tone="success" />
-          <PipeStat label="Hold" value={counts.hold} tone="sage" />
-          <PipeStat label="Booked" value={counts.booked} tone="success" />
-        </div>
+        {isQuick ? (
+          <div className="grid grid-cols-3 gap-2">
+            <PipeStat label="לסקירה" value={counts.submitted} tone="gold" />
+            <PipeStat label="נבחרו" value={counts.booked} tone="success" />
+            <PipeStat label="נדחו" value={counts.rejected ?? 0} tone="sage" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-2">
+            <PipeStat label="To review" value={counts.submitted} tone="gold" />
+            <PipeStat label="Callbacks" value={counts.callback} tone="success" />
+            <PipeStat label="Hold" value={counts.hold} tone="sage" />
+            <PipeStat label="Booked" value={counts.booked} tone="success" />
+          </div>
+        )}
 
         {/* Stage tabs */}
         <div className="flex gap-1.5 overflow-x-auto -mx-5 px-5 no-scrollbar">
@@ -170,7 +194,16 @@ export default function RoleDetailPage() {
           />
         ) : (
           <div className="space-y-2.5">
-            {sorted.map((s, i) => <SubmissionRow key={s.id} s={s} projectId={id} i={i} />)}
+            {sorted.map((s, i) => (
+              <SubmissionRow
+                key={s.id}
+                s={s}
+                projectId={id}
+                i={i}
+                isQuick={isQuick}
+                onAction={reload}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -210,17 +243,28 @@ function PipeStat({ label, value, tone }: { label: string; value: number; tone: 
   );
 }
 
-function SubmissionRow({ s, projectId, i }: { s: Submission; projectId: string; i: number }) {
+function SubmissionRow({
+  s, projectId, i, isQuick, onAction,
+}: {
+  s: Submission;
+  projectId: string;
+  i: number;
+  isQuick: boolean;
+  onAction: () => void;
+}) {
   const lastTape = s.tapes[s.tapes.length - 1];
+  const canQuickDecide = isQuick && s.stage === "submitted";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: i * 0.04 }}
+      className="rounded-2xl bg-bg-elevated border border-border overflow-hidden"
     >
       <Link
         href={`/pro/projects/${projectId}/role/${s.roleId}/submission/${s.id}`}
-        className="flex items-center gap-3 p-3 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40"
+        className="flex items-center gap-3 p-3 hover:border-gold/40"
       >
         <img src={s.talentPhoto} alt={s.talentName} className="w-12 h-12 rounded-xl object-cover shrink-0" />
         <div className="flex-1 min-w-0">
@@ -241,6 +285,33 @@ function SubmissionRow({ s, projectId, i }: { s: Submission; projectId: string; 
         </div>
         <ChevronRight className="w-4 h-4 text-text-muted shrink-0" />
       </Link>
+
+      {canQuickDecide && (
+        <div className="grid grid-cols-2 gap-1.5 p-2 border-t border-border bg-bg/40">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              rejectSubmission(s.id);
+              haptic("light");
+              onAction();
+            }}
+            className="h-9 rounded-xl bg-bg border border-danger/30 text-danger text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+          >
+            <X className="w-3.5 h-3.5" /> Pass
+          </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              confirmBooked(s.id);
+              haptic("medium");
+              onAction();
+            }}
+            className="h-9 rounded-xl bg-success text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+          >
+            <Check className="w-3.5 h-3.5" /> Select
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 }

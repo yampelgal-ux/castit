@@ -88,6 +88,9 @@ export type Project = {
   status: "casting" | "callbacks" | "closed";
   posterColor: string;
   description?: string;
+  // "full"  — principal casting, 8-stage pipeline (invited→submitted→callback→hold→avail→offered→booked)
+  // "quick" — extras/models/background, 3-stage flow (invited→submitted→booked|rejected)
+  mode?: "full" | "quick";
   createdAt: string;
 };
 
@@ -158,6 +161,19 @@ export function addRole(r: Omit<Role, "id" | "createdAt">): Role {
   safeSave(KEY_R, list);
   return role;
 }
+// Add many roles at once (used by AI bulk-import)
+export function addRoles(rolesData: Omit<Role, "id" | "createdAt">[]): Role[] {
+  const list = loadRoles();
+  const created: Role[] = rolesData.map((r) => ({
+    ...r,
+    id: uid("role"),
+    createdAt: new Date().toISOString(),
+  }));
+  list.unshift(...created);
+  safeSave(KEY_R, list);
+  return created;
+}
+
 export function updateRole(id: string, patch: Partial<Role>) {
   const list = loadRoles();
   const idx = list.findIndex((r) => r.id === id);

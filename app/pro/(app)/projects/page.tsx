@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FolderOpen, Plus, ArrowRight, Film, Tv, Megaphone, Users, CheckCircle2, Clock } from "lucide-react";
+import { FolderOpen, Plus, ArrowRight, Film, Tv, Megaphone, Users, CheckCircle2, Clock, Zap, Sparkles } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { loadProjects, projectCounts, addProject, type Project } from "@/lib/projects-store";
@@ -93,6 +93,11 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
           <span className="text-[10px] uppercase tracking-widest text-white/80 font-semibold">
             {p.type}
           </span>
+          {p.mode === "quick" && (
+            <span className="absolute top-3 left-3 inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full bg-plum/30 text-white font-bold uppercase tracking-wider">
+              <Zap className="w-2.5 h-2.5" /> Quick
+            </span>
+          )}
         </div>
         <div className="p-4">
           <div className="flex items-start justify-between gap-2">
@@ -147,6 +152,7 @@ function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreate
   const [type, setType] = useState<Project["type"]>("Feature Film");
   const [color, setColor] = useState(COLORS[0]);
   const [description, setDescription] = useState("");
+  const [mode, setMode] = useState<"full" | "quick">("full");
 
   function submit() {
     if (!title.trim()) return;
@@ -157,6 +163,7 @@ function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreate
       status: "casting",
       posterColor: color,
       description: description.trim() || undefined,
+      mode,
     });
     onCreated();
   }
@@ -175,6 +182,49 @@ function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreate
         <div className="space-y-3">
           <Field label="Title" value={title} onChange={setTitle} placeholder="e.g. After the Rain" />
           <Field label="Studio / Production" value={studio} onChange={setStudio} placeholder="e.g. Northwind Pictures" />
+
+          {/* Mode selector — full vs quick cast */}
+          <div>
+            <Label>Casting mode</Label>
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              <button
+                type="button"
+                onClick={() => setMode("full")}
+                className={cn(
+                  "p-3 rounded-2xl border text-right transition",
+                  mode === "full"
+                    ? "bg-gold/10 border-gold"
+                    : "bg-bg border-border"
+                )}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Sparkles className="w-3.5 h-3.5 text-gold" />
+                  <span className="text-xs font-semibold">Full Casting</span>
+                </div>
+                <p className="text-[10px] text-text-muted leading-snug">
+                  Pipeline מלא 8 שלבים. לידים, סופורט, יומיים — עם callback/hold/avail/offer.
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("quick")}
+                className={cn(
+                  "p-3 rounded-2xl border text-right transition",
+                  mode === "quick"
+                    ? "bg-plum/10 border-plum"
+                    : "bg-bg border-border"
+                )}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Zap className="w-3.5 h-3.5 text-plum-light" />
+                  <span className="text-xs font-semibold">Quick Cast</span>
+                </div>
+                <p className="text-[10px] text-text-muted leading-snug">
+                  3 שלבים בלבד. לניצבים, דוגמנים, פרסומות — Select/Pass.
+                </p>
+              </button>
+            </div>
+          </div>
 
           <div>
             <Label>Type</Label>

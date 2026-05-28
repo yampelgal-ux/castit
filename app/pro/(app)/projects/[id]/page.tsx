@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Plus, ArrowRight, Users, FileVideo, Trash2, ChevronRight, Heart } from "lucide-react";
+import { Plus, ArrowRight, Users, FileVideo, Trash2, ChevronRight, Heart, Wand2, Zap, CheckCircle2, XCircle } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { ProjectInsights } from "@/components/ProjectInsights";
 import { ProjectTeam } from "@/components/ProjectTeam";
+import { BulkRolesSheet } from "@/components/BulkRolesSheet";
 import {
   getProject, getRolesByProject, addRole, deleteRole, roleCounts, deleteProject,
   type Project, type Role,
@@ -20,6 +21,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [showNew, setShowNew] = useState(false);
+  const [showBulk, setShowBulk] = useState(false);
 
   function reload() {
     setProject(getProject(id) ?? null);
@@ -58,9 +60,16 @@ export default function ProjectDetailPage() {
         style={{ background: `linear-gradient(135deg, ${project.posterColor}cc, ${project.posterColor}33)` }}
       >
         <div className="absolute inset-0 flex flex-col justify-end p-5">
-          <span className="text-[10px] uppercase tracking-widest text-white/80 font-semibold">
-            {project.type} · {project.studio}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-widest text-white/80 font-semibold">
+              {project.type} · {project.studio}
+            </span>
+            {project.mode === "quick" && (
+              <span className="inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full bg-plum/40 text-white font-bold uppercase tracking-wider">
+                <Zap className="w-2.5 h-2.5" /> Quick Cast
+              </span>
+            )}
+          </div>
           <h1 className="font-display text-3xl tracking-editorial text-white">{project.title}</h1>
         </div>
       </div>
@@ -74,12 +83,20 @@ export default function ProjectDetailPage() {
           <h2 className="text-xs uppercase tracking-widest text-text-muted">
             Roles <span className="text-text font-semibold tnum">({roles.length})</span>
           </h2>
-          <button
-            onClick={() => setShowNew(true)}
-            className="text-[11px] text-gold font-semibold inline-flex items-center gap-1"
-          >
-            <Plus className="w-3 h-3" /> Add role
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowBulk(true)}
+              className="text-[11px] text-gold font-semibold inline-flex items-center gap-1"
+            >
+              <Wand2 className="w-3 h-3" /> AI Bulk
+            </button>
+            <button
+              onClick={() => setShowNew(true)}
+              className="text-[11px] text-gold font-semibold inline-flex items-center gap-1"
+            >
+              <Plus className="w-3 h-3" /> Add role
+            </button>
+          </div>
         </div>
 
         {roles.length === 0 ? (
@@ -140,6 +157,15 @@ export default function ProjectDetailPage() {
           projectId={project.id}
           onClose={() => setShowNew(false)}
           onCreated={() => { reload(); setShowNew(false); }}
+        />
+      )}
+
+      {showBulk && (
+        <BulkRolesSheet
+          projectId={project.id}
+          mode={project.mode ?? "full"}
+          onClose={() => setShowBulk(false)}
+          onCreated={() => { reload(); setShowBulk(false); }}
         />
       )}
     </div>
