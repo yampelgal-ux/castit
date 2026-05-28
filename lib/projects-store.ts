@@ -298,6 +298,127 @@ export function addTape(id: string, tape: Omit<Tape, "round" | "submittedAt"> & 
   safeSave(KEY_S, list);
 }
 
+// === Action Inbox helpers ===
+// Returns cross-project, time-sensitive items grouped by urgency category.
+export type InboxItem = {
+  submission: Submission;
+  role: Role;
+  project: Project;
+  reason: "to_review" | "hold_expiring" | "hold_expired" | "avail_waiting" | "offer_pending" | "deadline_today" | "deadline_passed";
+  urgencyMs?: number;
+};
+
+export function loadInbox(): InboxItem[] {
+  const subs = loadSubmissions();
+  const rolesById = Object.fromEntries(loadRoles().map((r) => [r.id, r])) as Record<string, Role>;
+  const projsById = Object.fromEntries(loadProjects().map((p) => [p.id, p])) as Record<string, Project>;
+  const out: InboxItem[] = [];
+  const now = Date.now();
+  const H24 = 86_400_000;
+
+  for (const s of subs) {
+    const role = rolesById[s.roleId];
+    const project = role ? projsById[role.projectId] : undefined;
+    if (!role || !project) continue;
+
+    // Skip closed projects
+    if (project.status === "closed") continue;
+
+    // 1) Tapes to review
+    if (s.stage === "submitted") {
+      out.push({
+        submission: s,
+        role,
+        project,
+        reason: "to_review",
+        urgencyMs: now - +new Date(s.tapes.at(-1)?.submittedAt ?? s.createdAt),
+      });
+      continue;
+    }
+
+    // 2) Holds with timers
+    if (s.stage === "hold" && s.holdUntil) {
+      const until = +new Date(s.holdUntil);
+      const diff = until - now;
+      if (diff <= 0) {
+        out.push({ submission: s, role, project, reason: "hold_expired", urgencyMs: -diff });
+        continue;
+      }
+      if (diff <= H24) {
+        out.push({ submission: s, role, project, reason: "hold_expiring", urgencyMs: diff });
+        continue;
+      }
+    }
+
+    // 3) Avail checks waiting on talent response
+    if (s.stage === "avail_check") {
+      out.push({
+        submission: s,
+        role,
+        project,
+        reason: "avail_waiting",
+        urgencyMs: s.decidedAt ? now - +new Date(s.decidedAt) : undefined,
+      });
+      continue;
+    }
+
+    // 4) Offers extended, awaiting acceptance
+    if (s.stage === "offered") {
+      out.push({
+        submission: s,
+        role,
+        project,
+        reason: "offer_pending",
+        urgencyMs: s.decidedAt ? now - +new Date(s.decidedAt) : undefined,
+      });
+      continue;
+    }
+
+    // 5) Invited with passed/imminent deadline
+    if (s.stage === "invited" && s.inviteDeadline) {
+      const d = +new Date(s.inviteDeadline);
+      const diff = d - now;
+      if (diff < 0) {
+        out.push({ submission: s, role, project, reason: "deadline_passed", urgencyMs: -diff });
+      } else if (diff <= H24) {
+        out.push({ submission: s, role, project, reason: "deadline_today", urgencyMs: diff });
+      }
+    }
+  }
+
+  // Urgency ordering: expired > hold expiring > to review > others
+  const order: Record<InboxItem["reason"], number> = {
+    hold_expired: 0,
+    deadline_passed: 1,
+    hold_expiring: 2,
+    deadline_today: 3,
+    to_review: 4,
+    avail_waiting: 5,
+    offer_pending: 6,
+  };
+  return out.sort((a, b) => order[a.reason] - order[b.reason]);
+}
+
+// All currently-reviewable submissions across active projects, oldest first
+// (for triage mode — sweep top-to-bottom by FIFO).
+export function loadTriageQueue(): { submission: Submission; role: Role; project: Project }[] {
+  const subs = loadSubmissions().filter((s) => s.stage === "submitted");
+  const rolesById = Object.fromEntries(loadRoles().map((r) => [r.id, r])) as Record<string, Role>;
+  const projsById = Object.fromEntries(loadProjects().map((p) => [p.id, p])) as Record<string, Project>;
+  const out: { submission: Submission; role: Role; project: Project }[] = [];
+  for (const s of subs) {
+    const role = rolesById[s.roleId];
+    const project = role ? projsById[role.projectId] : undefined;
+    if (!role || !project || project.status === "closed") continue;
+    out.push({ submission: s, role, project });
+  }
+  return out.sort((a, b) => {
+    const ta = +new Date(a.submission.tapes.at(-1)?.submittedAt ?? a.submission.createdAt);
+    const tb = +new Date(b.submission.tapes.at(-1)?.submittedAt ?? b.submission.createdAt);
+    return ta - tb; // oldest first
+  });
+}
+
 // === Aggregates ===
 export function projectCounts(projectId: string) {
   const roles = getRolesByProject(projectId);

@@ -5,11 +5,13 @@ import { motion } from "framer-motion";
 import {
   Search, FolderOpen, PlayCircle, Bell, Users, ArrowRight,
   Clock, CheckCircle2, XCircle, Send, Plus, Wand2, Calendar, TrendingUp,
+  Inbox, Zap, AlertTriangle,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
 import {
-  loadProjects, loadSubmissions, loadRoles, type Project, type Submission,
+  loadProjects, loadSubmissions, loadRoles, loadInbox,
+  type Project, type Submission, type InboxItem,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
 
@@ -17,11 +19,24 @@ export default function ProDashboardPage() {
   const { profile } = useStore();
   const [projects, setProjects] = useState<Project[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [inbox, setInbox] = useState<InboxItem[]>([]);
 
   useEffect(() => {
     setProjects(loadProjects());
     setSubmissions(loadSubmissions());
+    setInbox(loadInbox());
   }, []);
+
+  const inboxCounts = useMemo(() => {
+    const urgent = inbox.filter((i) =>
+      i.reason === "hold_expired" ||
+      i.reason === "deadline_passed" ||
+      i.reason === "hold_expiring" ||
+      i.reason === "deadline_today"
+    ).length;
+    const toReview = inbox.filter((i) => i.reason === "to_review").length;
+    return { total: inbox.length, urgent, toReview };
+  }, [inbox]);
 
   const stats = useMemo(() => {
     const activeProjects = projects.filter((p) => p.status !== "closed").length;
@@ -64,6 +79,67 @@ export default function ProDashboardPage() {
           <p className="text-text-muted text-sm mt-1">Your casting workspace.</p>
         </div>
 
+        {/* Action Inbox CTA — when there's work to do */}
+        {inboxCounts.total > 0 && (
+          <Link
+            href="/pro/inbox"
+            className={cn(
+              "block rounded-2xl p-4 border relative overflow-hidden",
+              inboxCounts.urgent > 0
+                ? "bg-gradient-to-br from-danger/10 via-bg-elevated to-bg-elevated border-danger/40"
+                : "bg-gradient-to-br from-gold/10 via-bg-elevated to-bg-elevated border-gold/30"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <div className={cn(
+                "w-11 h-11 rounded-xl grid place-items-center shrink-0",
+                inboxCounts.urgent > 0 ? "bg-danger/20 text-danger" : "bg-gold/20 text-gold"
+              )}>
+                {inboxCounts.urgent > 0 ? <AlertTriangle className="w-5 h-5" /> : <Inbox className="w-5 h-5" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className={cn(
+                  "text-[10px] uppercase tracking-widest font-semibold",
+                  inboxCounts.urgent > 0 ? "text-danger" : "text-gold"
+                )}>
+                  Action Inbox
+                </div>
+                <div className="text-sm font-semibold mt-0.5">
+                  {inboxCounts.urgent > 0 ? (
+                    <><span className="tnum">{inboxCounts.urgent}</span> פעולות דחופות</>
+                  ) : (
+                    <><span className="tnum">{inboxCounts.total}</span> פריטים ממתינים</>
+                  )}
+                </div>
+                <div className="text-[10px] text-text-muted mt-0.5">
+                  {inboxCounts.toReview > 0 && `${inboxCounts.toReview} טייפים לסקירה · `}
+                  הקש לפתיחה
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-text-muted shrink-0" />
+            </div>
+          </Link>
+        )}
+
+        {/* Triage CTA — when ≥3 tapes to review */}
+        {inboxCounts.toReview >= 3 && (
+          <Link
+            href="/pro/triage"
+            className="block rounded-2xl p-3 bg-bg-elevated border border-gold/30 hover:border-gold/50 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gold/15 text-gold grid place-items-center shrink-0">
+                <Zap className="w-4 h-4" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-semibold">Tape Triage Mode</div>
+                <div className="text-[10px] text-text-muted">החלק ימינה/שמאלה כדי לעבור מהר על {inboxCounts.toReview} טייפים</div>
+              </div>
+              <span className="text-[10px] font-bold text-gold tnum">{inboxCounts.toReview}</span>
+            </div>
+          </Link>
+        )}
+
         {/* KPI grid */}
         <div className="grid grid-cols-2 gap-2.5">
           <KPI
@@ -72,7 +148,7 @@ export default function ProDashboardPage() {
           />
           <KPI
             icon={Clock} label="Tapes to review" value={stats.toReview}
-            tone="plum" href="/pro/projects" urgent={stats.toReview > 0}
+            tone="plum" href="/pro/inbox" urgent={stats.toReview > 0}
           />
           <KPI
             icon={Send} label="Open invites" value={stats.invited}
