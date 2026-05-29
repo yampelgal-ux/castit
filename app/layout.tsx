@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OnboardingTour } from "@/components/OnboardingTour";
+import { DemoSeeder } from "@/components/DemoSeeder";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main id="main-content">
               <ErrorBoundary>{children}</ErrorBoundary>
             </main>
+            <DemoSeeder />
             <OnboardingTour />
           </div>
         </div>
