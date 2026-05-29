@@ -46,6 +46,22 @@ export type Tape = {
   posterUrl?: string;
   note?: string;
   submittedAt: string;
+  // Key for IndexedDB blob storage (persists across sessions, unlike blob: URLs)
+  tapeBlobKey?: string;
+  // Aria tape analysis (filled in lazily by /api/aria/analyze-tape)
+  ariaAnalysis?: TapeAnalysis;
+};
+
+export type TapeAnalysis = {
+  slateComplete: boolean;
+  linesAccuracy?: number; // 0-100
+  pacingNote?: string;
+  emotionalChoice?: string;
+  strengths: string[];
+  concerns: string[];
+  recommendation: "callback" | "hold" | "pass";
+  summary: string;
+  generatedAt: string;
 };
 
 export type Submission = {
@@ -308,9 +324,23 @@ export function addTape(id: string, tape: Omit<Tape, "round" | "submittedAt"> & 
     videoUrl: tape.videoUrl,
     posterUrl: tape.posterUrl,
     note: tape.note,
+    tapeBlobKey: tape.tapeBlobKey,
     submittedAt: tape.submittedAt ?? new Date().toISOString(),
   };
   list[idx] = { ...sub, tapes: [...sub.tapes, next], stage: "submitted" };
+  safeSave(KEY_S, list);
+}
+
+// Store an Aria analysis result on a specific tape round
+export function setTapeAnalysis(submissionId: string, round: number, analysis: TapeAnalysis) {
+  const list = loadSubmissions();
+  const idx = list.findIndex((s) => s.id === submissionId);
+  if (idx === -1) return;
+  const sub = list[idx];
+  const newTapes = sub.tapes.map((t) =>
+    t.round === round ? { ...t, ariaAnalysis: analysis } : t
+  );
+  list[idx] = { ...sub, tapes: newTapes };
   safeSave(KEY_S, list);
 }
 

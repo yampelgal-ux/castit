@@ -4,13 +4,14 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Video, Circle, Square, RotateCcw, Send, X, AlertCircle,
-  CheckCircle2, ScrollText, Clock, Camera,
+  CheckCircle2, ScrollText, Clock, Camera, Wand2, Loader2, Sparkles,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import {
-  getSubmission, getRole, getProject, addTape,
+  getSubmission, getRole, getProject, addTape, setTapeAnalysis,
   type Submission, type Role, type Project,
 } from "@/lib/projects-store";
+import { saveTapeVideo, newTapeKey } from "@/lib/tape-storage";
 import { cn } from "@/lib/utils";
 
 type RecState = "idle" | "countdown" | "recording" | "review";
@@ -33,6 +34,12 @@ export default function SelfTapeStudioPage() {
   const [takes, setTakes] = useState<{ url: string; blob: Blob; duration: number }[]>([]);
   const [selectedTake, setSelectedTake] = useState(0);
   const [showSides, setShowSides] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Aria pre-recording coaching
+  const [coaching, setCoaching] = useState<string | null>(null);
+  const [coachingOpen, setCoachingOpen] = useState(false);
+  const [coachingLoading, setCoachingLoading] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const reviewRef = useRef<HTMLVideoElement>(null);
@@ -134,15 +141,105 @@ export default function SelfTapeStudioPage() {
     setElapsed(0);
   }
 
-  function useTake() {
-    if (!sub || takes.length === 0) return;
+  async function useTake() {
+    if (!sub || !role || takes.length === 0) return;
+    setSubmitting(true);
     const take = takes[selectedTake];
-    // In a real backend this would upload to storage. For the demo we keep the blob URL.
+    const blobKey = newTapeKey(sub.id);
+    try {
+      await saveTapeVideo(blobKey, take.blob);
+    } catch (e) {
+      console.error("save tape video failed", e);
+    }
     addTape(sub.id, {
       videoUrl: take.url,
+      tapeBlobKey: blobKey,
       note: `Self-tape recorded in studio — ${formatTime(take.duration)}`,
     });
+
+    // Fire-and-forget AI tape analysis. Uses Whisper + Claude.
+    // Doesn't block the redirect — the analysis appears in the pro's
+    // submission view when it lands.
+    const round = (sub.tapes.length ?? 0) + 1;
+    (async () => {
+      try {
+        const buf = await take.blob.arrayBuffer();
+        const b64 = arrayBufferToBase64(buf);
+        const res = await fetch("/api/aria/analyze-tape", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mediaBase64: b64,
+            mediaMimeType: take.blob.type || "video/webm",
+            filename: `tape-${sub.id}-r${round}.webm`,
+            role: {
+              name: role.name,
+              description: role.description,
+              sides: role.sides,
+            },
+            takeCount: takes.length,
+            durationSec: take.duration,
+          }),
+        });
+        if (res.ok) {
+          const analysis = await res.json();
+          setTapeAnalysis(sub.id, round, {
+            slateComplete: analysis.slateComplete ?? false,
+            linesAccuracy: analysis.linesAccuracy,
+            pacingNote: analysis.pacingNote,
+            emotionalChoice: analysis.emotionalChoice,
+            strengths: analysis.strengths ?? [],
+            concerns: analysis.concerns ?? [],
+            recommendation: analysis.recommendation ?? "hold",
+            summary: analysis.summary ?? "",
+            generatedAt: analysis.generatedAt ?? new Date().toISOString(),
+          });
+        }
+      } catch (e) {
+        console.warn("Tape analysis failed (non-blocking)", e);
+      }
+    })();
+
     router.replace("/inbox");
+  }
+
+  function arrayBufferToBase64(buf: ArrayBuffer): string {
+    const bytes = new Uint8Array(buf);
+    let binary = "";
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+    }
+    return btoa(binary);
+  }
+
+  async function loadCoaching() {
+    if (!role || coaching || coachingLoading) return;
+    setCoachingLoading(true);
+    try {
+      const context = [
+        `Role: ${role.name}`,
+        role.description ? `Brief: ${role.description}` : null,
+        role.sides ? `Sides:\n${role.sides}` : null,
+      ].filter(Boolean).join("\n\n");
+      const res = await fetch("/api/aria", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "coach",
+          messages: [{
+            role: "user",
+            content: `I'm about to record a self-tape for this role. Give me 3 specific direction notes — intent, physicality, and one craft tip (subtext / pace / button). Be concrete, not generic. Match the language of the sides.\n\n${context}`,
+          }],
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCoaching(data.text ?? null);
+      }
+    } finally {
+      setCoachingLoading(false);
+    }
   }
 
   if (permError) {
@@ -280,6 +377,48 @@ export default function SelfTapeStudioPage() {
           </div>
         )}
 
+        {/* Aria coaching panel (collapsible) */}
+        {state === "idle" && (
+          <div className="absolute bottom-44 left-4 right-4 z-10">
+            <AnimatePresence>
+              {coachingOpen && coaching && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="mb-2 rounded-2xl bg-plum/20 backdrop-blur border border-plum/40 p-3 max-h-[35dvh] overflow-y-auto"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="text-[10px] uppercase tracking-widest text-plum-light font-semibold inline-flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" /> Aria's direction
+                    </div>
+                    <button onClick={() => setCoachingOpen(false)} className="text-white/60">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-[11px] leading-relaxed whitespace-pre-wrap">{coaching}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <button
+              onClick={async () => {
+                if (!coaching) await loadCoaching();
+                setCoachingOpen((o) => !o);
+              }}
+              className="w-full h-9 rounded-full bg-plum/30 backdrop-blur border border-plum/40 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+            >
+              {coachingLoading ? (
+                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Aria מכינה הוראות...</>
+              ) : coaching ? (
+                <><Wand2 className="w-3.5 h-3.5" /> {coachingOpen ? "סגור" : "הצג"} הוראות בימוי של Aria</>
+              ) : (
+                <><Wand2 className="w-3.5 h-3.5" /> שאל את Aria על התפקיד</>
+              )}
+            </button>
+          </div>
+        )}
+
         {/* Slate prompt at start */}
         {state === "idle" && (
           <div className="absolute bottom-32 left-4 right-4 z-10 rounded-2xl bg-gold/15 backdrop-blur border border-gold/30 p-3 text-center">
@@ -334,15 +473,21 @@ export default function SelfTapeStudioPage() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={retake}
-                  className="h-13 py-3 rounded-2xl bg-white/15 backdrop-blur border border-white/20 text-white font-semibold flex items-center justify-center gap-2"
+                  disabled={submitting}
+                  className="h-13 py-3 rounded-2xl bg-white/15 backdrop-blur border border-white/20 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <RotateCcw className="w-4 h-4" /> Another take
                 </button>
                 <button
                   onClick={useTake}
-                  className="h-13 py-3 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2"
+                  disabled={submitting}
+                  className="h-13 py-3 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
                 >
-                  <Send className="w-4 h-4" /> Send tape
+                  {submitting ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> שומר...</>
+                  ) : (
+                    <><Send className="w-4 h-4" /> Send tape</>
+                  )}
                 </button>
               </div>
             </div>

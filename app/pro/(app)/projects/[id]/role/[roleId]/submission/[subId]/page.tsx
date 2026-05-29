@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
 import { TalentNotes } from "@/components/TalentNotes";
 import { TapeCommentsViewer } from "@/components/TapeCommentsViewer";
+import { TapeAnalysisCard } from "@/components/TapeAnalysisCard";
 import {
   getSubmission, getRole, addTape,
   moveToCallback, moveToHold, moveToAvailCheck, sendOffer, confirmBooked,
@@ -125,11 +126,18 @@ export default function SubmissionPage() {
 
         {/* Latest tape (or invited placeholder) */}
         {sub.tapes.length > 0 ? (
-          <TapeCommentsViewer
-            submissionId={sub.id}
-            tape={sub.tapes[sub.tapes.length - 1]}
-            onChange={reload}
-          />
+          <>
+            <TapeCommentsViewer
+              submissionId={sub.id}
+              tape={sub.tapes[sub.tapes.length - 1]}
+              onChange={reload}
+            />
+            {sub.tapes[sub.tapes.length - 1].ariaAnalysis && (
+              <TapeAnalysisCard
+                analysis={sub.tapes[sub.tapes.length - 1].ariaAnalysis!}
+              />
+            )}
+          </>
         ) : (
           <InvitedCard sub={sub} role={role} onSimulate={simulateTape} />
         )}
