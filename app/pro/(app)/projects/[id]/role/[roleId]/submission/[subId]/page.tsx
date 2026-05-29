@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2, XCircle, PauseCircle, FileVideo, Calendar, ArrowRight,
   Repeat, CalendarCheck, FileSignature, PartyPopper, Undo2, Send, Clock,
+  Wand2, Loader2,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
@@ -13,10 +14,10 @@ import { TalentNotes } from "@/components/TalentNotes";
 import { TapeCommentsViewer } from "@/components/TapeCommentsViewer";
 import { TapeAnalysisCard } from "@/components/TapeAnalysisCard";
 import {
-  getSubmission, getRole, addTape,
+  getSubmission, getRole, getProject, addTape,
   moveToCallback, moveToHold, moveToAvailCheck, sendOffer, confirmBooked,
   rejectSubmission, reopenSubmission,
-  type Submission, type Role, type Stage,
+  type Submission, type Role, type Project, type Stage,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +46,7 @@ export default function SubmissionPage() {
   const router = useRouter();
   const [sub, setSub] = useState<Submission | null>(null);
   const [role, setRole] = useState<Role | null>(null);
+  const [project, setProject] = useState<Project | null>(null);
   const [action, setAction] = useState<Action | null>(null);
   const [message, setMessage] = useState("");
   const [shootDates, setShootDates] = useState("");
@@ -59,7 +61,11 @@ export default function SubmissionPage() {
   useEffect(() => {
     const s = getSubmission(subId);
     setSub(s ?? null);
-    if (s) setRole(getRole(s.roleId) ?? null);
+    if (s) {
+      const r = getRole(s.roleId);
+      setRole(r ?? null);
+      if (r) setProject(getProject(r.projectId) ?? null);
+    }
   }, [subId]);
 
   if (!sub) {
@@ -277,6 +283,16 @@ export default function SubmissionPage() {
                 <textarea
                   value={message} onChange={(e) => setMessage(e.target.value)} rows={4}
                   className="w-full px-3 py-2.5 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
+                />
+                <AriaDraftButton
+                  intent={actionToIntent(action.kind)}
+                  talentName={sub.talentName}
+                  roleName={role?.name ?? "the role"}
+                  projectTitle={project?.title ?? "the project"}
+                  shootDates={shootDates}
+                  payOffered={payOffered}
+                  holdHours={holdHours}
+                  onDraft={(t) => setMessage(t)}
                 />
               </Field>
 
@@ -512,4 +528,99 @@ function fmtDate(iso: string) {
     if (isNaN(+d)) return iso;
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
   } catch { return iso; }
+}
+
+// ─── Comm Automation ────────────────────────────────────
+type DraftIntent =
+  | "callback" | "hold" | "avail_check" | "offered"
+  | "rejected" | "request_tape" | "invite" | "follow_up";
+
+function actionToIntent(kind: Action["kind"]): DraftIntent {
+  switch (kind) {
+    case "callback":     return "callback";
+    case "hold":         return "hold";
+    case "avail":        return "avail_check";
+    case "offer":        return "offered";
+    case "book":         return "offered";
+    case "reject":       return "rejected";
+    case "request_tape": return "request_tape";
+    case "reopen":       return "follow_up";
+    default:             return "follow_up";
+  }
+}
+
+function AriaDraftButton({
+  intent, talentName, roleName, projectTitle, shootDates, payOffered, holdHours, onDraft,
+}: {
+  intent: DraftIntent;
+  talentName: string;
+  roleName: string;
+  projectTitle: string;
+  shootDates?: string;
+  payOffered?: string;
+  holdHours?: number;
+  onDraft: (text: string) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [tone, setTone] = useState<"warm" | "professional" | "brief" | "enthusiastic">("professional");
+
+  async function generate() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/aria/draft-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          intent,
+          talentName,
+          roleName,
+          projectTitle,
+          tone,
+          language: "auto",
+          shootDates: shootDates || undefined,
+          payOffered: payOffered || undefined,
+          holdHours: holdHours || undefined,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.text) onDraft(data.text);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mt-2 flex items-center gap-2 flex-wrap">
+      <button
+        type="button"
+        onClick={generate}
+        disabled={loading}
+        className="inline-flex items-center gap-1.5 px-3 h-8 rounded-full bg-plum/15 border border-plum/40 text-plum-light text-[11px] font-semibold disabled:opacity-50"
+      >
+        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+        Draft with Aria
+      </button>
+      {([
+        { k: "professional" as const, label: "מקצועי" },
+        { k: "warm" as const,         label: "חם" },
+        { k: "brief" as const,        label: "קצר" },
+        { k: "enthusiastic" as const, label: "נלהב" },
+      ]).map((t) => (
+        <button
+          key={t.k}
+          type="button"
+          onClick={() => setTone(t.k)}
+          className={`text-[10px] px-2 h-6 rounded-full border ${
+            tone === t.k
+              ? "bg-bg-elevated border-plum/40 text-plum-light font-semibold"
+              : "bg-transparent border-border text-text-muted"
+          }`}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
 }

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { OnboardingTour } from "@/components/OnboardingTour";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main id="main-content">
               <ErrorBoundary>{children}</ErrorBoundary>
             </main>
+            <OnboardingTour />
           </div>
         </div>
       </body>

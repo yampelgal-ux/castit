@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   Search, FolderOpen, PlayCircle, Bell, Users, ArrowRight,
   Clock, CheckCircle2, XCircle, Send, Plus, Wand2, Calendar, TrendingUp,
-  Inbox, Zap, AlertTriangle,
+  Inbox, Zap, AlertTriangle, ClipboardCheck,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
@@ -165,7 +165,7 @@ export default function ProDashboardPage() {
           <QuickAction icon={Search} label="Find" tone="gold" href="/pro/search" />
           <QuickAction icon={Wand2} label="AI" tone="violet" href="/pro/sourcing" />
           <QuickAction icon={PlayCircle} label="Reels" tone="plum" href="/pro/reels" />
-          <QuickAction icon={Calendar} label="Calendar" tone="sage" href="/pro/calendar" />
+          <QuickAction icon={ClipboardCheck} label="Reviews" tone="sage" href="/pro/approvals" />
         </div>
 
         {/* Projects hero */}
