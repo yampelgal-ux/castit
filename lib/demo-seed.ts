@@ -12,6 +12,7 @@ import {
   setTapeAnalysis, moveToAvailCheck,
 } from "@/lib/projects-store";
 import { createApprovalSession } from "@/lib/approval-store";
+import { addNotification } from "@/lib/notifications-store";
 
 const SEED_FLAG = "castit_demo_seeded_v2";
 
@@ -219,6 +220,60 @@ export function seedDemo(): void {
     greeting: "Hey — top 2 for Maya. Tag your gut: Yes / Maybe / No. I'll see it sync in real-time.",
     talents: callbackSubs,
     expiresAt: new Date(Date.now() + 14 * DAYS).toISOString(),
+  });
+
+  // ─── Seed Notifications ─────────────────────────────
+  // Talent-facing
+  addNotification({
+    audience: "talent",
+    kind: "callback",
+    title: "🎉 Callback ל-Maya",
+    body: "Northwind Pictures רוצה אותך לסיבוב הבא של After the Rain",
+    href: "/inbox",
+  });
+  addNotification({
+    audience: "talent",
+    kind: "invite",
+    title: "הזמנה חדשה: Detective Ben",
+    body: "Plume Studios — קרא לתפקיד ב-The Wave Below",
+    href: "/inbox",
+  });
+  addNotification({
+    audience: "talent",
+    kind: "casting",
+    title: "התאמת קסטינג חדשה",
+    body: "תפקיד חדש שמתאים לפרופיל שלך — Lead Female 25-32",
+    href: "/auditions",
+  });
+  addNotification({
+    audience: "talent",
+    kind: "like",
+    title: "Daniel Cohen אהב את הריל שלך",
+    body: "Monologue from 'A Streetcar Named Desire'",
+    href: "/feed",
+  });
+
+  // Pro-facing
+  addNotification({
+    audience: "pro",
+    kind: "tape_in",
+    title: "טייפ חדש מ-Noa Yadid",
+    body: `עבור Maya — Lead. Aria ניתחה: ${"recommended callback"}`,
+    href: `/pro/projects/${after.id}/role/${mayaRole.id}/submission/${s_maya_t3.id}`,
+  });
+  addNotification({
+    audience: "pro",
+    kind: "hold",
+    title: "Hold עומד לפוג: Shiran Mor",
+    body: "Maya — Lead · נשארו 12 שעות, החליטי בהקדם",
+    href: `/pro/projects/${after.id}/role/${mayaRole.id}/submission/${s_maya_t5.id}`,
+  });
+  addNotification({
+    audience: "pro",
+    kind: "vote",
+    title: "המפיק הצביע 👍 על Maya Levi",
+    body: "Director Review של After the Rain — 1/2 הצביעו",
+    href: "/pro/approvals",
   });
 
   // Done

@@ -19,6 +19,7 @@ import {
   rejectSubmission, reopenSubmission,
   type Submission, type Role, type Project, type Stage,
 } from "@/lib/projects-store";
+import { notifyTalentStageChange } from "@/lib/notifications-store";
 import { cn } from "@/lib/utils";
 
 type Action =
@@ -100,6 +101,23 @@ export default function SubmissionPage() {
       case "reopen":       reopenSubmission(subId); break;
       case "request_tape": moveToCallback(subId, msg); break;
     }
+
+    // Fire a notification to the talent (and to the demo audience)
+    const stageMap: Record<typeof action.kind, "callback" | "hold" | "avail_check" | "offered" | "booked" | "rejected" | undefined> = {
+      callback: "callback",
+      hold: "hold",
+      avail: "avail_check",
+      offer: "offered",
+      book: "booked",
+      reject: "rejected",
+      reopen: undefined,
+      request_tape: "callback",
+    };
+    const stage = stageMap[action.kind];
+    if (stage && sub && role && project) {
+      notifyTalentStageChange(stage, sub.talentName, project.title, role.name, sub.id);
+    }
+
     reload();
     setConfirmed(true);
     setTimeout(() => { setConfirmed(false); setAction(null); }, 1400);

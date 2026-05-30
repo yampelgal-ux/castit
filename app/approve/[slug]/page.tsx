@@ -11,6 +11,7 @@ import {
   type ApprovalSession, type ApprovalTalent, type ApprovalVote,
 } from "@/lib/approval-store";
 import { getTapePlaybackUrl } from "@/lib/tape-storage";
+import { notifyProDirectorVote } from "@/lib/notifications-store";
 
 export default function ApprovePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -36,7 +37,12 @@ export default function ApprovePage() {
       return;
     }
     castVote(slug, submissionId, v, voterName);
-    setSession({ ...getApprovalBySlug(slug)! });
+    const fresh = getApprovalBySlug(slug);
+    if (fresh) {
+      setSession({ ...fresh });
+      const t = fresh.talents.find((x) => x.submissionId === submissionId);
+      if (t) notifyProDirectorVote(voterName, t.talentName, v, slug);
+    }
   }
 
   function submitName() {
@@ -45,7 +51,12 @@ export default function ApprovePage() {
     setAskName(false);
     if (pendingVote) {
       castVote(slug, pendingVote.submissionId, pendingVote.vote, voterName);
-      setSession({ ...getApprovalBySlug(slug)! });
+      const fresh = getApprovalBySlug(slug);
+      if (fresh) {
+        setSession({ ...fresh });
+        const t = fresh.talents.find((x) => x.submissionId === pendingVote.submissionId);
+        if (t) notifyProDirectorVote(voterName, t.talentName, pendingVote.vote, slug);
+      }
       setPendingVote(null);
     }
   }

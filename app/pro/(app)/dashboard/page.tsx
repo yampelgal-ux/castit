@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   Search, FolderOpen, PlayCircle, Bell, Users, ArrowRight,
   Clock, CheckCircle2, XCircle, Send, Plus, Wand2, Calendar, TrendingUp,
-  Inbox, Zap, AlertTriangle, ClipboardCheck,
+  Inbox, Zap, AlertTriangle, ClipboardCheck, BarChart3,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
@@ -163,9 +163,9 @@ export default function ProDashboardPage() {
         {/* Quick actions row */}
         <div className="grid grid-cols-4 gap-2">
           <QuickAction icon={Search} label="Find" tone="gold" href="/pro/search" />
-          <QuickAction icon={Wand2} label="AI" tone="violet" href="/pro/sourcing" />
-          <QuickAction icon={PlayCircle} label="Reels" tone="plum" href="/pro/reels" />
           <QuickAction icon={ClipboardCheck} label="Reviews" tone="sage" href="/pro/approvals" />
+          <QuickAction icon={BarChart3} label="Analytics" tone="plum" href="/pro/analytics" />
+          <QuickAction icon={Bell} label="Inbox" tone="violet" href="/notifications" />
         </div>
 
         {/* Projects hero */}
