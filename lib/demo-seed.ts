@@ -9,7 +9,7 @@ import {
   loadProjects, loadRoles, loadSubmissions,
   addProject, addRole, inviteTalent, addTape,
   moveToCallback, markCallbackDone, moveToHold, sendOffer, confirmBooked, rejectSubmission,
-  setTapeAnalysis, moveToAvailCheck,
+  moveToAvailCheck,
 } from "@/lib/projects-store";
 import { createApprovalSession } from "@/lib/approval-store";
 import { addNotification } from "@/lib/notifications-store";
@@ -92,18 +92,6 @@ export function seedDemo(): void {
     scheduledAt: new Date(Date.now() + 2 * DAYS + 4 * HOURS).toISOString(),
     location: "Tagada Studios, Tel Aviv — Room 3",
   });
-  setTapeAnalysis(s_maya_t1.id, 1, {
-    slateComplete: true,
-    linesAccuracy: 96,
-    pacingNote: "Well-placed pause before 'that's the problem'",
-    emotionalChoice: "Restraint over anger — exactly the brief asks for",
-    strengths: ["Eye-line steady through the silence", "Specific choices on subtext"],
-    concerns: ["Slate could be a beat tighter"],
-    recommendation: "callback",
-    summary: "Genuine internal life. Matches the role's restraint-over-explosion brief precisely.",
-    generatedAt: new Date(Date.now() - 6 * HOURS).toISOString(),
-  });
-
   const s_maya_t3 = inviteTalent(mayaRole.id,
     { id: TALENTS[2].id, name: TALENTS[2].name, photo: TALENTS[2].photo },
     { message: "Read for Maya?", deadline: mayaRole.deadline },
@@ -272,7 +260,7 @@ export function seedDemo(): void {
     audience: "pro",
     kind: "tape_in",
     title: "טייפ חדש מ-Noa Yadid",
-    body: `עבור Maya — Lead. Aria ניתחה: ${"recommended callback"}`,
+    body: `עבור Maya — Lead. מחכה לסקירה שלך.`,
     href: `/pro/projects/${after.id}/role/${mayaRole.id}/submission/${s_maya_t3.id}`,
   });
   addNotification({

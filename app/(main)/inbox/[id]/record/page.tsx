@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import {
-  getSubmission, getRole, getProject, addTape, setTapeAnalysis,
+  getSubmission, getRole, getProject, addTape,
   type Submission, type Role, type Project,
 } from "@/lib/projects-store";
 import { saveTapeVideo, newTapeKey } from "@/lib/tape-storage";
@@ -211,60 +211,9 @@ export default function SelfTapeStudioPage() {
         : `Self-tape recorded in studio — ${formatTime(take.duration)}`,
     });
 
-    // Fire-and-forget AI tape analysis. Uses Whisper + Claude.
-    // Doesn't block the redirect — the analysis appears in the pro's
-    // submission view when it lands.
-    const round = (sub.tapes.length ?? 0) + 1;
-    (async () => {
-      try {
-        const buf = await take.blob.arrayBuffer();
-        const b64 = arrayBufferToBase64(buf);
-        const res = await fetch("/api/aria/analyze-tape", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            mediaBase64: b64,
-            mediaMimeType: take.blob.type || "video/webm",
-            filename: `tape-${sub.id}-r${round}.webm`,
-            role: {
-              name: role.name,
-              description: role.description,
-              sides: role.sides,
-            },
-            takeCount: takes.length,
-            durationSec: take.duration,
-          }),
-        });
-        if (res.ok) {
-          const analysis = await res.json();
-          setTapeAnalysis(sub.id, round, {
-            slateComplete: analysis.slateComplete ?? false,
-            linesAccuracy: analysis.linesAccuracy,
-            pacingNote: analysis.pacingNote,
-            emotionalChoice: analysis.emotionalChoice,
-            strengths: analysis.strengths ?? [],
-            concerns: analysis.concerns ?? [],
-            recommendation: analysis.recommendation ?? "hold",
-            summary: analysis.summary ?? "",
-            generatedAt: analysis.generatedAt ?? new Date().toISOString(),
-          });
-        }
-      } catch (e) {
-        console.warn("Tape analysis failed (non-blocking)", e);
-      }
-    })();
-
+    // No automatic AI scoring sent to the pro — that's the pro's call.
+    // The talent's tape goes straight to the pro's review queue.
     router.replace("/inbox");
-  }
-
-  function arrayBufferToBase64(buf: ArrayBuffer): string {
-    const bytes = new Uint8Array(buf);
-    let binary = "";
-    const chunk = 0x8000;
-    for (let i = 0; i < bytes.length; i += chunk) {
-      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
-    }
-    return btoa(binary);
   }
 
   // Sends the role's sides (text + file) to the Coach for full practice
