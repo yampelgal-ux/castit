@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Video, Circle, Square, RotateCcw, Send, X, AlertCircle,
   CheckCircle2, ScrollText, Clock, Camera, Wand2, Loader2, Sparkles,
+  Upload, FileVideo,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import {
@@ -32,7 +33,7 @@ export default function SelfTapeStudioPage() {
   const [permError, setPermError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(3);
   const [elapsed, setElapsed] = useState(0);
-  const [takes, setTakes] = useState<{ url: string; blob: Blob; duration: number }[]>([]);
+  const [takes, setTakes] = useState<{ url: string; blob: Blob; duration: number; uploaded?: boolean; filename?: string }[]>([]);
   const [selectedTake, setSelectedTake] = useState(0);
   const [showSides, setShowSides] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -47,6 +48,54 @@ export default function SelfTapeStudioPage() {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const tickRef = useRef<number | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Read duration from a video file via metadata
+  function getVideoDuration(file: File): Promise<number> {
+    return new Promise((resolve) => {
+      const v = document.createElement("video");
+      v.preload = "metadata";
+      v.muted = true;
+      const url = URL.createObjectURL(file);
+      v.onloadedmetadata = () => {
+        const d = Math.round(v.duration || 0);
+        URL.revokeObjectURL(url);
+        resolve(d || 0);
+      };
+      v.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+      v.src = url;
+    });
+  }
+
+  async function handleFileUpload(file: File) {
+    setUploadError(null);
+    if (!file.type.startsWith("video/")) {
+      setUploadError("רק קבצי וידאו (MP4, MOV, WEBM וכו')");
+      return;
+    }
+    // Cap at 500MB to keep IDB happy
+    const MAX = 500 * 1024 * 1024;
+    if (file.size > MAX) {
+      setUploadError(`הקובץ גדול מדי (מקסימום 500MB). נסה להמיר ל-MP4 דחוס.`);
+      return;
+    }
+    setUploading(true);
+    try {
+      const duration = await getVideoDuration(file);
+      const url = URL.createObjectURL(file);
+      setTakes((prev) => [...prev, { url, blob: file, duration, uploaded: true, filename: file.name }]);
+      setSelectedTake(takes.length); // newest take
+      setState("review");
+      // Stop any live camera preview to save resources
+      stream?.getTracks().forEach((t) => t.stop());
+    } catch (e) {
+      setUploadError(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   // Load submission + role + project
   useEffect(() => {
@@ -155,7 +204,9 @@ export default function SelfTapeStudioPage() {
     addTape(sub.id, {
       videoUrl: take.url,
       tapeBlobKey: blobKey,
-      note: `Self-tape recorded in studio — ${formatTime(take.duration)}`,
+      note: take.uploaded
+        ? `Uploaded${take.filename ? `: ${take.filename}` : ""} — ${formatTime(take.duration)}`
+        : `Self-tape recorded in studio — ${formatTime(take.duration)}`,
     });
 
     // Fire-and-forget AI tape analysis. Uses Whisper + Claude.
@@ -251,9 +302,43 @@ export default function SelfTapeStudioPage() {
           <AlertCircle className="w-12 h-12 text-danger mx-auto" />
           <h2 className="font-display text-xl mt-4">Camera unavailable</h2>
           <p className="text-sm text-text-muted mt-2 max-w-xs mx-auto">{permError}</p>
-          <p className="text-xs text-text-subtle mt-4">
-            Open the app over HTTPS and allow camera + microphone access for the studio.
+          <p className="text-xs text-text-subtle mt-4 max-w-xs mx-auto">
+            Open the app over HTTPS and allow camera + microphone access — or upload an existing file below.
           </p>
+
+          {/* Upload alternative — works even without camera */}
+          <button
+            onClick={() => uploadInputRef.current?.click()}
+            disabled={uploading}
+            className="mt-6 mx-auto h-12 px-6 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center gap-2 disabled:opacity-50"
+          >
+            {uploading ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> טוען...</>
+            ) : (
+              <><Upload className="w-4 h-4" /> העלה קובץ וידאו</>
+            )}
+          </button>
+          <p className="text-[11px] text-text-subtle mt-2">
+            צילמת במצלמה מקצועית / סטודיו? תעלה את הקובץ הסופי כאן.
+          </p>
+
+          {uploadError && (
+            <div className="mt-3 max-w-xs mx-auto p-3 rounded-xl bg-danger/10 border border-danger/30 text-xs text-danger text-right">
+              {uploadError}
+            </div>
+          )}
+
+          <input
+            ref={uploadInputRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleFileUpload(f);
+              e.target.value = "";
+            }}
+          />
         </div>
       </div>
     );
@@ -436,13 +521,52 @@ export default function SelfTapeStudioPage() {
         {/* Bottom controls */}
         <div className="absolute bottom-0 inset-x-0 p-5 z-10 bg-gradient-to-t from-black/80 to-transparent">
           {state === "idle" && (
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center gap-8">
+              {/* Upload existing video — left of the record button */}
+              <button
+                onClick={() => uploadInputRef.current?.click()}
+                disabled={uploading}
+                className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
+              >
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/30 grid place-items-center">
+                  {uploading ? (
+                    <Loader2 className="w-5 h-5 text-white animate-spin" />
+                  ) : (
+                    <Upload className="w-5 h-5 text-white" />
+                  )}
+                </div>
+                <span className="text-[10px] text-white/80">העלה קובץ</span>
+              </button>
+
+              {/* Main record button */}
               <button
                 onClick={startCountdown}
                 className="w-20 h-20 rounded-full bg-danger grid place-items-center active:scale-95 transition-transform"
               >
                 <Circle className="w-8 h-8 text-white fill-white" />
               </button>
+
+              {/* Spacer for symmetry */}
+              <div className="w-12" />
+
+              <input
+                ref={uploadInputRef}
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleFileUpload(f);
+                  e.target.value = "";
+                }}
+              />
+            </div>
+          )}
+
+          {/* Upload error toast */}
+          {state === "idle" && uploadError && (
+            <div className="absolute bottom-32 left-4 right-4 z-20 p-3 rounded-2xl bg-danger/90 backdrop-blur text-white text-xs text-center">
+              {uploadError}
             </div>
           )}
 
@@ -467,11 +591,12 @@ export default function SelfTapeStudioPage() {
                       key={i}
                       onClick={() => setSelectedTake(i)}
                       className={cn(
-                        "px-3 h-8 rounded-full text-[11px] font-semibold border",
+                        "px-3 h-8 rounded-full text-[11px] font-semibold border inline-flex items-center gap-1.5",
                         selectedTake === i ? "bg-gold text-bg border-gold" : "bg-black/50 text-white border-white/20"
                       )}
                     >
-                      Take {i + 1} · {formatTime(t.duration)}
+                      {t.uploaded && <FileVideo className="w-3 h-3" />}
+                      {t.uploaded ? "Uploaded" : `Take ${i + 1}`} · {formatTime(t.duration)}
                     </button>
                   ))}
                 </div>
