@@ -49,6 +49,7 @@ export default function SelfTapeStudioPage() {
   const chunksRef = useRef<Blob[]>([]);
   const tickRef = useRef<number | null>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -306,20 +307,29 @@ export default function SelfTapeStudioPage() {
             Open the app over HTTPS and allow camera + microphone access — or upload an existing file below.
           </p>
 
-          {/* Upload alternative — works even without camera */}
-          <button
-            onClick={() => uploadInputRef.current?.click()}
-            disabled={uploading}
-            className="mt-6 mx-auto h-12 px-6 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center gap-2 disabled:opacity-50"
-          >
-            {uploading ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> טוען...</>
-            ) : (
-              <><Upload className="w-4 h-4" /> העלה קובץ וידאו</>
-            )}
-          </button>
-          <p className="text-[11px] text-text-subtle mt-2">
-            צילמת במצלמה מקצועית / סטודיו? תעלה את הקובץ הסופי כאן.
+          {/* Camera + gallery options — work even without camera permission */}
+          <div className="mt-6 mx-auto max-w-xs space-y-2">
+            <button
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={uploading}
+              className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {uploading ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> טוען...</>
+              ) : (
+                <><Camera className="w-4 h-4" /> צלם עם מצלמת הטלפון</>
+              )}
+            </button>
+            <button
+              onClick={() => uploadInputRef.current?.click()}
+              disabled={uploading}
+              className="w-full h-12 rounded-2xl bg-bg-elevated border border-border text-text font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Upload className="w-4 h-4" /> בחר מהגלריה / קבצים
+            </button>
+          </div>
+          <p className="text-[11px] text-text-subtle mt-3">
+            צילמת במצלמה מקצועית / סטודיו? בחר "גלריה / קבצים".
           </p>
 
           {uploadError && (
@@ -328,6 +338,18 @@ export default function SelfTapeStudioPage() {
             </div>
           )}
 
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="video/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleFileUpload(f);
+              e.target.value = "";
+            }}
+          />
           <input
             ref={uploadInputRef}
             type="file"
@@ -521,8 +543,32 @@ export default function SelfTapeStudioPage() {
         {/* Bottom controls */}
         <div className="absolute bottom-0 inset-x-0 p-5 z-10 bg-gradient-to-t from-black/80 to-transparent">
           {state === "idle" && (
-            <div className="flex items-center justify-center gap-8">
-              {/* Upload existing video — left of the record button */}
+            <div className="flex items-center justify-center gap-6">
+              {/* Phone camera — opens iOS/Android native camera */}
+              <button
+                onClick={() => cameraInputRef.current?.click()}
+                disabled={uploading}
+                className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
+              >
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/30 grid place-items-center">
+                  {uploading ? (
+                    <Loader2 className="w-5 h-5 text-white animate-spin" />
+                  ) : (
+                    <Camera className="w-5 h-5 text-white" />
+                  )}
+                </div>
+                <span className="text-[10px] text-white/80">מצלמת טלפון</span>
+              </button>
+
+              {/* Main in-studio record button */}
+              <button
+                onClick={startCountdown}
+                className="w-20 h-20 rounded-full bg-danger grid place-items-center active:scale-95 transition-transform"
+              >
+                <Circle className="w-8 h-8 text-white fill-white" />
+              </button>
+
+              {/* Gallery / files — opens native picker */}
               <button
                 onClick={() => uploadInputRef.current?.click()}
                 disabled={uploading}
@@ -535,20 +581,22 @@ export default function SelfTapeStudioPage() {
                     <Upload className="w-5 h-5 text-white" />
                   )}
                 </div>
-                <span className="text-[10px] text-white/80">העלה קובץ</span>
+                <span className="text-[10px] text-white/80">גלריה / קובץ</span>
               </button>
 
-              {/* Main record button */}
-              <button
-                onClick={startCountdown}
-                className="w-20 h-20 rounded-full bg-danger grid place-items-center active:scale-95 transition-transform"
-              >
-                <Circle className="w-8 h-8 text-white fill-white" />
-              </button>
-
-              {/* Spacer for symmetry */}
-              <div className="w-12" />
-
+              {/* Hidden inputs */}
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="video/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleFileUpload(f);
+                  e.target.value = "";
+                }}
+              />
               <input
                 ref={uploadInputRef}
                 type="file"

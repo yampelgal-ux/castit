@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Upload, Film, X, Check, AlertCircle } from "lucide-react";
+import { Upload, Film, X, Check, AlertCircle, Camera, Image as ImageIcon } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
 import { uploadReel } from "@/lib/db";
@@ -13,6 +13,7 @@ export default function UploadReelPage() {
   const router = useRouter();
   const { userId } = useStore();
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
@@ -76,18 +77,44 @@ export default function UploadReelPage() {
 
       <div className="flex-1 px-5 pt-4 pb-6 flex flex-col">
         {!file ? (
-          <button
-            onClick={() => inputRef.current?.click()}
-            className="flex-1 min-h-[280px] rounded-3xl border-2 border-dashed border-border-strong bg-bg-elevated flex flex-col items-center justify-center gap-4 p-8 hover:border-gold/40 transition-colors"
-          >
-            <div className="w-16 h-16 rounded-full bg-gold/10 grid place-items-center">
-              <Upload className="w-7 h-7 text-gold" />
+          <div className="flex-1 flex flex-col gap-3">
+            <div className="text-center mb-2">
+              <p className="font-display text-2xl tracking-editorial">איך תרצה ליצור את הריל?</p>
+              <p className="text-xs text-text-muted mt-1">MP4 / MOV · עד 100MB · מומלץ פורמט אנכי</p>
             </div>
-            <div className="text-center">
-              <p className="font-display text-xl">Tap to choose a video</p>
-              <p className="text-xs text-text-muted mt-1">MP4 or MOV · up to 100MB · vertical works best</p>
+
+            {/* Option 1: Camera — opens phone camera directly */}
+            <button
+              onClick={() => cameraInputRef.current?.click()}
+              className="rounded-3xl bg-gradient-to-br from-gold/15 to-bg-elevated border border-gold/30 p-5 flex items-center gap-4 text-right active:scale-[0.99] transition-transform"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-gold/20 grid place-items-center shrink-0">
+                <Camera className="w-7 h-7 text-gold" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-display text-lg">צלם עם המצלמה</div>
+                <div className="text-[11px] text-text-muted">פתיחת מצלמת הטלפון להקלטה ישירה</div>
+              </div>
+            </button>
+
+            {/* Option 2: Gallery / Files — native picker */}
+            <button
+              onClick={() => inputRef.current?.click()}
+              className="rounded-3xl bg-bg-elevated border border-border p-5 flex items-center gap-4 text-right active:scale-[0.99] transition-transform"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-plum/15 grid place-items-center shrink-0">
+                <ImageIcon className="w-7 h-7 text-plum-light" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-display text-lg">בחר מהגלריה / קבצים</div>
+                <div className="text-[11px] text-text-muted">סרטון שכבר צילמת — במכשיר או ב-Cloud</div>
+              </div>
+            </button>
+
+            <div className="text-[10px] text-text-subtle text-center mt-3 leading-relaxed">
+              צילמת במצלמה מקצועית? בחר "גלריה / קבצים" והעלה את ה-MP4 הסופי.
             </div>
-          </button>
+          </div>
         ) : (
           <>
             <div className="relative aspect-[9/16] max-h-[55vh] mx-auto rounded-3xl overflow-hidden bg-black">
@@ -169,10 +196,20 @@ export default function UploadReelPage() {
         </div>
       </div>
 
+      {/* Gallery / files — no capture attribute, opens native picker */}
       <input
         ref={inputRef}
         type="file"
         accept="video/*"
+        onChange={onPick}
+        className="hidden"
+      />
+      {/* Camera — capture attribute forces the phone camera */}
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="video/*"
+        capture="environment"
         onChange={onPick}
         className="hidden"
       />
