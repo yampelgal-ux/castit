@@ -8,7 +8,7 @@ import { TALENTS } from "@/lib/mock-data";
 import {
   loadProjects, loadRoles, loadSubmissions,
   addProject, addRole, inviteTalent, addTape,
-  moveToCallback, moveToHold, sendOffer, confirmBooked, rejectSubmission,
+  moveToCallback, markCallbackDone, moveToHold, sendOffer, confirmBooked, rejectSubmission,
   setTapeAnalysis, moveToAvailCheck,
 } from "@/lib/projects-store";
 import { createApprovalSession } from "@/lib/approval-store";
@@ -85,7 +85,13 @@ export function seedDemo(): void {
     { message: "Loved your reel — would love you to read for Maya.", deadline: mayaRole.deadline },
   );
   addTape(s_maya_t1.id, { note: "Submitted on time. Clean two-take read." });
-  moveToCallback(s_maya_t1.id, "Strong submission. Bringing you back for callback with new sides.");
+  // Maya's callback is scheduled in-person, not yet completed (showcases new flow)
+  moveToCallback(s_maya_t1.id, {
+    message: "Strong submission. Let's bring you in for an in-person callback.",
+    type: "in_person",
+    scheduledAt: new Date(Date.now() + 2 * DAYS + 4 * HOURS).toISOString(),
+    location: "Tagada Studios, Tel Aviv — Room 3",
+  });
   setTapeAnalysis(s_maya_t1.id, 1, {
     slateComplete: true,
     linesAccuracy: 96,
@@ -124,7 +130,14 @@ export function seedDemo(): void {
     { message: "Would love you to read for David." },
   );
   addTape(s_david_t4.id, { note: "Beautifully understated read." });
-  moveToCallback(s_david_t4.id, "We loved this. Callback?");
+  // David's callback was scheduled in-person AND completed → unblocks avail check
+  moveToCallback(s_david_t4.id, {
+    message: "We loved this. Callback?",
+    type: "in_person",
+    scheduledAt: new Date(Date.now() - 1 * DAYS).toISOString(),
+    location: "Northwind Office",
+  });
+  markCallbackDone(s_david_t4.id, "Great chemistry with the energy. Confident in the role.");
   addTape(s_david_t4.id, { note: "Round 2 — even better. Adjustments landed." });
   moveToAvailCheck(s_david_t4.id, "Aug 12 – Sep 25", "Checking your availability for the shoot window.");
 
@@ -158,8 +171,9 @@ export function seedDemo(): void {
     { id: TALENTS[3].id, name: TALENTS[3].name, photo: TALENTS[3].photo },
   );
   addTape(s_ben_t4.id, { note: "Round 1" });
-  moveToCallback(s_ben_t4.id);
-  addTape(s_ben_t4.id, { note: "Round 2 callback — sharper" });
+  // Ben's callback was a tape callback that has been completed → moved to offer
+  moveToCallback(s_ben_t4.id, { type: "tape", message: "New sides attached — send a callback tape." });
+  addTape(s_ben_t4.id, { note: "Round 2 callback — sharper" }); // auto-completes the tape callback
   sendOffer(s_ben_t4.id, "$2.5K/episode × 8 + back-end", "Formal offer on the table. Looking forward to making this official.");
 
   const s_ben_t6 = inviteTalent(detRole.id,

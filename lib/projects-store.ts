@@ -64,6 +64,9 @@ export type TapeAnalysis = {
   generatedAt: string;
 };
 
+// How the callback round is conducted
+export type CallbackType = "in_person" | "tape";
+
 export type Submission = {
   id: string;
   roleId: string;
@@ -76,6 +79,16 @@ export type Submission = {
   inviteMessage?: string;     // pro's note when first inviting
   inviteDeadline?: string;    // ISO — when self-tape is due
   proMessage?: string;        // most recent message to talent
+
+  // Callback session fields (real-world flow)
+  // "in_person" = scheduled meeting; cannot move to hold/offer/book until completed
+  // "tape"      = requesting another self-tape; talent's tape arrival auto-marks done
+  callbackType?: CallbackType;
+  callbackScheduledAt?: string;   // ISO — when the in-person callback is
+  callbackLocation?: string;      // e.g. "Tagada Studios, Tel Aviv"
+  callbackCompleted?: boolean;    // pro confirms the session happened
+  callbackOutcome?: string;       // optional note from the in-person session
+
   shootDates?: string;
   payOffered?: string;
   holdUntil?: string;         // ISO — auto-expiring hold (1st refusal)
@@ -256,8 +269,52 @@ function patchSubmission(id: string, patch: Partial<Submission>) {
 }
 
 // Pro decisions
-export function moveToCallback(id: string, message?: string) {
-  patchSubmission(id, { stage: "callback", proMessage: message });
+// moveToCallback supports both modes:
+//   in_person  → schedule a meeting (date/time/location). Must be marked done.
+//   tape       → request another self-tape. Auto-completes when talent submits.
+export function moveToCallback(
+  id: string,
+  opts?: {
+    message?: string;
+    type?: CallbackType;
+    scheduledAt?: string;
+    location?: string;
+  },
+) {
+  const type = opts?.type ?? "in_person";
+  patchSubmission(id, {
+    stage: "callback",
+    proMessage: opts?.message,
+    callbackType: type,
+    callbackScheduledAt: type === "in_person" ? opts?.scheduledAt : undefined,
+    callbackLocation: type === "in_person" ? opts?.location : undefined,
+    // Tape callbacks are "done" only when a new tape arrives (see addTape).
+    // In-person callbacks are explicitly marked done by the pro.
+    callbackCompleted: false,
+    callbackOutcome: undefined,
+  });
+}
+
+// Pro confirms the in-person callback session happened.
+// Only after this can hold/offer/book actions appear (when in-person callback).
+export function markCallbackDone(id: string, outcome?: string) {
+  patchSubmission(id, { callbackCompleted: true, callbackOutcome: outcome });
+}
+
+// Pro decides the scheduled callback won't happen — back to "submitted".
+export function cancelCallback(id: string, message?: string) {
+  const sub = getSubmission(id);
+  if (!sub) return;
+  const target: Stage = sub.tapes.length > 0 ? "submitted" : "invited";
+  patchSubmission(id, {
+    stage: target,
+    proMessage: message,
+    callbackType: undefined,
+    callbackScheduledAt: undefined,
+    callbackLocation: undefined,
+    callbackCompleted: false,
+    callbackOutcome: undefined,
+  });
 }
 export function moveToHold(id: string, message?: string, holdHours?: number) {
   const holdUntil = holdHours && holdHours > 0
@@ -336,7 +393,17 @@ export function addTape(id: string, tape: Omit<Tape, "round" | "submittedAt"> & 
     tapeBlobKey: tape.tapeBlobKey,
     submittedAt: tape.submittedAt ?? new Date().toISOString(),
   };
-  list[idx] = { ...sub, tapes: [...sub.tapes, next], stage: "submitted" };
+  // Tape-mode callback: a new tape arriving auto-completes the callback.
+  // After that the pro can move to hold/offer/book.
+  const autoCompleteCallback =
+    sub.stage === "callback" && sub.callbackType === "tape" && !sub.callbackCompleted;
+  list[idx] = {
+    ...sub,
+    tapes: [...sub.tapes, next],
+    // Stay in "callback" stage if we're auto-completing it; otherwise move to "submitted"
+    stage: autoCompleteCallback ? "callback" : "submitted",
+    callbackCompleted: autoCompleteCallback ? true : sub.callbackCompleted,
+  };
   safeSave(KEY_S, list);
 }
 
