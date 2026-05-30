@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Wand2, FileText, Image as ImageIcon, Loader2, AlertCircle, Plus, X, Check,
+  Wand2, FileText, Image as ImageIcon, Loader2, AlertCircle, Plus, X, Check, Camera,
 } from "lucide-react";
 import { addRoles } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
   const [parsed, setParsed] = useState<ParsedRole[] | null>(null);
   const [keep, setKeep] = useState<Set<number>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   async function parse(payload: { text?: string; imageBase64?: string; imageMediaType?: string }) {
     setParsing(true);
@@ -127,25 +128,45 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
               העלה casting breakdown או הדבק טקסט — Aria תזהה את כל התפקידים.
             </p>
 
-            {/* Upload buttons */}
-            <div className="grid grid-cols-2 gap-2 mb-4">
+            {/* Upload buttons — camera / gallery / file */}
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              <button
+                onClick={() => cameraInputRef.current?.click()}
+                className="h-20 rounded-2xl bg-bg border border-border flex flex-col items-center justify-center gap-1 hover:border-gold/40"
+              >
+                <Camera className="w-5 h-5 text-gold" />
+                <span className="text-xs font-semibold">מצלמה</span>
+                <span className="text-[9px] text-text-subtle">צלם breakdown</span>
+              </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="h-20 rounded-2xl bg-bg border border-border flex flex-col items-center justify-center gap-1 hover:border-gold/40"
               >
                 <ImageIcon className="w-5 h-5 text-gold" />
-                <span className="text-xs font-semibold">תמונה</span>
-                <span className="text-[9px] text-text-subtle">PDF screenshot / breakdown</span>
+                <span className="text-xs font-semibold">גלריה</span>
+                <span className="text-[9px] text-text-subtle">צילום מסך</span>
               </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="h-20 rounded-2xl bg-bg border border-border flex flex-col items-center justify-center gap-1 hover:border-gold/40"
               >
                 <FileText className="w-5 h-5 text-gold" />
-                <span className="text-xs font-semibold">קובץ טקסט</span>
-                <span className="text-[9px] text-text-subtle">.txt</span>
+                <span className="text-xs font-semibold">קובץ</span>
+                <span className="text-[9px] text-text-subtle">.txt / PDF</span>
               </button>
             </div>
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleFile(f);
+                e.target.value = "";
+              }}
+            />
             <input
               ref={fileInputRef}
               type="file"

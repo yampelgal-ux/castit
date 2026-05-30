@@ -6,6 +6,7 @@ import { ArrowRight, ArrowLeft, Camera, Check, Sparkles, Briefcase, Star } from 
 import { useStore } from "@/lib/store";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { PhotoPicker } from "@/components/PhotoPicker";
 
 type Role = "Talent" | "Casting Pro";
 type Goal = "discovered" | "scenes" | "castings" | "network";
@@ -36,9 +37,7 @@ export default function OnboardingPage() {
     router.replace(role === "Talent" ? "/typecast" : "/feed");
   }
 
-  function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  function onPhoto(file: File) {
     const url = URL.createObjectURL(file);
     setPhoto(url);
     setProfile({ photoUrl: url });
@@ -163,8 +162,12 @@ export default function OnboardingPage() {
                 </p>
 
                 <div className="flex flex-col items-center">
-                  <label className="cursor-pointer">
-                    <input type="file" accept="image/*" onChange={onPhoto} className="hidden" />
+                  <PhotoPicker
+                    onPick={onPhoto}
+                    cameraFacing="user"
+                    title="הוסף תמונת פרופיל"
+                    className="cursor-pointer"
+                  >
                     {photo ? (
                       <img src={photo} alt="" className="w-40 h-40 rounded-full object-cover ring-4 ring-gold/30" />
                     ) : (
@@ -175,7 +178,7 @@ export default function OnboardingPage() {
                         </div>
                       </div>
                     )}
-                  </label>
+                  </PhotoPicker>
 
                   {photo && (
                     <button

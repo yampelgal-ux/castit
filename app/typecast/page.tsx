@@ -6,6 +6,7 @@ import { ArrowRight, ChevronLeft, ShieldCheck, Camera } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { SKIN_TONES, EYE_COLORS, HAIR_COLORS } from "@/lib/typecast-palette";
 import { TypecastPicker } from "@/components/TypecastPicker";
+import { PhotoPicker } from "@/components/PhotoPicker";
 import { cn } from "@/lib/utils";
 
 const LANGUAGES = ["Hebrew", "English", "Arabic", "Russian", "French", "Spanish", "German", "Italian"];
@@ -47,9 +48,7 @@ export default function TypecastPage() {
     else setStep(step - 1);
   }
 
-  function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  function onPhoto(file: File) {
     const url = URL.createObjectURL(file);
     setProfile({ photoUrl: url });
   }
@@ -102,8 +101,12 @@ export default function TypecastPage() {
               exit={{ opacity: 0, height: 0 }}
               className="flex items-center gap-4 mb-6 p-4 rounded-2xl bg-bg-elevated border border-border overflow-hidden"
             >
-              <label className="relative cursor-pointer shrink-0">
-                <input type="file" accept="image/*" onChange={onPhoto} className="hidden" />
+              <PhotoPicker
+                onPick={onPhoto}
+                cameraFacing="user"
+                title="הוסף תמונת פרופיל"
+                className="relative shrink-0 cursor-pointer"
+              >
                 {profile.photoUrl ? (
                   <img
                     src={profile.photoUrl}
@@ -118,7 +121,7 @@ export default function TypecastPage() {
                 <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gold text-bg grid place-items-center shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
                   <Camera className="w-3 h-3" />
                 </span>
-              </label>
+              </PhotoPicker>
               <div className="flex-1 min-w-0">
                 <div className="text-[10px] uppercase tracking-widest text-gold mb-1">
                   Your profile photo

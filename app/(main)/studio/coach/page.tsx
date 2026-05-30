@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Image as ImageIcon, FileText, Sparkles, Loader2,
   Mic, Volume2, VolumeX, RotateCcw, Play,
-  Send, AlertCircle, Wand2, Library, Disc, Square, Save,
+  Send, AlertCircle, Wand2, Library, Disc, Square, Save, Camera,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { cn } from "@/lib/utils";
@@ -102,6 +102,7 @@ export default function CoachPage() {
   const [parsing, setParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Parsed scene
   const [scene, setScene] = useState<ParsedScene | null>(null);
@@ -773,25 +774,45 @@ export default function CoachPage() {
             תמונה של הסיידס, קובץ טקסט, או להדביק ידנית. אני אזהה את כל הדיאלוג.
           </p>
 
-          {/* Upload buttons */}
-          <div className="grid grid-cols-2 gap-2 mt-5">
+          {/* Upload buttons — camera / gallery / file */}
+          <div className="grid grid-cols-3 gap-2 mt-5">
+            <button
+              onClick={() => cameraInputRef.current?.click()}
+              className="h-24 rounded-2xl bg-bg-elevated border border-border flex flex-col items-center justify-center gap-1 hover:border-gold/40 transition"
+            >
+              <Camera className="w-5 h-5 text-gold" />
+              <span className="text-xs font-semibold">מצלמה</span>
+              <span className="text-[9px] text-text-subtle">צלם sides</span>
+            </button>
             <button
               onClick={() => fileInputRef.current?.click()}
               className="h-24 rounded-2xl bg-bg-elevated border border-border flex flex-col items-center justify-center gap-1 hover:border-gold/40 transition"
             >
               <ImageIcon className="w-5 h-5 text-gold" />
-              <span className="text-xs font-semibold">תמונה</span>
-              <span className="text-[9px] text-text-subtle">צילום מסך / סיידס</span>
+              <span className="text-xs font-semibold">גלריה</span>
+              <span className="text-[9px] text-text-subtle">צילום מסך</span>
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
               className="h-24 rounded-2xl bg-bg-elevated border border-border flex flex-col items-center justify-center gap-1 hover:border-gold/40 transition"
             >
               <FileText className="w-5 h-5 text-gold" />
-              <span className="text-xs font-semibold">קובץ טקסט</span>
-              <span className="text-[9px] text-text-subtle">.txt</span>
+              <span className="text-xs font-semibold">קובץ</span>
+              <span className="text-[9px] text-text-subtle">.txt / PDF</span>
             </button>
           </div>
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleFile(f);
+              e.target.value = "";
+            }}
+          />
           <input
             ref={fileInputRef}
             type="file"
