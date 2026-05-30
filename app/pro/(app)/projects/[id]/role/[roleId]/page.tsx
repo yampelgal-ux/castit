@@ -13,10 +13,11 @@ import { StageBadge } from "@/components/StageBadge";
 import {
   getRole, getProject, getSubmissionsByRole, roleCounts, updateRole,
   confirmBooked, rejectSubmission,
-  type Role, type Project, type Submission, type Stage, STAGE_META,
+  type Role, type Project, type Submission, type Stage, STAGE_META, type RoleSidesFile,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptics";
+import { SidesFileInput, SidesFileViewer } from "@/components/SidesFileInput";
 
 // Pipeline columns — full mode has all 8 stages, quick mode has 3
 const PIPELINE_FULL: { id: "all" | Stage; label: string }[] = [
@@ -106,6 +107,12 @@ export default function RoleDetailPage() {
               {role.payRange && (
                 <Mini icon={DollarSign} label="Pay" value={role.payRange} />
               )}
+            </div>
+          )}
+
+          {role.sidesFile && (
+            <div className="mt-3 pt-3 border-t border-border">
+              <SidesFileViewer file={role.sidesFile} />
             </div>
           )}
 
@@ -319,6 +326,7 @@ function SubmissionRow({
 function EditBriefSheet({ role, onClose, onSaved }: { role: Role; onClose: () => void; onSaved: () => void }) {
   const [description, setDescription] = useState(role.description);
   const [sides, setSides] = useState(role.sides ?? "");
+  const [sidesFile, setSidesFile] = useState<RoleSidesFile | undefined>(role.sidesFile);
   const [instructions, setInstructions] = useState(role.selfTapeInstructions ?? "");
   const [deadline, setDeadline] = useState(role.deadline ?? "");
   const [shootDates, setShootDates] = useState(role.shootDates ?? "");
@@ -328,6 +336,7 @@ function EditBriefSheet({ role, onClose, onSaved }: { role: Role; onClose: () =>
     updateRole(role.id, {
       description,
       sides: sides.trim() || undefined,
+      sidesFile,
       selfTapeInstructions: instructions.trim() || undefined,
       deadline: deadline || undefined,
       shootDates: shootDates.trim() || undefined,
@@ -354,6 +363,13 @@ function EditBriefSheet({ role, onClose, onSaved }: { role: Role; onClose: () =>
           <Field label="Sides (scene text)">
             <textarea value={sides} onChange={(e) => setSides(e.target.value)} rows={4}
               className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60 font-mono" />
+          </Field>
+          <Field label="Sides file (PDF / DOC)">
+            <SidesFileInput
+              roleId={role.id}
+              value={sidesFile}
+              onChange={setSidesFile}
+            />
           </Field>
           <Field label="Self-tape instructions">
             <textarea value={instructions} onChange={(e) => setInstructions(e.target.value)} rows={2}

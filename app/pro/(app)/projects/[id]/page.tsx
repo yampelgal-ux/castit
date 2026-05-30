@@ -3,12 +3,14 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Plus, ArrowRight, Users, FileVideo, Trash2, ChevronRight, Heart, Wand2, Zap, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, ArrowRight, Users, FileVideo, Trash2, ChevronRight, Heart, Wand2, Zap, CheckCircle2, XCircle, Paperclip } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { ProjectInsights } from "@/components/ProjectInsights";
 import { ProjectTeam } from "@/components/ProjectTeam";
 import { BulkRolesSheet } from "@/components/BulkRolesSheet";
+import { SidesFileInput } from "@/components/SidesFileInput";
+import type { RoleSidesFile } from "@/lib/projects-store";
 import {
   getProject, getRolesByProject, addRole, deleteRole, roleCounts, deleteProject,
   type Project, type Role,
@@ -217,10 +219,16 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [sides, setSides] = useState("");
+  const [sidesFile, setSidesFile] = useState<RoleSidesFile | undefined>(undefined);
   const [instructions, setInstructions] = useState("Slate first (name + height). Vertical, well-lit. Two takes max.");
   const [deadline, setDeadline] = useState("");
   const [shootDates, setShootDates] = useState("");
   const [payRange, setPayRange] = useState("");
+
+  // Temporary roleId used for namespacing the IDB key during upload.
+  // The role hasn't been created yet, but it doesn't matter — the key is
+  // unique and the file will be saved with the (final) created role anyway.
+  const [tempRoleId] = useState(() => `pending-${Date.now()}`);
 
   function submit() {
     if (!name.trim()) return;
@@ -229,6 +237,7 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
       name: name.trim(),
       description: description.trim(),
       sides: sides.trim() || undefined,
+      sidesFile,
       selfTapeInstructions: instructions.trim() || undefined,
       deadline: deadline || undefined,
       shootDates: shootDates.trim() || undefined,
@@ -273,6 +282,13 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
               rows={4}
               placeholder="INT. KITCHEN — NIGHT&#10;MAYA: I told you I'm not doing it…"
               className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60 font-mono"
+            />
+          </Sect>
+          <Sect label="Sides file (אופציונלי)" hint="קובץ PDF / DOC / TXT שהשחקנים יוכלו להוריד">
+            <SidesFileInput
+              roleId={tempRoleId}
+              value={sidesFile}
+              onChange={setSidesFile}
             />
           </Sect>
           <Sect label="Self-tape instructions">

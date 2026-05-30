@@ -12,6 +12,7 @@ import {
   type Submission, type Role, type Project,
 } from "@/lib/projects-store";
 import { saveTapeVideo, newTapeKey } from "@/lib/tape-storage";
+import { SidesFileViewer } from "@/components/SidesFileInput";
 import { cn } from "@/lib/utils";
 
 type RecState = "idle" | "countdown" | "recording" | "review";
@@ -338,6 +339,11 @@ export default function SelfTapeStudioPage() {
               exit={{ opacity: 0, y: -10 }}
               className="absolute top-20 left-4 right-4 z-10 rounded-2xl bg-black/70 backdrop-blur p-3 max-h-[40dvh] overflow-y-auto border border-white/10"
             >
+              {role.sidesFile && (
+                <div className="mb-3">
+                  <SidesFileViewer file={role.sidesFile} />
+                </div>
+              )}
               {role.selfTapeInstructions && (
                 <div className="text-[10px] uppercase tracking-widest text-gold mb-1">Instructions</div>
               )}

@@ -30,7 +30,7 @@ export function BottomNav() {
   const items = role === "Casting Pro" ? proItems : talentItems;
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 max-w-[440px] mx-auto">
+    <nav className="fixed bottom-0 inset-x-0 z-30 max-w-[440px] mx-auto">
       <div className="glass border-t border-border px-1 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <div className="flex justify-around items-center">
           {items.map(({ href, icon: Icon, label }) => {

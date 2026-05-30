@@ -83,12 +83,21 @@ export type Submission = {
   createdAt: string;
 };
 
+// Optional attachment (PDF/DOC/TXT) the pro uploads with the sides
+export type RoleSidesFile = {
+  name: string;        // original filename, e.g. "Maya sides — Round 1.pdf"
+  type: string;        // mime type
+  size: number;        // bytes
+  blobKey: string;     // IndexedDB key — resolved via lib/sides-storage
+};
+
 export type Role = {
   id: string;
   projectId: string;
   name: string;
   description: string;
   sides?: string;                  // scene text or upload notes
+  sidesFile?: RoleSidesFile;       // optional attached file (PDF/DOC/TXT)
   selfTapeInstructions?: string;   // slate, framing, takes
   deadline?: string;               // ISO date for tape submission
   shootDates?: string;             // e.g. "Aug 12 – Sep 25"
