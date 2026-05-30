@@ -14,6 +14,7 @@ import {
 } from "@/lib/projects-store";
 import { saveTapeVideo, newTapeKey } from "@/lib/tape-storage";
 import { SidesFileViewer } from "@/components/SidesFileInput";
+import { loadSidesFile } from "@/lib/sides-storage";
 import { cn } from "@/lib/utils";
 
 type RecState = "idle" | "countdown" | "recording" | "review";
@@ -266,6 +267,57 @@ export default function SelfTapeStudioPage() {
     return btoa(binary);
   }
 
+  // Sends the role's sides (text + file) to the Coach for full practice
+  async function practiceWithAria() {
+    if (!role || !project) return;
+    const payload: {
+      title: string;
+      context?: string;
+      sides?: string;
+      imageBase64?: string;
+      imageMediaType?: string;
+      fileText?: string;
+    } = {
+      title: `${role.name} · ${project.title}`,
+      context: role.description,
+      sides: role.sides,
+    };
+
+    // If a sidesFile is attached, hydrate it too
+    if (role.sidesFile) {
+      try {
+        const blob = await loadSidesFile(role.sidesFile.blobKey);
+        if (blob) {
+          if (blob.type.startsWith("image/")) {
+            // Convert to base64 for Aria vision parsing
+            const buf = await blob.arrayBuffer();
+            const bytes = new Uint8Array(buf);
+            let bin = "";
+            const chunk = 0x8000;
+            for (let i = 0; i < bytes.length; i += chunk) {
+              bin += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+            }
+            payload.imageBase64 = btoa(bin);
+            const mt = blob.type;
+            if (mt === "image/png" || mt === "image/webp" || mt === "image/jpeg") {
+              payload.imageMediaType = mt;
+            } else {
+              payload.imageMediaType = "image/jpeg";
+            }
+          } else if (blob.type === "text/plain" || role.sidesFile.name.endsWith(".txt")) {
+            payload.fileText = await blob.text();
+          }
+          // PDF/DOC — Aria can't directly read those; we leave just the text sides
+        }
+      } catch (e) {
+        console.warn("could not hydrate sides file for Aria:", e);
+      }
+    }
+
+    sessionStorage.setItem("castit_coach_incoming_scene", JSON.stringify(payload));
+    router.push("/studio/coach");
+  }
+
   async function loadCoaching() {
     if (!role || coaching || coachingLoading) return;
     setCoachingLoading(true);
@@ -460,6 +512,17 @@ export default function SelfTapeStudioPage() {
                   <div className="text-[10px] uppercase tracking-widest text-gold mb-1">Sides</div>
                   <pre className="text-[11px] leading-relaxed whitespace-pre-wrap font-mono">{role.sides}</pre>
                 </>
+              )}
+
+              {/* Practice with Aria — sends sides to Coach */}
+              {(role.sides || role.sidesFile) && (
+                <button
+                  type="button"
+                  onClick={practiceWithAria}
+                  className="mt-3 w-full h-10 rounded-xl bg-gradient-to-r from-plum/40 to-gold/40 border border-gold/40 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
+                >
+                  <Wand2 className="w-3.5 h-3.5" /> תרגל את הסצנה עם Aria
+                </button>
               )}
             </motion.div>
           )}

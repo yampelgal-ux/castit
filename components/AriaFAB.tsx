@@ -79,7 +79,7 @@ export function AriaFAB() {
 
             <div className="p-2 pt-1.5">
               <FabAction href="/studio/agent" icon={Sparkles} title="Chat with Aria" sub="Casting strategy · negotiations · scheduling" onClose={() => setOpen(false)} />
-              <FabAction href="/practice" icon={Mic} title="Practice an audition" sub="AI scene partner — record yourself live" onClose={() => setOpen(false)} />
+              <FabAction href="/studio/coach" icon={Mic} title="Practice with Aria" sub="העלה sides (תמונה / טקסט / קובץ) ותרגל" onClose={() => setOpen(false)} />
               <FabAction href="/studio" icon={Wand2} title="Open Studio" sub="Scene library · reel upload" onClose={() => setOpen(false)} />
             </div>
           </motion.div>

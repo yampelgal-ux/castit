@@ -177,6 +177,41 @@ export default function CoachPage() {
     });
   }, []);
 
+  // Incoming scene from an audition page — pre-loads sides as new scene
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = window.sessionStorage.getItem("castit_coach_incoming_scene");
+    if (!raw) return;
+    window.sessionStorage.removeItem("castit_coach_incoming_scene");
+    try {
+      const data = JSON.parse(raw) as {
+        title?: string;
+        context?: string;
+        sides?: string;
+        fileText?: string;
+        imageBase64?: string;
+        imageMediaType?: string;
+      };
+      // Combine the available text into one body for parsing
+      const combinedText = [data.sides, data.fileText].filter(Boolean).join("\n\n");
+      if (data.context) setContext(data.context);
+      if (data.imageBase64) {
+        // Vision-parse the attached image
+        parseScene({
+          imageBase64: data.imageBase64,
+          imageMediaType: (data.imageMediaType as "image/jpeg" | "image/png" | "image/webp" | undefined) ?? "image/jpeg",
+        });
+      } else if (combinedText.trim().length > 0) {
+        setTextInput(combinedText);
+        parseScene({ text: combinedText });
+      }
+      // If neither — leave on upload step so user can paste manually
+    } catch (e) {
+      console.warn("Failed to parse incoming scene", e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Pick best voice for profile
   const ttsVoice = useMemo(() => {
     if (!voices.length) return null;
