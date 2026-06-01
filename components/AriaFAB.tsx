@@ -7,6 +7,7 @@ import { useState } from "react";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 
 const HIDDEN = ["/studio/agent", "/practice", "/onboarding", "/welcome", "/signup", "/login"];
 
@@ -15,6 +16,7 @@ export function AriaFAB() {
   const role = useStore((s) => s.profile.role);
   const ariaCredits = useStore((s) => s.ariaCredits);
   const [open, setOpen] = useState(false);
+  const { t } = useT();
 
   if (HIDDEN.some((p) => pathname.startsWith(p))) return null;
   if (pathname.startsWith("/pro")) return null;
@@ -47,9 +49,9 @@ export function AriaFAB() {
           >
             <div className="px-4 pt-3.5 pb-2 border-b border-border flex items-center justify-between">
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">Quick actions</div>
+                <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">{t("fab.quickActions")}</div>
                 <div className="font-display text-sm">
-                  What does your agent need?
+                  {t("fab.heading")}
                 </div>
               </div>
               <button
@@ -68,19 +70,19 @@ export function AriaFAB() {
               <Zap className={cn("w-3 h-3", lowCredits ? "text-danger" : "text-gold")} />
               <span className={cn(lowCredits ? "text-danger" : "text-gold")}>
                 <span className="font-bold tnum">{ariaCredits}</span>
-                {" "}Aria credits remaining
+                {" "}{t("fab.credits")}
               </span>
               {lowCredits && (
                 <Link href="/studio/agent" className="ml-auto text-[10px] text-gold font-semibold underline">
-                  Top up
+                  {t("fab.topUp")}
                 </Link>
               )}
             </div>
 
             <div className="p-2 pt-1.5">
-              <FabAction href="/studio/agent" icon={Sparkles} title="Chat with Aria" sub="Casting strategy · negotiations · scheduling" onClose={() => setOpen(false)} />
-              <FabAction href="/studio/coach" icon={Mic} title="Practice with Aria" sub="העלה sides (תמונה / טקסט / קובץ) ותרגל" onClose={() => setOpen(false)} />
-              <FabAction href="/studio" icon={Wand2} title="Open Studio" sub="Scene library · reel upload" onClose={() => setOpen(false)} />
+              <FabAction href="/studio/agent" icon={Sparkles} title={t("fab.chat")} sub={t("fab.chatSub")} onClose={() => setOpen(false)} />
+              <FabAction href="/studio/coach" icon={Mic} title={t("fab.practice")} sub={t("fab.practiceSub")} onClose={() => setOpen(false)} />
+              <FabAction href="/studio" icon={Wand2} title={t("fab.studio")} sub={t("fab.studioSub")} onClose={() => setOpen(false)} />
             </div>
           </motion.div>
         )}

@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Image as ImageIcon } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 type Props = {
   // The visual to render — typically the current photo / placeholder
@@ -25,8 +26,9 @@ export function PhotoPicker({
   accept = "image/*",
   cameraFacing = "user",
   className,
-  title = "בחר מקור תמונה",
+  title,
 }: Props) {
+  const { t } = useT();
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
@@ -57,7 +59,7 @@ export function PhotoPicker({
               className="relative w-full bg-bg-elevated border-t border-border rounded-t-3xl p-5 pb-[max(2rem,env(safe-area-inset-bottom))]"
             >
               <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
-              <h3 className="font-display text-lg mb-4 text-center">{title}</h3>
+              <h3 className="font-display text-lg mb-4 text-center">{title ?? t("picker.title")}</h3>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -65,8 +67,8 @@ export function PhotoPicker({
                   className="rounded-2xl bg-gold/15 border border-gold/30 p-5 flex flex-col items-center gap-2 active:scale-95 transition-transform"
                 >
                   <Camera className="w-7 h-7 text-gold" />
-                  <span className="text-sm font-semibold">מצלמה</span>
-                  <span className="text-[10px] text-text-muted">צילום ישיר עכשיו</span>
+                  <span className="text-sm font-semibold">{t("picker.camera")}</span>
+                  <span className="text-[10px] text-text-muted">{t("picker.cameraSub")}</span>
                 </button>
                 <button
                   type="button"
@@ -74,8 +76,8 @@ export function PhotoPicker({
                   className="rounded-2xl bg-plum/10 border border-plum/30 p-5 flex flex-col items-center gap-2 active:scale-95 transition-transform"
                 >
                   <ImageIcon className="w-7 h-7 text-plum-light" />
-                  <span className="text-sm font-semibold">גלריה / קבצים</span>
-                  <span className="text-[10px] text-text-muted">תמונה שכבר קיימת</span>
+                  <span className="text-sm font-semibold">{t("picker.gallery")}</span>
+                  <span className="text-[10px] text-text-muted">{t("picker.gallerySub")}</span>
                 </button>
               </div>
             </motion.div>

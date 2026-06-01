@@ -125,6 +125,31 @@ const DICT: Record<string, Entry> = {
   "ob.photo.later":    { en: "You can skip this and add a photo later from your profile settings.", he: "אפשר לדלג ולהוסיף תמונה מאוחר יותר מהגדרות הפרופיל." },
   "ob.enter":          { en: "Enter CastIt", he: "כניסה ל-CastIt" },
   "ob.skipNow":        { en: "Skip for now", he: "דלג לבינתיים" },
+
+  // PhotoPicker (shared — appears on onboarding, typecast, etc.)
+  "picker.title":      { en: "Choose a source", he: "בחר מקור תמונה" },
+  "picker.camera":     { en: "Camera", he: "מצלמה" },
+  "picker.cameraSub":  { en: "Take one now", he: "צילום ישיר עכשיו" },
+  "picker.gallery":    { en: "Gallery / Files", he: "גלריה / קבצים" },
+  "picker.gallerySub": { en: "An existing photo", he: "תמונה שכבר קיימת" },
+
+  // Aria FAB (shared — appears across talent screens)
+  "fab.quickActions":  { en: "Quick actions", he: "פעולות מהירות" },
+  "fab.heading":       { en: "What does your agent need?", he: "מה הסוכן שלך צריך?" },
+  "fab.credits":       { en: "Aria credits remaining", he: "קרדיטים של Aria נותרו" },
+  "fab.topUp":         { en: "Top up", he: "טען" },
+  "fab.chat":          { en: "Chat with Aria", he: "שיחה עם Aria" },
+  "fab.chatSub":       { en: "Casting strategy · negotiations · scheduling", he: "אסטרטגיית ליהוק · משא ומתן · יומן" },
+  "fab.practice":      { en: "Practice with Aria", he: "תרגל עם Aria" },
+  "fab.practiceSub":   { en: "Upload sides (image / text / file) and rehearse", he: "העלה sides (תמונה / טקסט / קובץ) ותרגל" },
+  "fab.studio":        { en: "Open Studio", he: "פתח סטודיו" },
+  "fab.studioSub":     { en: "Scene library · reel upload", he: "ספריית סצנות · העלאת ריל" },
+
+  // Upload sources (reels + auditions)
+  "up.camera":         { en: "Camera", he: "מצלמה" },
+  "up.phoneCamera":    { en: "Phone camera", he: "מצלמת טלפון" },
+  "up.galleryFiles":   { en: "Gallery / file", he: "גלריה / קובץ" },
+  "up.recordStudio":   { en: "Record in studio", he: "הקלטה בסטודיו" },
 };
 
 // The translation hook. Returns { t, lang, dir }.
