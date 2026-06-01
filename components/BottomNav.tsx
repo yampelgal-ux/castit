@@ -4,24 +4,25 @@ import { usePathname } from "next/navigation";
 import { Home, Search, MessageCircle, User, Users, PlayCircle, FolderOpen, Inbox } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useUnreadCount } from "@/lib/notifications-store";
+import { useT } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 const talentItems = [
-  { href: "/feed", icon: Home, label: "Feed" },
-  { href: "/discover", icon: Search, label: "Discover" },
-  { href: "/inbox", icon: Inbox, label: "Auditions", badgeFor: "talent" as const },
-  { href: "/messages", icon: MessageCircle, label: "Messages" },
-  { href: "/profile/me", icon: User, label: "Profile" },
+  { href: "/feed", icon: Home, tkey: "nav.feed", badgeFor: undefined },
+  { href: "/discover", icon: Search, tkey: "nav.discover", badgeFor: undefined },
+  { href: "/inbox", icon: Inbox, tkey: "nav.auditions", badgeFor: "talent" as const },
+  { href: "/messages", icon: MessageCircle, tkey: "nav.messages", badgeFor: undefined },
+  { href: "/profile/me", icon: User, tkey: "nav.profile", badgeFor: undefined },
 ];
 
 const proItems = [
-  { href: "/pro/dashboard", icon: Home, label: "Studio", badgeFor: "pro" as const },
-  { href: "/pro/projects", icon: FolderOpen, label: "Projects" },
-  { href: "/pro/search", icon: Users, label: "Search" },
-  { href: "/pro/reels", icon: PlayCircle, label: "Reels" },
-  { href: "/messages", icon: MessageCircle, label: "Messages" },
-  { href: "/profile/me", icon: User, label: "Profile" },
+  { href: "/pro/dashboard", icon: Home, tkey: "nav.studio", badgeFor: "pro" as const },
+  { href: "/pro/projects", icon: FolderOpen, tkey: "nav.projects", badgeFor: undefined },
+  { href: "/pro/search", icon: Users, tkey: "nav.search", badgeFor: undefined },
+  { href: "/pro/reels", icon: PlayCircle, tkey: "nav.reels", badgeFor: undefined },
+  { href: "/messages", icon: MessageCircle, tkey: "nav.messages", badgeFor: undefined },
+  { href: "/profile/me", icon: User, tkey: "nav.profile", badgeFor: undefined },
 ];
 
 export function BottomNav() {
@@ -31,14 +32,16 @@ export function BottomNav() {
   const unreadTalent = useUnreadCount("talent");
   const unreadPro = useUnreadCount("pro");
   const unread = role === "Casting Pro" ? unreadPro : unreadTalent;
+  const { t } = useT();
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-30 max-w-[440px] mx-auto">
       <div className="glass border-t border-border px-1 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <div className="flex justify-around items-center">
           {items.map((item) => {
-            const { href, icon: Icon, label } = item;
-            const showBadge = "badgeFor" in item && !!item.badgeFor;
+            const { href, icon: Icon, tkey } = item;
+            const label = t(tkey);
+            const showBadge = !!item.badgeFor;
             const active = pathname?.startsWith(href.split("/").slice(0, 2).join("/"));
             return (
               <Link

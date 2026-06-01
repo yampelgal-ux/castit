@@ -4,6 +4,7 @@ import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { DemoSeeder } from "@/components/DemoSeeder";
+import { LanguageHydrator } from "@/components/LanguageToggle";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main id="main-content">
               <ErrorBoundary>{children}</ErrorBoundary>
             </main>
+            <LanguageHydrator />
             <DemoSeeder />
             <OnboardingTour />
           </div>

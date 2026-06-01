@@ -13,6 +13,7 @@ import {
   type AppNotification, type NotifKind,
 } from "@/lib/notifications-store";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const ICON: Record<NotifKind, typeof Bell> = {
@@ -65,6 +66,7 @@ export default function NotificationsPage() {
   const role = useStore((s) => s.profile.role);
   const audience = role === "Casting Pro" ? "pro" : "talent";
   const [notifs, setNotifs] = useState<AppNotification[]>([]);
+  const { t } = useT();
 
   function reload() { setNotifs(loadNotifications(audience)); }
 
@@ -88,7 +90,7 @@ export default function NotificationsPage() {
         title={
           <span className="inline-flex items-center gap-2">
             <Bell className="w-4 h-4 text-gold" />
-            <span className="font-display text-lg">Notifications</span>
+            <span className="font-display text-lg">{t("notif.title")}</span>
             {unread > 0 && (
               <span className="text-[10px] tnum bg-danger text-white rounded-full px-1.5 h-4 grid place-items-center">
                 {unread}
@@ -102,7 +104,7 @@ export default function NotificationsPage() {
               onClick={() => { markAllRead(audience); reload(); }}
               className="text-[11px] text-gold font-semibold"
             >
-              Mark all read
+              {t("common.markAllRead")}
             </button>
           ) : null
         }
@@ -113,8 +115,8 @@ export default function NotificationsPage() {
           <EmptyState
             icon={Bell}
             tone="gold"
-            title="אין התראות"
-            description="כשמלהק יזמין אותך, ישלח callback, או יקרה משהו חשוב — תקבל כאן עדכון."
+            title={t("notif.empty")}
+            description={t("notif.emptyDesc")}
           />
         ) : (
           <div className="space-y-2">
