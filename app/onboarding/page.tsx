@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, Camera, Check, Sparkles, Briefcase, Star } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { PhotoPicker } from "@/components/PhotoPicker";
@@ -11,16 +13,17 @@ import { PhotoPicker } from "@/components/PhotoPicker";
 type Role = "Talent" | "Casting Pro";
 type Goal = "discovered" | "scenes" | "castings" | "network";
 
-const GOALS: { id: Goal; label: string; emoji: string; desc: string }[] = [
-  { id: "discovered", label: "Get discovered", emoji: "🌟", desc: "Show your reels to casting pros" },
-  { id: "scenes",     label: "Practice scenes", emoji: "🎭", desc: "Sharpen your craft daily" },
-  { id: "castings",   label: "Apply to roles",  emoji: "🎬", desc: "Match with paid opportunities" },
-  { id: "network",    label: "Build a network", emoji: "💬", desc: "Connect with other creatives" },
+const GOALS: { id: Goal; emoji: string; labelKey: string; descKey: string }[] = [
+  { id: "discovered", emoji: "🌟", labelKey: "ob.goal.discovered", descKey: "ob.goal.discoveredDesc" },
+  { id: "scenes",     emoji: "🎭", labelKey: "ob.goal.scenes",     descKey: "ob.goal.scenesDesc" },
+  { id: "castings",   emoji: "🎬", labelKey: "ob.goal.castings",   descKey: "ob.goal.castingsDesc" },
+  { id: "network",    emoji: "💬", labelKey: "ob.goal.network",    descKey: "ob.goal.networkDesc" },
 ];
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { setProfile, completeOnboarding } = useStore();
+  const { t, dir } = useT();
   const [step, setStep] = useState(0);
   const [role, setRole] = useState<Role>("Talent");
   const [goals, setGoals] = useState<Set<Goal>>(new Set());
@@ -51,7 +54,11 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col bg-bg">
+    <div className="min-h-dvh flex flex-col bg-bg" dir={dir}>
+      {/* Language toggle */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageToggle />
+      </div>
       {/* Progress bar */}
       <div className="px-5 pt-6 flex items-center gap-2">
         {[0, 1, 2].map((i) => (
@@ -78,28 +85,28 @@ export default function OnboardingPage() {
             {step === 0 && (
               <>
                 <div className="text-[11px] uppercase tracking-widest text-gold mb-2">
-                  Step 1 of 3
+                  {t("ob.step", { n: 1 })}
                 </div>
                 <h1 className="font-display text-3xl tracking-editorial leading-[1.05]">
-                  Who are you on <em className="text-gold-gradient not-italic">CastIt</em>?
+                  {t("ob.role.title")} <em className="text-gold-gradient not-italic">CastIt</em>?
                 </h1>
-                <p className="text-text-muted text-sm mt-2 mb-8">Pick the one that fits today — you can switch later.</p>
+                <p className="text-text-muted text-sm mt-2 mb-8">{t("ob.role.sub")}</p>
 
                 <div className="grid grid-cols-1 gap-3">
                   <RoleCard
                     selected={role === "Talent"}
                     onClick={() => { setRole("Talent"); haptic("light"); }}
                     icon={<Star className="w-5 h-5" />}
-                    title="Talent"
-                    desc="Actor, model, creator. Post reels, get cast."
+                    title={t("ob.role.talent")}
+                    desc={t("ob.role.talentDesc")}
                     tone="gold"
                   />
                   <RoleCard
                     selected={role === "Casting Pro"}
                     onClick={() => { setRole("Casting Pro"); haptic("light"); }}
                     icon={<Briefcase className="w-5 h-5" />}
-                    title="Casting Pro"
-                    desc="Director, agent, producer. Discover talent."
+                    title={t("ob.role.pro")}
+                    desc={t("ob.role.proDesc")}
                     tone="plum"
                   />
                 </div>
@@ -109,13 +116,13 @@ export default function OnboardingPage() {
             {step === 1 && (
               <>
                 <div className="text-[11px] uppercase tracking-widest text-gold mb-2">
-                  Step 2 of 3
+                  {t("ob.step", { n: 2 })}
                 </div>
                 <h1 className="font-display text-3xl tracking-editorial leading-[1.05]">
-                  What are you here for?
+                  {t("ob.goals.title")}
                 </h1>
                 <p className="text-text-muted text-sm mt-2 mb-8">
-                  Pick any — we'll tailor your feed.
+                  {t("ob.goals.sub")}
                 </p>
 
                 <div className="space-y-2.5">
@@ -134,8 +141,8 @@ export default function OnboardingPage() {
                       >
                         <span className="text-2xl">{g.emoji}</span>
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-sm">{g.label}</div>
-                          <div className="text-xs text-text-muted mt-0.5">{g.desc}</div>
+                          <div className="font-semibold text-sm">{t(g.labelKey)}</div>
+                          <div className="text-xs text-text-muted mt-0.5">{t(g.descKey)}</div>
                         </div>
                         {active && (
                           <div className="w-6 h-6 rounded-full bg-gold grid place-items-center shrink-0">
@@ -152,20 +159,20 @@ export default function OnboardingPage() {
             {step === 2 && (
               <>
                 <div className="text-[11px] uppercase tracking-widest text-gold mb-2">
-                  Step 3 of 3
+                  {t("ob.step", { n: 3 })}
                 </div>
                 <h1 className="font-display text-3xl tracking-editorial leading-[1.05]">
-                  Add a face to the name
+                  {t("ob.photo.title")}
                 </h1>
                 <p className="text-text-muted text-sm mt-2 mb-10">
-                  A profile photo boosts your discovery rate <span className="text-gold">5×</span>.
+                  {t("ob.photo.sub")}
                 </p>
 
                 <div className="flex flex-col items-center">
                   <PhotoPicker
                     onPick={onPhoto}
                     cameraFacing="user"
-                    title="הוסף תמונת פרופיל"
+                    title={t("ob.photo.add")}
                     className="cursor-pointer"
                   >
                     {photo ? (
@@ -174,7 +181,7 @@ export default function OnboardingPage() {
                       <div className="w-40 h-40 rounded-full bg-bg-elevated border-2 border-dashed border-border-strong grid place-items-center text-text-muted">
                         <div className="flex flex-col items-center gap-2">
                           <Camera className="w-7 h-7" />
-                          <span className="text-xs">Tap to upload</span>
+                          <span className="text-xs">{t("ob.photo.tap")}</span>
                         </div>
                       </div>
                     )}
@@ -185,7 +192,7 @@ export default function OnboardingPage() {
                       onClick={() => setPhoto(null)}
                       className="mt-4 text-xs text-text-muted underline"
                     >
-                      Change photo
+                      {t("ob.photo.change")}
                     </button>
                   )}
                 </div>
@@ -194,7 +201,7 @@ export default function OnboardingPage() {
                   <div className="rounded-2xl p-4 bg-sage/8 border border-sage/20 flex gap-3">
                     <Sparkles className="w-4 h-4 text-sage shrink-0 mt-0.5" />
                     <p className="text-xs text-sage leading-relaxed">
-                      You can skip this and add a photo later from your profile settings.
+                      {t("ob.photo.later")}
                     </p>
                   </div>
                 </div>
@@ -219,14 +226,14 @@ export default function OnboardingPage() {
               onClick={next}
               className="flex-1 h-12 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2"
             >
-              Continue <ArrowRight className="w-4 h-4" />
+              {t("common.continue")} <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
             <button
               onClick={finish}
               className="flex-1 h-12 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2"
             >
-              {photo ? "Enter CastIt" : "Skip for now"}
+              {photo ? t("ob.enter") : t("ob.skipNow")}
               <ArrowRight className="w-4 h-4" />
             </button>
           )}

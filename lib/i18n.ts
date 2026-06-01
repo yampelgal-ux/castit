@@ -98,15 +98,48 @@ const DICT: Record<string, Entry> = {
   "lang.label":        { en: "Language", he: "שפה" },
   "lang.he":           { en: "עברית", he: "עברית" },
   "lang.en":           { en: "English", he: "English" },
+
+  // Onboarding
+  "ob.step":           { en: "Step {n} of 3", he: "שלב {n} מתוך 3" },
+  "ob.role.title":     { en: "Who are you on", he: "מי אתה ב־" },
+  "ob.role.sub":       { en: "Pick the one that fits today — you can switch later.", he: "בחר את מה שמתאים היום — אפשר להחליף בהמשך." },
+  "ob.role.talent":    { en: "Talent", he: "כישרון" },
+  "ob.role.talentDesc":{ en: "Actor, model, creator. Post reels, get cast.", he: "שחקן, דוגמן, יוצר. פרסם רילים, היבחר לתפקידים." },
+  "ob.role.pro":       { en: "Casting Pro", he: "איש ליהוק" },
+  "ob.role.proDesc":   { en: "Director, agent, producer. Discover talent.", he: "במאי, סוכן, מפיק. גלה כישרונות." },
+  "ob.goals.title":    { en: "What are you here for?", he: "מה הביא אותך לכאן?" },
+  "ob.goals.sub":      { en: "Pick any — we'll tailor your feed.", he: "בחר כמה שתרצה — נתאים לך את הפיד." },
+  "ob.goal.discovered":{ en: "Get discovered", he: "להתגלות" },
+  "ob.goal.discoveredDesc": { en: "Show your reels to casting pros", he: "הצג את הרילים שלך למלהקים" },
+  "ob.goal.scenes":    { en: "Practice scenes", he: "לתרגל סצנות" },
+  "ob.goal.scenesDesc":{ en: "Sharpen your craft daily", he: "חדד את המשחק שלך יום-יום" },
+  "ob.goal.castings":  { en: "Apply to roles", he: "להגיש לתפקידים" },
+  "ob.goal.castingsDesc": { en: "Match with paid opportunities", he: "התאמה להזדמנויות בתשלום" },
+  "ob.goal.network":   { en: "Build a network", he: "לבנות רשת קשרים" },
+  "ob.goal.networkDesc": { en: "Connect with other creatives", he: "התחבר ליוצרים אחרים" },
+  "ob.photo.title":    { en: "Add a face to the name", he: "תוסיף פנים לשם" },
+  "ob.photo.sub":      { en: "A profile photo boosts your discovery rate 5×.", he: "תמונת פרופיל מגבירה את סיכויי הגילוי שלך פי 5." },
+  "ob.photo.tap":      { en: "Tap to upload", he: "הקש להעלאה" },
+  "ob.photo.change":   { en: "Change photo", he: "החלף תמונה" },
+  "ob.photo.add":      { en: "Add a profile photo", he: "הוסף תמונת פרופיל" },
+  "ob.photo.later":    { en: "You can skip this and add a photo later from your profile settings.", he: "אפשר לדלג ולהוסיף תמונה מאוחר יותר מהגדרות הפרופיל." },
+  "ob.enter":          { en: "Enter CastIt", he: "כניסה ל-CastIt" },
+  "ob.skipNow":        { en: "Skip for now", he: "דלג לבינתיים" },
 };
 
 // The translation hook. Returns { t, lang, dir }.
+// t(key, params?) — params fills {placeholders}, e.g. t("ob.step", { n: 2 }).
 export function useT() {
   const lang = useLangStore((s) => s.lang);
-  function t(key: string, fallback?: string): string {
+  function t(key: string, params?: Record<string, string | number>): string {
     const entry = DICT[key];
-    if (!entry) return fallback ?? key;
-    return entry[lang] ?? entry.en ?? fallback ?? key;
+    let str = entry ? (entry[lang] ?? entry.en) : key;
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        str = str.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+      }
+    }
+    return str;
   }
   return { t, lang, dir: (lang === "he" ? "rtl" : "ltr") as "rtl" | "ltr" };
 }
