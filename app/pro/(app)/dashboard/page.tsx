@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import {
   loadProjects, loadSubmissions, loadRoles, loadInbox,
   type Project, type Submission, type InboxItem,
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 
 export default function ProDashboardPage() {
   const { profile } = useStore();
+  const { t, dir } = useT();
   const [projects, setProjects] = useState<Project[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [inbox, setInbox] = useState<InboxItem[]>([]);
@@ -59,7 +61,7 @@ export default function ProDashboardPage() {
       <Header
         title={
           <span className="flex items-center gap-2">
-            <span className="font-display text-lg">Studio</span>
+            <span className="font-display text-lg">{t("pd.studio")}</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-plum/20 text-plum-light font-semibold tracking-wider">PRO</span>
           </span>
         }
@@ -70,13 +72,13 @@ export default function ProDashboardPage() {
         }
       />
 
-      <div className="px-5 pt-3 space-y-5">
+      <div className="px-5 pt-3 space-y-5" dir={dir}>
         {/* Greeting */}
         <div>
           <h1 className="font-display text-3xl tracking-editorial">
-            Good to see you, <em className="text-gold-gradient not-italic">{profile.name?.split(" ")[0] || "there"}</em>.
+            {t("pd.greeting")} <em className="text-gold-gradient not-italic">{profile.name?.split(" ")[0] || t("pd.greetingFallback")}</em>.
           </h1>
-          <p className="text-text-muted text-sm mt-1">Your casting workspace.</p>
+          <p className="text-text-muted text-sm mt-1">{t("pd.workspace")}</p>
         </div>
 
         {/* Action Inbox CTA — when there's work to do */}
@@ -102,18 +104,16 @@ export default function ProDashboardPage() {
                   "text-[10px] uppercase tracking-widest font-semibold",
                   inboxCounts.urgent > 0 ? "text-danger" : "text-gold"
                 )}>
-                  Action Inbox
+                  {t("pd.actionInbox")}
                 </div>
                 <div className="text-sm font-semibold mt-0.5">
-                  {inboxCounts.urgent > 0 ? (
-                    <><span className="tnum">{inboxCounts.urgent}</span> פעולות דחופות</>
-                  ) : (
-                    <><span className="tnum">{inboxCounts.total}</span> פריטים ממתינים</>
-                  )}
+                  {inboxCounts.urgent > 0
+                    ? t("pd.urgentActions", { n: inboxCounts.urgent })
+                    : t("pd.itemsWaiting", { n: inboxCounts.total })}
                 </div>
                 <div className="text-[10px] text-text-muted mt-0.5">
-                  {inboxCounts.toReview > 0 && `${inboxCounts.toReview} טייפים לסקירה · `}
-                  הקש לפתיחה
+                  {inboxCounts.toReview > 0 && t("pd.tapesToReviewShort", { n: inboxCounts.toReview })}
+                  {t("pd.tapOpen")}
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-text-muted shrink-0" />
@@ -132,8 +132,8 @@ export default function ProDashboardPage() {
                 <Zap className="w-4 h-4" />
               </div>
               <div className="flex-1">
-                <div className="text-sm font-semibold">Tape Triage Mode</div>
-                <div className="text-[10px] text-text-muted">החלק ימינה/שמאלה כדי לעבור מהר על {inboxCounts.toReview} טייפים</div>
+                <div className="text-sm font-semibold">{t("pd.triage")}</div>
+                <div className="text-[10px] text-text-muted">{t("pd.triageSub", { n: inboxCounts.toReview })}</div>
               </div>
               <span className="text-[10px] font-bold text-gold tnum">{inboxCounts.toReview}</span>
             </div>
@@ -143,29 +143,29 @@ export default function ProDashboardPage() {
         {/* KPI grid */}
         <div className="grid grid-cols-2 gap-2.5">
           <KPI
-            icon={FolderOpen} label="Active projects" value={stats.projects}
+            icon={FolderOpen} label={t("pd.kpi.projects")} value={stats.projects}
             tone="gold" href="/pro/projects"
           />
           <KPI
-            icon={Clock} label="Tapes to review" value={stats.toReview}
+            icon={Clock} label={t("pd.kpi.toReview")} value={stats.toReview}
             tone="plum" href="/pro/inbox" urgent={stats.toReview > 0}
           />
           <KPI
-            icon={Send} label="Open invites" value={stats.invited}
+            icon={Send} label={t("pd.kpi.invites")} value={stats.invited}
             tone="sage" href="/pro/projects"
           />
           <KPI
-            icon={CheckCircle2} label="Booked" value={stats.booked}
+            icon={CheckCircle2} label={t("pd.kpi.booked")} value={stats.booked}
             tone="success" href="/pro/projects"
           />
         </div>
 
         {/* Quick actions row */}
         <div className="grid grid-cols-4 gap-2">
-          <QuickAction icon={Search} label="Find" tone="gold" href="/pro/search" />
-          <QuickAction icon={ClipboardCheck} label="Reviews" tone="sage" href="/pro/approvals" />
-          <QuickAction icon={BarChart3} label="Analytics" tone="plum" href="/pro/analytics" />
-          <QuickAction icon={Bell} label="Inbox" tone="violet" href="/notifications" />
+          <QuickAction icon={Search} label={t("pd.qa.find")} tone="gold" href="/pro/search" />
+          <QuickAction icon={ClipboardCheck} label={t("pd.qa.reviews")} tone="sage" href="/pro/approvals" />
+          <QuickAction icon={BarChart3} label={t("pd.qa.analytics")} tone="plum" href="/pro/analytics" />
+          <QuickAction icon={Bell} label={t("pd.qa.inbox")} tone="violet" href="/notifications" />
         </div>
 
         {/* Projects hero */}
@@ -179,10 +179,10 @@ export default function ProDashboardPage() {
               <FolderOpen className="w-7 h-7 text-gold" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">Workspace</div>
-              <div className="font-display text-xl leading-tight mt-0.5">Projects & Auditions</div>
+              <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">{t("pd.workspaceTag")}</div>
+              <div className="font-display text-xl leading-tight mt-0.5">{t("pd.projectsTitle")}</div>
               <div className="text-[11px] text-text-muted mt-0.5">
-                Organize tapes by project and role — decide callbacks.
+                {t("pd.projectsSub")}
               </div>
             </div>
             <ArrowRight className="w-4 h-4 text-gold shrink-0" />
@@ -194,9 +194,9 @@ export default function ProDashboardPage() {
           <section>
             <div className="flex items-center justify-between mb-2.5 px-1">
               <h2 className="text-xs uppercase tracking-widest text-text-muted">
-                Awaiting your call <span className="text-text font-semibold tnum">({stats.toReview})</span>
+                {t("pd.awaiting")} <span className="text-text font-semibold tnum">({stats.toReview})</span>
               </h2>
-              <Link href="/pro/projects" className="text-[11px] text-gold font-semibold">See all →</Link>
+              <Link href="/pro/projects" className="text-[11px] text-gold font-semibold">{t("pd.seeAll")}</Link>
             </div>
             <div className="space-y-2">
               {todo.map((s, i) => <PendingRow key={s.id} s={s} i={i} />)}
@@ -210,15 +210,15 @@ export default function ProDashboardPage() {
             <div className="w-12 h-12 rounded-2xl bg-gold/10 text-gold grid place-items-center mx-auto mb-3">
               <FolderOpen className="w-6 h-6" />
             </div>
-            <h3 className="font-display text-lg">Start your first project</h3>
+            <h3 className="font-display text-lg">{t("pd.empty.title")}</h3>
             <p className="text-xs text-text-muted max-w-[280px] mx-auto mt-1">
-              Create a casting folder, add roles, then send audition invites to talents you find via search or reels.
+              {t("pd.empty.sub")}
             </p>
             <Link
               href="/pro/projects"
               className="inline-flex items-center gap-2 mt-4 px-5 h-11 rounded-full bg-gold text-bg text-sm font-semibold"
             >
-              <Plus className="w-4 h-4" /> Create project
+              <Plus className="w-4 h-4" /> {t("pd.empty.cta")}
             </Link>
           </section>
         )}
@@ -269,6 +269,7 @@ function QuickAction({ icon: Icon, label, tone, href }: { icon: any; label: stri
 }
 
 function PendingRow({ s, i }: { s: Submission; i: number }) {
+  const { t } = useT();
   return (
     <motion.div
       initial={{ opacity: 0, y: 4 }}
@@ -282,21 +283,21 @@ function PendingRow({ s, i }: { s: Submission; i: number }) {
         <img src={s.talentPhoto} alt={s.talentName} className="w-10 h-10 rounded-xl object-cover" />
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold truncate">{s.talentName}</div>
-          <div className="text-[10px] text-text-muted">{timeAgo(s.createdAt)}</div>
+          <div className="text-[10px] text-text-muted">{timeAgo(s.createdAt, t)}</div>
         </div>
         <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 font-semibold uppercase tracking-wider">
-          Review
+          {t("pd.review")}
         </span>
       </Link>
     </motion.div>
   );
 }
 
-function timeAgo(iso: string) {
+function timeAgo(iso: string, t: (k: string, p?: Record<string, string | number>) => string) {
   const ms = Date.now() - new Date(iso).getTime();
   const d = Math.floor(ms / 86400000);
   const h = Math.floor(ms / 3600000);
-  if (d > 0) return `${d}d ago`;
-  if (h > 0) return `${h}h ago`;
-  return "just now";
+  if (d > 0) return t("time.ago.d", { n: d });
+  if (h > 0) return t("time.ago.h", { n: h });
+  return t("time.now");
 }
