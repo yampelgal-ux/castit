@@ -1093,6 +1093,61 @@ export default function CoachPage() {
             </div>
           </div>
 
+          {/* Living Aria presence — reacts to speaking / listening / thinking */}
+          <div className="flex flex-col items-center pt-5 pb-4 border-b border-border bg-gradient-to-b from-bg-elevated/40 to-transparent">
+            <div className="relative">
+              {(speaking || listening) && (
+                <span
+                  className={cn(
+                    "absolute inset-0 rounded-full animate-ping opacity-25",
+                    listening ? "bg-terra" : "bg-gold"
+                  )}
+                />
+              )}
+              <motion.div
+                animate={
+                  speaking ? { scale: [1, 1.1, 1] }
+                  : listening ? { scale: [1, 1.05, 1] }
+                  : { scale: 1 }
+                }
+                transition={{
+                  duration: speaking ? 0.55 : 1.3,
+                  repeat: (speaking || listening) ? Infinity : 0,
+                  ease: "easeInOut",
+                }}
+                className={cn(
+                  "relative w-[88px] h-[88px] rounded-full grid place-items-center border-2 transition-colors",
+                  "bg-gradient-to-br from-gold/25 via-plum/15 to-gold/5",
+                  speaking ? "border-gold" : listening ? "border-terra" : "border-border-strong"
+                )}
+              >
+                {speaking ? (
+                  <div className="flex items-end gap-1 h-7">
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <motion.span
+                        key={i}
+                        className="w-1 rounded-full bg-gold"
+                        animate={{ height: [6, 22, 6] }}
+                        transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1, ease: "easeInOut" }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <Sparkles className={cn("w-9 h-9", listening ? "text-terra" : "text-gold/80")} />
+                )}
+              </motion.div>
+            </div>
+            <div className="mt-3 text-sm font-semibold">{partnerCharacter || "Aria"}</div>
+            <div className={cn(
+              "text-[11px] mt-0.5 font-medium inline-flex items-center gap-1.5",
+              speaking ? "text-gold" : listening ? "text-terra" : loading ? "text-plum-light" : "text-text-muted"
+            )}>
+              {speaking ? (
+                <>מדבר… <button onClick={stopSpeaking} className="underline">עצור</button></>
+              ) : listening ? "מקשיב…" : loading ? "חושב…" : "התור שלך"}
+            </div>
+          </div>
+
           {/* Dialogue scroll area */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
             {turns.length === 0 && (
@@ -1138,7 +1193,7 @@ export default function CoachPage() {
               </div>
             )}
 
-            {speaking && (
+            {false && speaking && (
               <div className="flex justify-start">
                 <div className="text-[10px] text-gold inline-flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-gold rounded-full animate-pulse" /> מדבר...
