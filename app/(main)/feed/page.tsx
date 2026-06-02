@@ -10,19 +10,21 @@ import { AnimatedLike } from "@/components/AnimatedLike";
 import { Brand } from "@/components/Brand";
 import { LazyVideo } from "@/components/LazyVideo";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
 import { cn, formatNumber } from "@/lib/utils";
 
 export default function FeedPage() {
+  const { t } = useT();
   return (
     <div className="snap-feed no-scrollbar bg-black -mx-0">
       {/* Header overlay */}
       <div className="fixed top-0 inset-x-0 z-30 max-w-[440px] mx-auto px-5 pt-4 pb-3 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent">
         <Brand size="sm" />
         <div className="flex items-center gap-4 text-xs">
-          <span className="text-text-muted">Following</span>
+          <span className="text-text-muted">{t("feed.following")}</span>
           <span className="font-semibold relative">
-            For You
+            {t("feed.forYou")}
             <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gold rounded-full" />
           </span>
         </div>
@@ -40,6 +42,7 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
   const [liked, setLiked] = useState(false);
   const { toggleLike, toggleBookmark, bookmarks } = useStore();
   const bookmarked = bookmarks.has(reel.id);
+  const { t } = useT();
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-black">
@@ -82,9 +85,9 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
           aria-label={bookmarked ? "Remove bookmark" : "Save"}
         >
           <Bookmark className={cn("w-7 h-7 transition-colors", bookmarked && "fill-gold text-gold")} />
-          <span className="text-[11px] font-medium tnum">{bookmarked ? "Saved" : "Save"}</span>
+          <span className="text-[11px] font-medium tnum">{bookmarked ? t("feed.saved") : t("feed.save")}</span>
         </button>
-        <Action icon={<Send className="w-7 h-7" />} label="Send" />
+        <Action icon={<Send className="w-7 h-7" />} label={t("feed.send")} />
         <Action icon={<Share2 className="w-7 h-7" />} label={formatNumber(reel.shares)} />
       </div>
 
@@ -99,27 +102,27 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
           <span className="font-semibold">@{talent.username}</span>
           {talent.verified && <VerifiedBadge />}
           <button className="ml-1 px-3 py-1 text-[11px] font-semibold rounded-full bg-white/10 backdrop-blur border border-white/20">
-            Follow
+            {t("feed.follow")}
           </button>
         </div>
         <p className="text-sm leading-snug text-white/95 mb-3">{reel.caption}</p>
 
         <div className="flex flex-wrap gap-1.5 mb-3">
           <TypecastBadge>{talent.typecast.heightCm}cm</TypecastBadge>
-          <TypecastBadge color={talent.typecast.eyeColor}>Eyes</TypecastBadge>
-          <TypecastBadge color={talent.typecast.hairColor}>{talent.typecast.hairLength} hair</TypecastBadge>
+          <TypecastBadge color={talent.typecast.eyeColor}>{t("feed.eyes")}</TypecastBadge>
+          <TypecastBadge color={talent.typecast.hairColor}>{talent.typecast.hairLength} {t("feed.hair")}</TypecastBadge>
           <TypecastBadge>{talent.typecast.languages.slice(0, 2).join(" · ")}</TypecastBadge>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-white/80">
           <Music2 className="w-3.5 h-3.5" />
-          <span className="truncate">Original audio — {talent.name}</span>
+          <span className="truncate">{t("feed.originalAudio")} — {talent.name}</span>
         </div>
       </motion.div>
 
       {/* Send to casting CTA */}
       <button className="absolute left-4 bottom-6 z-10 px-4 py-2.5 rounded-full bg-gold text-bg font-semibold text-xs shadow-lg shadow-gold/20">
-        ✦ Send to a Casting Pro
+        ✦ {t("feed.sendToPro")}
       </button>
     </div>
   );

@@ -183,6 +183,26 @@ const DICT: Record<string, Entry> = {
   "time.ago.d":        { en: "{n}d ago", he: "לפני {n} ימים" },
   "time.ago.h":        { en: "{n}h ago", he: "לפני {n} שעות" },
   "time.now":          { en: "just now", he: "הרגע" },
+
+  // Feed
+  "feed.following":    { en: "Following", he: "עוקב" },
+  "feed.forYou":       { en: "For You", he: "בשבילך" },
+  "feed.follow":       { en: "Follow", he: "עקוב" },
+  "feed.save":         { en: "Save", he: "שמור" },
+  "feed.saved":        { en: "Saved", he: "נשמר" },
+  "feed.send":         { en: "Send", he: "שלח" },
+  "feed.sendToPro":    { en: "Send to a Casting Pro", he: "שלח למלהק" },
+  "feed.originalAudio":{ en: "Original audio", he: "אודיו מקורי" },
+  "feed.eyes":         { en: "Eyes", he: "עיניים" },
+  "feed.hair":         { en: "hair", he: "שיער" },
+
+  // Discover
+  "disc.title":        { en: "Discover", he: "גילוי" },
+  "disc.search":       { en: "Search talent, skills, location…", he: "חפש כישרון, כישורים, מיקום…" },
+  "disc.filters":      { en: "Filters", he: "מסננים" },
+  "disc.results":      { en: "results", he: "תוצאות" },
+  "disc.noResults":    { en: "No talent matches these filters", he: "אין כישרון שתואם למסננים האלה" },
+  "disc.clearFilters": { en: "Clear filters", he: "נקה מסננים" },
 };
 
 // The translation hook. Returns { t, lang, dir }.
