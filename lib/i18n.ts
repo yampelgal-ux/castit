@@ -295,6 +295,22 @@ const DICT: Record<string, Entry> = {
   "empty.notFound":    { en: "Not found", he: "לא נמצא" },
   "empty.removed":     { en: "This may have been removed.", he: "ייתכן שזה הוסר." },
 
+  // Casting Report (public share)
+  "report.label":      { en: "Casting Report", he: "דוח ליהוק" },
+  "report.talents":    { en: "{n} talents", he: "{n} כישרונות" },
+  "report.talent1":    { en: "1 talent", he: "כישרון 1" },
+  "report.print":      { en: "Save / Print", he: "שמור / הדפס" },
+  "report.notFound":   { en: "Link not found", he: "הקישור לא נמצא" },
+  "report.removed":    { en: "This shortlist may have been removed.", he: "ייתכן שה-shortlist הוסר." },
+  "report.expired":    { en: "This link has expired", he: "תוקף הקישור פג" },
+  "report.expiredDesc":{ en: "Ask the sender for a fresh link.", he: "בקש מהשולח קישור חדש." },
+  "report.empty":      { en: "No talents on this shortlist.", he: "אין כישרונות ב-shortlist." },
+  "report.note":       { en: "Casting director's note", he: "הערת המלהק/ת" },
+  "report.reels":      { en: "Audition reels", he: "רילי אודישן" },
+  "report.noReels":    { en: "No reels yet.", he: "אין רילים עדיין." },
+  "report.curated":    { en: "Curated on CastIt", he: "נאסף ב-CastIt" },
+  "report.presented":  { en: "Presented by", he: "מוצג על ידי" },
+
   // Pro search
   "srch.title":        { en: "Talent search", he: "חיפוש כישרון" },
   "srch.clearAll":     { en: "Clear all", he: "נקה הכל" },
