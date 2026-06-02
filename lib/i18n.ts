@@ -294,6 +294,15 @@ const DICT: Record<string, Entry> = {
   "empty.notFound":    { en: "Not found", he: "לא נמצא" },
   "empty.removed":     { en: "This may have been removed.", he: "ייתכן שזה הוסר." },
 
+  // Pro search
+  "srch.title":        { en: "Talent search", he: "חיפוש כישרון" },
+  "srch.clearAll":     { en: "Clear all", he: "נקה הכל" },
+  "srch.matches":      { en: "matches", he: "התאמות" },
+  "srch.noMatches":    { en: "No matches — yet", he: "אין התאמות — עדיין" },
+  "srch.refine":       { en: "Refine search", he: "דייק חיפוש" },
+  "srch.matchCount":   { en: "{n} talents match these filters", he: "{n} כישרונות תואמים למסננים" },
+  "srch.showMatches":  { en: "Show {n} matches", he: "הצג {n} התאמות" },
+
   // Projects — casting mode picker
   "proj.fullDesc":     { en: "Full 8-stage pipeline. Leads, support, day-players — with callback/hold/avail/offer.", he: "Pipeline מלא 8 שלבים. לידים, סופורט, יומיים — עם callback/hold/avail/offer." },
   "proj.quickDesc":    { en: "Just 3 stages. For extras, models, commercials — Select/Pass.", he: "3 שלבים בלבד. לניצבים, דוגמנים, פרסומות — Select/Pass." },

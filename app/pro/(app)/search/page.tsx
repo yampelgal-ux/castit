@@ -15,6 +15,7 @@ import { matchTalent } from "@/lib/matching";
 import { ColorSwatchPicker } from "@/components/ColorSwatchPicker";
 import { SKIN_TONES, EYE_COLORS, HAIR_COLORS, BODY_TYPES } from "@/lib/typecast-palette";
 import { cn, formatNumber } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 type Filters = {
   gender: string[];
@@ -58,6 +59,7 @@ const LOCATIONS = ["Tel Aviv", "Jerusalem", "Haifa", "Eilat", "Berlin", "London"
 // Palettes imported from lib/typecast-palette.ts (named, industry-standard)
 
 export default function ProSearchPage() {
+  const { t } = useT();
   const [f, setF] = useState<Filters>(EMPTY);
   const [openPanel, setOpenPanel] = useState(false);
   const [inviteFor, setInviteFor] = useState<{ id: string; name: string; photo: string } | null>(null);
@@ -160,7 +162,7 @@ export default function ProSearchPage() {
     <div className="min-h-dvh bg-bg pb-24">
       <Header
         back
-        title="Talent search"
+        title={t("srch.title")}
         right={
           <div className="flex items-center gap-2">
             <button
@@ -177,7 +179,7 @@ export default function ProSearchPage() {
             </button>
             {activeCount > 0 && (
               <button onClick={() => setF(EMPTY)} className="text-[11px] text-text-muted underline">
-                Clear all
+                {t("srch.clearAll")}
               </button>
             )}
           </div>
@@ -207,7 +209,7 @@ export default function ProSearchPage() {
           </button>
           <div className="h-12 px-4 rounded-2xl bg-gold/10 border border-gold/30 flex flex-col items-center justify-center min-w-[80px]">
             <span className="font-display text-base text-gold tnum leading-none">{ranked.length}</span>
-            <span className="text-[9px] uppercase tracking-wider text-gold/80 leading-none mt-0.5">matches</span>
+            <span className="text-[9px] uppercase tracking-wider text-gold/80 leading-none mt-0.5">{t("srch.matches")}</span>
           </div>
         </div>
 
@@ -232,7 +234,7 @@ export default function ProSearchPage() {
         {ranked.length === 0 ? (
           <div className="text-center py-16 px-6">
             <Users className="w-10 h-10 text-text-subtle mx-auto opacity-50" />
-            <p className="font-display text-xl mt-4">No matches — yet</p>
+            <p className="font-display text-xl mt-4">{t("srch.noMatches")}</p>
             <p className="text-sm text-text-muted mt-1.5 max-w-xs mx-auto">
               Your filters are very specific. Relax one to widen the pool.
             </p>
@@ -396,6 +398,7 @@ function Chip({ children, onClear }: { children: React.ReactNode; onClear: () =>
 function FilterPanel({
   filters: f, onChange, onClose, results,
 }: { filters: Filters; onChange: (f: Filters) => void; onClose: () => void; results: number }) {
+  const { t } = useT();
   return (
     <>
       <motion.div
@@ -409,8 +412,8 @@ function FilterPanel({
       >
         <div className="p-5 pb-3 border-b border-border flex items-center justify-between">
           <div>
-            <h3 className="font-display text-xl">Refine search</h3>
-            <p className="text-[11px] text-text-muted">{results} talent{results !== 1 ? "s" : ""} match these filters</p>
+            <h3 className="font-display text-xl">{t("srch.refine")}</h3>
+            <p className="text-[11px] text-text-muted">{t("srch.matchCount", { n: results })}</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-bg-muted grid place-items-center">
             <X className="w-4 h-4" />
@@ -485,7 +488,7 @@ function FilterPanel({
             onClick={onClose}
             className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-4 h-4" /> Show {results} match{results !== 1 ? "es" : ""}
+            <Sparkles className="w-4 h-4" /> {t("srch.showMatches", { n: results })}
           </button>
         </div>
       </motion.div>
