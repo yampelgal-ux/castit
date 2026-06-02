@@ -250,6 +250,12 @@ const DICT: Record<string, Entry> = {
   "an.yes":            { en: "Yes", he: "כן" },
   "an.maybe":          { en: "Maybe", he: "אולי" },
   "an.no":             { en: "No", he: "לא" },
+  "an.thisSeason":     { en: "This season", he: "העונה" },
+  "an.heroBookRate":   { en: "callback rate", he: "אחוז callback" },
+  "an.heroSubs":       { en: "submissions", he: "הגשות" },
+  "an.heroHours":      { en: "hours saved", he: "שעות נחסכו" },
+  "an.dropoff":        { en: "{n}% drop-off", he: "{n}% נשירה" },
+  "an.ofSubs":         { en: "of submissions", he: "מההגשות" },
 
   // Projects — casting mode picker
   "proj.fullDesc":     { en: "Full 8-stage pipeline. Leads, support, day-players — with callback/hold/avail/offer.", he: "Pipeline מלא 8 שלבים. לידים, סופורט, יומיים — עם callback/hold/avail/offer." },

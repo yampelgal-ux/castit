@@ -157,36 +157,45 @@ export default function ProAnalyticsPage() {
       } />
 
       <div className="px-4 pt-3 space-y-4" dir={dir}>
-        {/* Hero KPIs */}
+        {/* Hero band — the three numbers an investor reads in 2 seconds */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-3xl p-5 bg-gradient-to-br from-gold/15 via-bg-elevated to-plum/10 border border-gold/30 relative overflow-hidden"
+        >
+          <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-gold/10 blur-3xl" />
+          <div className="relative">
+            <div className="text-[10px] uppercase tracking-widest text-gold font-semibold mb-3">
+              {t("an.thisSeason")}
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <div className="font-display text-4xl font-bold text-gold tnum leading-none">{stats.callbackRate}%</div>
+                <div className="text-[10px] text-text-muted mt-1.5 leading-tight">{t("an.heroBookRate")}</div>
+              </div>
+              <div>
+                <div className="font-display text-4xl font-bold text-text tnum leading-none">{stats.totalSubs}</div>
+                <div className="text-[10px] text-text-muted mt-1.5 leading-tight">{t("an.heroSubs")}</div>
+              </div>
+              <div>
+                <div className="font-display text-4xl font-bold text-plum-light tnum leading-none">{stats.aiSaved}</div>
+                <div className="text-[10px] text-text-muted mt-1.5 leading-tight">{t("an.heroHours")}</div>
+              </div>
+            </div>
+            <div className="text-[11px] text-text-muted mt-4 pt-3 border-t border-gold/15 leading-relaxed flex items-start gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-gold shrink-0 mt-0.5" />
+              <span><span className="text-gold font-semibold">{t("an.ariaImpact")}:</span> {t("an.ariaEstimate", { n: stats.tapesReviewed })}</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Secondary KPIs */}
         <div className="grid grid-cols-2 gap-2">
-          <Kpi icon={Users} label={t("an.kpi.subs")} value={stats.totalSubs} tone="gold" />
           <Kpi icon={FileVideo} label={t("an.kpi.reviewed")} value={stats.tapesReviewed} tone="plum" />
           <Kpi icon={Sparkles} label={t("an.kpi.callbacks")} value={stats.callbacks} tone="sage" />
           <Kpi icon={Award} label={t("an.kpi.booked")} value={stats.booked} tone="success" />
+          <Kpi icon={Users} label={t("an.kpi.subs")} value={stats.totalSubs} tone="gold" />
         </div>
-
-        {/* AI Savings — investor wow */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-4 bg-gradient-to-br from-gold/15 via-bg-elevated to-plum/10 border border-gold/30"
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="w-4 h-4 text-gold" />
-            <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">
-              {t("an.ariaImpact")}
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <div className="font-display text-4xl font-bold text-gold tnum">
-              {stats.aiSaved}
-            </div>
-            <div className="text-sm text-text-muted">{t("an.hoursSaved")}</div>
-          </div>
-          <div className="text-[11px] text-text-muted mt-2 leading-relaxed">
-            {t("an.ariaEstimate", { n: stats.tapesReviewed })}
-          </div>
-        </motion.div>
 
         {/* Conversion funnel */}
         <Card title={t("an.funnel")} subtitle={t("an.funnelSub")}>
