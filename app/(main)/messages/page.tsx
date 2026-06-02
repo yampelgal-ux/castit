@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
+import { useT } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { getConversations, getOrCreateConversation } from "@/lib/db";
 import { TALENTS } from "@/lib/mock-data";
@@ -54,6 +55,7 @@ function MessagesContent() {
   const router = useRouter();
   const params = useSearchParams();
   const { userId, profile } = useStore();
+  const { t, dir } = useT();
   const [convos, setConvos] = useState<Convo[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -141,7 +143,7 @@ function MessagesContent() {
 
   return (
     <div className="min-h-dvh">
-      <Header title={isPro ? "Project messages" : "Messages"} />
+      <Header title={t("msg.title")} />
 
       {isPro && (
         <div className="mx-4 mt-3 p-2.5 rounded-xl bg-bg-elevated border border-border flex items-start gap-2">
@@ -169,18 +171,18 @@ function MessagesContent() {
           <EmptyState
             icon={MessageCircle}
             tone="plum"
-            title="No active conversations"
-            description="Invite a talent to a project, and a thread opens here. Talents can't DM you unprompted."
-            ctaLabel="Go to projects"
+            title={t("msg.empty")}
+            description={t("msg.emptyDesc")}
+            ctaLabel={t("nav.projects")}
             ctaHref="/pro/projects"
           />
         ) : (
           <EmptyState
             icon={MessageCircle}
             tone="plum"
-            title="No messages yet"
-            description="Tap Message on a talent's profile to start a conversation."
-            ctaLabel="Find talents"
+            title={t("msg.empty")}
+            description={t("msg.emptyDesc")}
+            ctaLabel={t("disc.title")}
             ctaHref="/discover"
           />
         )

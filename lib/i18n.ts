@@ -257,6 +257,43 @@ const DICT: Record<string, Entry> = {
   "an.dropoff":        { en: "{n}% drop-off", he: "{n}% נשירה" },
   "an.ofSubs":         { en: "of submissions", he: "מההגשות" },
 
+  // Messages
+  "msg.title":         { en: "Messages", he: "הודעות" },
+  "msg.empty":         { en: "No conversations yet", he: "עדיין אין שיחות" },
+  "msg.emptyDesc":     { en: "Message a talent from their profile or a reel — chats appear here.", he: "שלח הודעה לטאלנט מהפרופיל או מריל — השיחות יופיעו כאן." },
+  "msg.placeholder":   { en: "Write a message…", he: "כתוב הודעה…" },
+  "msg.searchPh":      { en: "Search messages", he: "חפש בהודעות" },
+
+  // Self-tape record
+  "rec.studio":        { en: "Self-tape studio", he: "אולפן Self-tape" },
+  "rec.cameraOff":     { en: "Camera unavailable", he: "המצלמה לא זמינה" },
+  "rec.cameraOffDesc": { en: "Open the app over HTTPS and allow camera + microphone — or upload an existing file below.", he: "פתח את האפליקציה ב-HTTPS ואשר מצלמה + מיקרופון — או העלה קובץ קיים למטה." },
+  "rec.shootWith":     { en: "Shot on a pro camera / studio? Choose \"Gallery / files\".", he: "צילמת במצלמה מקצועית / סטודיו? בחר \"גלריה / קבצים\"." },
+  "rec.phoneCam":      { en: "Record with phone camera", he: "צלם עם מצלמת הטלפון" },
+  "rec.pickGallery":   { en: "Pick from gallery / files", he: "בחר מהגלריה / קבצים" },
+  "rec.loading":       { en: "Loading…", he: "טוען…" },
+  "rec.saving":        { en: "Saving…", he: "שומר…" },
+  "rec.phoneCamShort": { en: "Phone camera", he: "מצלמת טלפון" },
+  "rec.galleryShort":  { en: "Gallery / file", he: "גלריה / קובץ" },
+  "rec.errVideoOnly":  { en: "Video files only (MP4, MOV, WEBM, etc.)", he: "רק קבצי וידאו (MP4, MOV, WEBM וכו')" },
+  "rec.errTooBig":     { en: "File too large (max 500MB). Try a compressed MP4.", he: "הקובץ גדול מדי (מקסימום 500MB). נסה להמיר ל-MP4 דחוס." },
+  "rec.practiceAria":  { en: "Practice the scene with Aria", he: "תרגל את הסצנה עם Aria" },
+  "rec.ariaPreparing": { en: "Aria is preparing notes…", he: "Aria מכינה הוראות…" },
+  "rec.show":          { en: "Show", he: "הצג" },
+  "rec.hide":          { en: "Hide", he: "סגור" },
+  "rec.ariaDirections":{ en: "Aria's direction", he: "הוראות בימוי של Aria" },
+  "rec.askAria":       { en: "Ask Aria about the role", he: "שאל את Aria על התפקיד" },
+  "rec.slate":         { en: "Slate first", he: "סלייט קודם" },
+  "rec.headHere":      { en: "Head here", he: "ראש כאן" },
+  "rec.sides":         { en: "Sides", he: "Sides" },
+  "rec.instructions":  { en: "Instructions", he: "הוראות" },
+  "rec.sendTape":      { en: "Send tape", he: "שלח טייפ" },
+  "rec.anotherTake":   { en: "Another take", he: "טייק נוסף" },
+
+  // Common empty / robustness
+  "empty.notFound":    { en: "Not found", he: "לא נמצא" },
+  "empty.removed":     { en: "This may have been removed.", he: "ייתכן שזה הוסר." },
+
   // Projects — casting mode picker
   "proj.fullDesc":     { en: "Full 8-stage pipeline. Leads, support, day-players — with callback/hold/avail/offer.", he: "Pipeline מלא 8 שלבים. לידים, סופורט, יומיים — עם callback/hold/avail/offer." },
   "proj.quickDesc":    { en: "Just 3 stages. For extras, models, commercials — Select/Pass.", he: "3 שלבים בלבד. לניצבים, דוגמנים, פרסומות — Select/Pass." },

@@ -15,6 +15,7 @@ import {
 import { saveTapeVideo, newTapeKey } from "@/lib/tape-storage";
 import { SidesFileViewer } from "@/components/SidesFileInput";
 import { loadSidesFile } from "@/lib/sides-storage";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 type RecState = "idle" | "countdown" | "recording" | "review";
@@ -24,6 +25,7 @@ const MAX_SEC = 120; // 2 min cap for a self-tape
 export default function SelfTapeStudioPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useT();
 
   const [sub, setSub] = useState<Submission | null>(null);
   const [role, setRole] = useState<Role | null>(null);
@@ -74,13 +76,13 @@ export default function SelfTapeStudioPage() {
   async function handleFileUpload(file: File) {
     setUploadError(null);
     if (!file.type.startsWith("video/")) {
-      setUploadError("רק קבצי וידאו (MP4, MOV, WEBM וכו')");
+      setUploadError(t("rec.errVideoOnly"));
       return;
     }
     // Cap at 500MB to keep IDB happy
     const MAX = 500 * 1024 * 1024;
     if (file.size > MAX) {
-      setUploadError(`הקובץ גדול מדי (מקסימום 500MB). נסה להמיר ל-MP4 דחוס.`);
+      setUploadError(t("rec.errTooBig"));
       return;
     }
     setUploading(true);
@@ -299,13 +301,13 @@ export default function SelfTapeStudioPage() {
   if (permError) {
     return (
       <div className="min-h-dvh bg-bg">
-        <Header back title="Self-tape studio" />
+        <Header back title={t("rec.studio")} />
         <div className="px-6 pt-10 text-center">
           <AlertCircle className="w-12 h-12 text-danger mx-auto" />
-          <h2 className="font-display text-xl mt-4">Camera unavailable</h2>
+          <h2 className="font-display text-xl mt-4">{t("rec.cameraOff")}</h2>
           <p className="text-sm text-text-muted mt-2 max-w-xs mx-auto">{permError}</p>
           <p className="text-xs text-text-subtle mt-4 max-w-xs mx-auto">
-            Open the app over HTTPS and allow camera + microphone access — or upload an existing file below.
+            {t("rec.cameraOffDesc")}
           </p>
 
           {/* Camera + gallery options — work even without camera permission */}
@@ -316,9 +318,9 @@ export default function SelfTapeStudioPage() {
               className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {uploading ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> טוען...</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> {t("rec.loading")}</>
               ) : (
-                <><Camera className="w-4 h-4" /> צלם עם מצלמת הטלפון</>
+                <><Camera className="w-4 h-4" /> {t("rec.phoneCam")}</>
               )}
             </button>
             <button
@@ -326,11 +328,11 @@ export default function SelfTapeStudioPage() {
               disabled={uploading}
               className="w-full h-12 rounded-2xl bg-bg-elevated border border-border text-text font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <Upload className="w-4 h-4" /> בחר מהגלריה / קבצים
+              <Upload className="w-4 h-4" /> {t("rec.pickGallery")}
             </button>
           </div>
           <p className="text-[11px] text-text-subtle mt-3">
-            צילמת במצלמה מקצועית / סטודיו? בחר "גלריה / קבצים".
+            {t("rec.shootWith")}
           </p>
 
           {uploadError && (
@@ -370,7 +372,7 @@ export default function SelfTapeStudioPage() {
   if (!sub || !role || !project) {
     return (
       <div className="min-h-dvh bg-bg">
-        <Header back title="Self-tape studio" />
+        <Header back title={t("rec.studio")} />
         <div className="px-6 pt-10 text-center text-text-muted text-sm">Audition not found.</div>
       </div>
     );
@@ -432,7 +434,7 @@ export default function SelfTapeStudioPage() {
             <div className="absolute left-0 right-0 bottom-1/3 border-b border-white/15" />
             <div className="absolute inset-x-0 top-[15%] flex justify-center">
               <div className="text-[10px] uppercase tracking-widest text-white/40 bg-black/30 px-2 py-0.5 rounded-full">
-                Head here
+                {t("rec.headHere")}
               </div>
             </div>
           </div>
@@ -453,12 +455,12 @@ export default function SelfTapeStudioPage() {
                 </div>
               )}
               {role.selfTapeInstructions && (
-                <div className="text-[10px] uppercase tracking-widest text-gold mb-1">Instructions</div>
+                <div className="text-[10px] uppercase tracking-widest text-gold mb-1">{t("rec.instructions")}</div>
               )}
               {role.selfTapeInstructions && <p className="text-xs leading-relaxed mb-3">{role.selfTapeInstructions}</p>}
               {role.sides && (
                 <>
-                  <div className="text-[10px] uppercase tracking-widest text-gold mb-1">Sides</div>
+                  <div className="text-[10px] uppercase tracking-widest text-gold mb-1">{t("rec.sides")}</div>
                   <pre className="text-[11px] leading-relaxed whitespace-pre-wrap font-mono">{role.sides}</pre>
                 </>
               )}
@@ -470,7 +472,7 @@ export default function SelfTapeStudioPage() {
                   onClick={practiceWithAria}
                   className="mt-3 w-full h-10 rounded-xl bg-gradient-to-r from-plum/40 to-gold/40 border border-gold/40 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
                 >
-                  <Wand2 className="w-3.5 h-3.5" /> תרגל את הסצנה עם Aria
+                  <Wand2 className="w-3.5 h-3.5" /> {t("rec.practiceAria")}
                 </button>
               )}
             </motion.div>
@@ -534,11 +536,11 @@ export default function SelfTapeStudioPage() {
               className="w-full h-9 rounded-full bg-plum/30 backdrop-blur border border-plum/40 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5"
             >
               {coachingLoading ? (
-                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Aria מכינה הוראות...</>
+                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("rec.ariaPreparing")}</>
               ) : coaching ? (
-                <><Wand2 className="w-3.5 h-3.5" /> {coachingOpen ? "סגור" : "הצג"} הוראות בימוי של Aria</>
+                <><Wand2 className="w-3.5 h-3.5" /> {coachingOpen ? t("rec.hide") : t("rec.show")} {t("rec.ariaDirections")}</>
               ) : (
-                <><Wand2 className="w-3.5 h-3.5" /> שאל את Aria על התפקיד</>
+                <><Wand2 className="w-3.5 h-3.5" /> {t("rec.askAria")}</>
               )}
             </button>
           </div>
@@ -569,7 +571,7 @@ export default function SelfTapeStudioPage() {
                     <Camera className="w-5 h-5 text-white" />
                   )}
                 </div>
-                <span className="text-[10px] text-white/80">מצלמת טלפון</span>
+                <span className="text-[10px] text-white/80">{t("rec.phoneCamShort")}</span>
               </button>
 
               {/* Main in-studio record button */}
@@ -593,7 +595,7 @@ export default function SelfTapeStudioPage() {
                     <Upload className="w-5 h-5 text-white" />
                   )}
                 </div>
-                <span className="text-[10px] text-white/80">גלריה / קובץ</span>
+                <span className="text-[10px] text-white/80">{t("rec.galleryShort")}</span>
               </button>
 
               {/* Hidden inputs */}
@@ -646,7 +648,7 @@ export default function SelfTapeStudioPage() {
               {/* Takes selector */}
               {takes.length > 1 && (
                 <div className="flex gap-1.5 justify-center">
-                  {takes.map((t, i) => (
+                  {takes.map((tk, i) => (
                     <button
                       key={i}
                       onClick={() => setSelectedTake(i)}
@@ -655,8 +657,8 @@ export default function SelfTapeStudioPage() {
                         selectedTake === i ? "bg-gold text-bg border-gold" : "bg-black/50 text-white border-white/20"
                       )}
                     >
-                      {t.uploaded && <FileVideo className="w-3 h-3" />}
-                      {t.uploaded ? "Uploaded" : `Take ${i + 1}`} · {formatTime(t.duration)}
+                      {tk.uploaded && <FileVideo className="w-3 h-3" />}
+                      {tk.uploaded ? "Uploaded" : `Take ${i + 1}`} · {formatTime(tk.duration)}
                     </button>
                   ))}
                 </div>
@@ -667,7 +669,7 @@ export default function SelfTapeStudioPage() {
                   disabled={submitting}
                   className="h-13 py-3 rounded-2xl bg-white/15 backdrop-blur border border-white/20 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  <RotateCcw className="w-4 h-4" /> Another take
+                  <RotateCcw className="w-4 h-4" /> {t("rec.anotherTake")}
                 </button>
                 <button
                   onClick={useTake}
@@ -675,9 +677,9 @@ export default function SelfTapeStudioPage() {
                   className="h-13 py-3 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   {submitting ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> שומר...</>
+                    <><Loader2 className="w-4 h-4 animate-spin" /> {t("rec.saving")}</>
                   ) : (
-                    <><Send className="w-4 h-4" /> Send tape</>
+                    <><Send className="w-4 h-4" /> {t("rec.sendTape")}</>
                   )}
                 </button>
               </div>

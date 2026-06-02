@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import { getMessages, sendMessage } from "@/lib/db";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ const MOCK_MSGS: Msg[] = [
 export default function ConversationPage() {
   const { id } = useParams<{ id: string }>();
   const { userId, profile } = useStore();
+  const { t } = useT();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -128,7 +130,7 @@ export default function ConversationPage() {
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Write a message…"
+            placeholder={t("msg.placeholder")}
             className="flex-1 h-11 px-4 rounded-full bg-bg-elevated border border-border outline-none text-sm placeholder:text-text-subtle"
           />
           <button
