@@ -8,6 +8,7 @@ import { SKIN_TONES, EYE_COLORS, HAIR_COLORS } from "@/lib/typecast-palette";
 import { ColorSwatchPicker } from "@/components/ColorSwatchPicker";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import { cn, formatNumber } from "@/lib/utils";
 
 const QUICK = ["All", "Drama", "Comedy", "Action", "Modeling", "Voice"];
@@ -100,6 +101,7 @@ const FEATURED_TALENT = TALENTS[0];
 
 export default function DiscoverPage() {
   const { savedSearches, saveSearch, deleteSavedSearch } = useStore();
+  const { t } = useT();
   const [quick, setQuick] = useState("All");
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -162,7 +164,7 @@ export default function DiscoverPage() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search talents"
+              placeholder={t("disc.searchPh")}
               className="flex-1 bg-transparent outline-none text-sm placeholder:text-text-subtle"
             />
           </div>
@@ -239,8 +241,8 @@ export default function DiscoverPage() {
         >
           <Sparkles className="w-4 h-4 text-gold shrink-0" />
           <p className="text-xs text-text">
-            <span className="font-semibold">Sorted by Typecast match.</span>{" "}
-            <span className="text-text-muted">Showing talents with ≥40% fit.</span>
+            <span className="font-semibold">{t("disc.sortedBy")}</span>{" "}
+            <span className="text-text-muted">{t("disc.showingFit")}</span>
           </p>
         </motion.div>
       )}
@@ -248,10 +250,10 @@ export default function DiscoverPage() {
       {/* Results */}
       <div className="px-4 pt-4 pb-8">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-xs text-text-muted tnum">{results.length} talents</p>
+          <p className="text-xs text-text-muted tnum">{results.length} {t("disc.talents")}</p>
           {filtersActive && (
             <button onClick={() => setFilters(DEFAULT_FILTERS)} className="text-[11px] text-gold font-medium">
-              Clear filters
+              {t("disc.clearFilters")}
             </button>
           )}
         </div>

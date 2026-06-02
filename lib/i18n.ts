@@ -201,8 +201,12 @@ const DICT: Record<string, Entry> = {
   "disc.search":       { en: "Search talent, skills, location…", he: "חפש כישרון, כישורים, מיקום…" },
   "disc.filters":      { en: "Filters", he: "מסננים" },
   "disc.results":      { en: "results", he: "תוצאות" },
+  "disc.talents":      { en: "talents", he: "כישרונות" },
+  "disc.searchPh":     { en: "Search talents", he: "חפש כישרונות" },
   "disc.noResults":    { en: "No talent matches these filters", he: "אין כישרון שתואם למסננים האלה" },
   "disc.clearFilters": { en: "Clear filters", he: "נקה מסננים" },
+  "disc.sortedBy":     { en: "Sorted by Typecast match.", he: "ממוין לפי התאמת Typecast." },
+  "disc.showingFit":   { en: "Showing talents with ≥40% fit.", he: "מציג כישרונות עם התאמה ≥40%." },
 };
 
 // The translation hook. Returns { t, lang, dir }.
