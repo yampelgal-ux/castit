@@ -63,8 +63,8 @@ export default function WelcomePage() {
                 <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&q=80&auto=format&fit=crop" alt="" className="w-7 h-7 rounded-full object-cover border-2 border-bg" />
                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&q=80&auto=format&fit=crop" alt="" className="w-7 h-7 rounded-full object-cover border-2 border-bg" />
               </div>
-              <p className="text-[11px] text-text-muted">
-                <span className="text-text font-semibold">48,000+</span> {t("welcome.joined")}
+              <p className="text-[11px] text-text-muted max-w-[230px]">
+                {t("welcome.proof")}
               </p>
             </div>
           </motion.div>

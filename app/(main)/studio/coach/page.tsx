@@ -11,7 +11,7 @@ import { Header } from "@/components/Header";
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptics";
 import {
-  upsertScene, touchScenePracticed, addTake, newId,
+  upsertScene, touchScenePracticed, addTake, newId, loadScenes,
   type SavedScene,
 } from "@/lib/coach-store";
 import { saveAudio } from "@/lib/coach-recordings";
@@ -101,6 +101,7 @@ export default function CoachPage() {
   const [textInput, setTextInput] = useState("");
   const [parsing, setParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [lastScene, setLastScene] = useState<SavedScene | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -151,6 +152,26 @@ export default function CoachPage() {
     window.speechSynthesis.onvoiceschanged = load;
     return () => { window.speechSynthesis.onvoiceschanged = null; };
   }, []);
+
+  // Load the most-recent saved scene for the "Continue" shortcut
+  useEffect(() => {
+    const all = loadScenes();
+    const recent = all.find((s) => s.lastPracticedAt) ?? all[0] ?? null;
+    setLastScene(recent);
+  }, []);
+
+  // Load a saved scene straight into the configure step
+  function resumeScene(s: SavedScene) {
+    setScene({ title: s.title, summary: s.summary, characters: s.characters, lines: s.lines });
+    setSavedSceneId(s.id);
+    if (s.yourCharacter) setYourCharacter(s.yourCharacter);
+    if (s.partnerVoice) setVoiceProfile(s.partnerVoice);
+    if (s.partnerTone) setTone(s.partnerTone);
+    if (s.intensity) setIntensity(s.intensity);
+    if (s.context) setContext(s.context);
+    setStep("configure");
+    haptic("light");
+  }
 
   // Resume scene from library (sessionStorage hand-off)
   useEffect(() => {
@@ -808,6 +829,25 @@ export default function CoachPage() {
           <p className="text-sm text-text-muted mt-1.5">
             תמונה של הסיידס, קובץ טקסט, או להדביק ידנית. אני אזהה את כל הדיאלוג.
           </p>
+
+          {/* Resume last scene — skip re-upload */}
+          {lastScene && (
+            <button
+              onClick={() => resumeScene(lastScene)}
+              className="w-full mt-4 rounded-2xl bg-gradient-to-br from-gold/15 to-bg-elevated border border-gold/30 p-3.5 flex items-center gap-3 text-right active:scale-[0.99] transition-transform"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gold/20 grid place-items-center shrink-0">
+                <Play className="w-4 h-4 text-gold" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">המשך סצנה אחרונה</div>
+                <div className="text-sm font-semibold truncate">{lastScene.title}</div>
+                <div className="text-[10px] text-text-muted truncate">
+                  {lastScene.characters.length} דמויות · {lastScene.lines.length} שורות
+                </div>
+              </div>
+            </button>
+          )}
 
           {/* Upload buttons — camera / gallery / file */}
           <div className="grid grid-cols-3 gap-2 mt-5">

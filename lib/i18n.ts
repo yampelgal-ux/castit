@@ -73,6 +73,7 @@ const DICT: Record<string, Entry> = {
   "welcome.tagline2":  { en: "opportunity", he: "הזדמנות" },
   "welcome.sub":       { en: "The casting platform actors, models and creators have been waiting for. Get discovered by the people who matter.", he: "פלטפורמת הליהוק ששחקנים, דוגמנים ויוצרים חיכו לה. תתגלו על ידי האנשים שחשובים." },
   "welcome.joined":    { en: "talents joined this season", he: "כישרונות הצטרפו העונה" },
+  "welcome.proof":     { en: "Casting directors, actors & agencies — one platform.", he: "מלהקים, שחקנים וסוכנויות — פלטפורמה אחת." },
   "welcome.getStarted":{ en: "Get Started", he: "בוא נתחיל" },
   "welcome.haveAccount": { en: "I already have an account", he: "כבר יש לי חשבון" },
   "welcome.proLine1":  { en: "I'm a casting professional", he: "אני איש ליהוק מקצועי" },
