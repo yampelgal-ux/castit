@@ -36,8 +36,10 @@ export default function OnboardingPage() {
     haptic("success");
     setProfile({ role, ...(photo ? { photoUrl: photo } : {}) });
     completeOnboarding();
-    // Talents must complete their typecast — this is the core of the app
-    router.replace(role === "Talent" ? "/typecast" : "/feed");
+    // Land each role on its true "aha" workspace:
+    // - Talent → typecast (complete the profile that makes them discoverable)
+    // - Casting Pro → their dashboard (the CRM that is the core of their value)
+    router.replace(role === "Talent" ? "/typecast" : "/pro/dashboard");
   }
 
   function onPhoto(file: File) {
