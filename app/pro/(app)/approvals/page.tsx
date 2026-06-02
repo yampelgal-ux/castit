@@ -17,11 +17,13 @@ import {
   type ApprovalSession,
 } from "@/lib/approval-store";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 type Step = "list" | "build";
 
 export default function ProApprovalsPage() {
+  const { t, dir } = useT();
   const [step, setStep] = useState<Step>("list");
   const [sessions, setSessions] = useState<ApprovalSession[]>([]);
 
@@ -30,7 +32,7 @@ export default function ProApprovalsPage() {
   function reload() { setSessions(loadApprovalSessions()); }
 
   return (
-    <div className="min-h-dvh bg-bg pb-24">
+    <div className="min-h-dvh bg-bg pb-24" dir={dir}>
       <Header
         back
         title="Director Reviews"
@@ -40,11 +42,11 @@ export default function ProApprovalsPage() {
               onClick={() => setStep("build")}
               className="text-[11px] text-gold font-semibold inline-flex items-center gap-1"
             >
-              <Plus className="w-3 h-3" /> חדש
+              <Plus className="w-3 h-3" /> {t("ap.new")}
             </button>
           ) : (
             <button onClick={() => setStep("list")} className="text-[11px] text-text-muted">
-              חזור
+              {t("ap.back")}
             </button>
           )
         }
@@ -60,14 +62,15 @@ export default function ProApprovalsPage() {
 }
 
 function SessionsList({ sessions, onChange }: { sessions: ApprovalSession[]; onChange: () => void }) {
+  const { t } = useT();
   if (sessions.length === 0) {
     return (
       <EmptyState
         icon={ClipboardCheck}
         tone="gold"
-        title="עדיין אין סשני אישור"
-        description='לאחר שאתה מסקור טייפים, צור "Director Review" — בחר 5 טייפים ושלח קישור לבמאי. הוא מצביע 👍/🤔/👎 על כל אחד, וההצבעה מסתנכרנת אליך.'
-        ctaLabel="צור סשן ראשון"
+        title={t("ap.empty")}
+        description={t("ap.emptyDesc")}
+        ctaLabel={t("ap.createFirst")}
         ctaOnClick={onChange}
       />
     );
@@ -83,6 +86,7 @@ function SessionsList({ sessions, onChange }: { sessions: ApprovalSession[]; onC
 }
 
 function SessionRow({ session, i, onChange }: { session: ApprovalSession; i: number; onChange: () => void }) {
+  const { t } = useT();
   const [copied, setCopied] = useState(false);
   const url = typeof window !== "undefined" ? `${window.location.origin}/approve/${session.slug}` : `/approve/${session.slug}`;
 
@@ -102,7 +106,7 @@ function SessionRow({ session, i, onChange }: { session: ApprovalSession; i: num
   }
 
   function remove() {
-    if (!confirm(`למחוק סשן "${session.projectTitle}"?`)) return;
+    if (!confirm(t("ap.deleteConfirm", { title: session.projectTitle }))) return;
     deleteApprovalSession(session.id);
     onChange();
   }
@@ -145,14 +149,14 @@ function SessionRow({ session, i, onChange }: { session: ApprovalSession; i: num
           onClick={copyUrl}
           className="h-9 rounded-xl bg-gold text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5"
         >
-          {copied ? <><Check className="w-3.5 h-3.5" /> הועתק</> : <><Copy className="w-3.5 h-3.5" /> העתק קישור</>}
+          {copied ? <><Check className="w-3.5 h-3.5" /> {t("ap.copied")}</> : <><Copy className="w-3.5 h-3.5" /> {t("ap.copyLink")}</>}
         </button>
         <Link
           href={`/approve/${session.slug}`}
           target="_blank"
           className="h-9 rounded-xl bg-bg-elevated border border-border text-xs font-semibold inline-flex items-center justify-center gap-1.5 text-text-muted"
         >
-          <ExternalLink className="w-3.5 h-3.5" /> פתח
+          <ExternalLink className="w-3.5 h-3.5" /> {t("ap.open")}
         </Link>
       </div>
     </motion.div>
@@ -171,6 +175,7 @@ function Stat({ label, value, tone }: { label: string; value: number; tone: "gol
 
 // ─── Build session ─────────────────────────────────────
 function BuildSession({ onCreated }: { onCreated: () => void }) {
+  const { t } = useT();
   const { profile } = useStore();
   const [project, setProject] = useState<Project | null>(null);
   const [role, setRole] = useState<Role | null>(null);
@@ -235,14 +240,14 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
             >{p.title}</button>
           ))}
           {projects.length === 0 && (
-            <p className="text-xs text-text-muted">אין פרויקטים. צור פרויקט קודם.</p>
+            <p className="text-xs text-text-muted">{t("ap.noProjects")}</p>
           )}
         </div>
       </div>
 
       {project && roles.length > 0 && (
         <div>
-          <Label>Role (אופציונלי)</Label>
+          <Label>{t("ap.roleOptional")}</Label>
           <div className="flex flex-wrap gap-1.5 mt-1.5">
             {roles.map((r) => (
               <button
@@ -263,7 +268,7 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
           <Label>Choose tapes ({selected.size} selected)</Label>
           <div className="mt-2 space-y-2">
             {subs.length === 0 ? (
-              <p className="text-xs text-text-muted">אין טייפים עדיין בתפקיד הזה.</p>
+              <p className="text-xs text-text-muted">{t("ap.noTapesYet")}</p>
             ) : subs.map((s) => (
               <button
                 key={s.id}
@@ -295,7 +300,7 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
       )}
 
       <div>
-        <Label>Greeting (אופציונלי)</Label>
+        <Label>{t("ap.greetingOptional")}</Label>
         <textarea
           value={greeting}
           onChange={(e) => setGreeting(e.target.value)}
@@ -313,7 +318,7 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
           selected.size > 0 && project ? "bg-gold text-bg" : "bg-bg text-text-subtle"
         )}
       >
-        <Send className="w-4 h-4" /> צור קישור לבמאי
+        <Send className="w-4 h-4" /> {t("ap.createLink")}
       </button>
     </div>
   );

@@ -12,12 +12,14 @@ import {
   type Project, type Submission, type Stage, STAGE_META,
 } from "@/lib/projects-store";
 import { loadApprovalSessions, type ApprovalSession } from "@/lib/approval-store";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 // Stages in pipeline order (excluding "rejected")
 const PIPELINE_STAGES: Stage[] = ["invited", "submitted", "callback", "hold", "avail_check", "offered", "booked"];
 
 export default function ProAnalyticsPage() {
+  const { t, dir } = useT();
   const [loaded, setLoaded] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [subs, setSubs] = useState<Submission[]>([]);
@@ -131,14 +133,14 @@ export default function ProAnalyticsPage() {
 
   if (loaded && subs.length === 0) {
     return (
-      <div className="min-h-dvh bg-bg">
-        <Header back title="Analytics" />
+      <div className="min-h-dvh bg-bg" dir={dir}>
+        <Header back title={t("an.title")} />
         <EmptyState
           icon={BarChart3}
           tone="gold"
-          title="עדיין אין מספיק נתונים"
-          description="ברגע שתתחיל לקבל הגשות לפרויקטים שלך, האנליטיקה תופיע כאן."
-          ctaLabel="פרויקטים"
+          title={t("an.empty")}
+          description={t("an.emptyDesc")}
+          ctaLabel={t("nav.projects")}
           ctaHref="/pro/projects"
         />
       </div>
@@ -150,17 +152,17 @@ export default function ProAnalyticsPage() {
       <Header back title={
         <span className="inline-flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-gold" />
-          <span className="font-display text-lg">Analytics</span>
+          <span className="font-display text-lg">{t("an.title")}</span>
         </span>
       } />
 
-      <div className="px-4 pt-3 space-y-4">
+      <div className="px-4 pt-3 space-y-4" dir={dir}>
         {/* Hero KPIs */}
         <div className="grid grid-cols-2 gap-2">
-          <Kpi icon={Users} label="Submissions" value={stats.totalSubs} tone="gold" />
-          <Kpi icon={FileVideo} label="Tapes Reviewed" value={stats.tapesReviewed} tone="plum" />
-          <Kpi icon={Sparkles} label="Callbacks" value={stats.callbacks} tone="sage" />
-          <Kpi icon={Award} label="Booked" value={stats.booked} tone="success" />
+          <Kpi icon={Users} label={t("an.kpi.subs")} value={stats.totalSubs} tone="gold" />
+          <Kpi icon={FileVideo} label={t("an.kpi.reviewed")} value={stats.tapesReviewed} tone="plum" />
+          <Kpi icon={Sparkles} label={t("an.kpi.callbacks")} value={stats.callbacks} tone="sage" />
+          <Kpi icon={Award} label={t("an.kpi.booked")} value={stats.booked} tone="success" />
         </div>
 
         {/* AI Savings — investor wow */}
@@ -172,22 +174,22 @@ export default function ProAnalyticsPage() {
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-4 h-4 text-gold" />
             <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">
-              Aria Impact
+              {t("an.ariaImpact")}
             </div>
           </div>
           <div className="flex items-baseline gap-2">
             <div className="font-display text-4xl font-bold text-gold tnum">
               {stats.aiSaved}
             </div>
-            <div className="text-sm text-text-muted">שעות נחסכו עד עכשיו</div>
+            <div className="text-sm text-text-muted">{t("an.hoursSaved")}</div>
           </div>
           <div className="text-[11px] text-text-muted mt-2 leading-relaxed">
-            הערכה לפי {stats.tapesReviewed} טייפים שעברו ניתוח, ניסוחי הודעות אוטומטיים, ויצירת תפקידים ב-bulk.
+            {t("an.ariaEstimate", { n: stats.tapesReviewed })}
           </div>
         </motion.div>
 
         {/* Conversion funnel */}
-        <Card title="Pipeline Conversion" subtitle="כמה מההגשות מתקדמות בשלב">
+        <Card title={t("an.funnel")} subtitle={t("an.funnelSub")}>
           <div className="space-y-2">
             {PIPELINE_STAGES.map((stage) => {
               const count = stats.stageBreakdown[stage] ?? 0;
@@ -210,32 +212,32 @@ export default function ProAnalyticsPage() {
           </div>
           <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-border">
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-text-muted">Book Rate</div>
+              <div className="text-[10px] uppercase tracking-widest text-text-muted">{t("an.bookRate")}</div>
               <div className="font-display text-xl text-success">{stats.bookRate}%</div>
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-text-muted">Callback Rate</div>
+              <div className="text-[10px] uppercase tracking-widest text-text-muted">{t("an.callbackRate")}</div>
               <div className="font-display text-xl text-gold">{stats.callbackRate}%</div>
             </div>
           </div>
         </Card>
 
         {/* Time to decision */}
-        <Card title="Time-to-Decision">
+        <Card title={t("an.ttd")}>
           <div className="flex items-center gap-3">
             <Clock className="w-8 h-8 text-plum-light" />
             <div>
               <div className="font-display text-3xl text-text">
-                {stats.avgTimeToDecision} <span className="text-base text-text-muted">ימים</span>
+                {stats.avgTimeToDecision} <span className="text-base text-text-muted">{t("an.days")}</span>
               </div>
-              <div className="text-[11px] text-text-muted">ממוצע מ-invitation עד החלטה סופית</div>
+              <div className="text-[11px] text-text-muted">{t("an.ttdSub")}</div>
             </div>
           </div>
         </Card>
 
         {/* Top projects */}
         {stats.topProjects.length > 0 && (
-          <Card title="פרויקטים מובילים">
+          <Card title={t("an.topProjects")}>
             <div className="space-y-2">
               {stats.topProjects.map((p) => (
                 <div key={p.project.id} className="flex items-center gap-3">
@@ -246,7 +248,7 @@ export default function ProAnalyticsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold truncate">{p.project.title}</div>
                     <div className="text-[10px] text-text-muted">
-                      {p.total} submissions · {p.booked} booked
+                      {t("an.subsBooked", { a: p.total, b: p.booked })}
                     </div>
                   </div>
                   <div className="font-display text-lg text-gold tnum">
@@ -260,11 +262,11 @@ export default function ProAnalyticsPage() {
 
         {/* Director vote breakdown */}
         {voteStats.total > 0 && (
-          <Card title="Director Votes" subtitle={`${voteStats.total} הצבעות מבמאים`}>
+          <Card title={t("an.directorVotes")} subtitle={t("an.votesCount", { n: voteStats.total })}>
             <div className="grid grid-cols-3 gap-2">
-              <VoteStat label="👍 Yes" value={voteStats.yes} tone="success" />
-              <VoteStat label="🤔 Maybe" value={voteStats.maybe} tone="gold" />
-              <VoteStat label="👎 No" value={voteStats.no} tone="danger" />
+              <VoteStat label={`👍 ${t("an.yes")}`} value={voteStats.yes} tone="success" />
+              <VoteStat label={`🤔 ${t("an.maybe")}`} value={voteStats.maybe} tone="gold" />
+              <VoteStat label={`👎 ${t("an.no")}`} value={voteStats.no} tone="danger" />
             </div>
           </Card>
         )}

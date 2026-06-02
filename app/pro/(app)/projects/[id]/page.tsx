@@ -15,6 +15,7 @@ import {
   getProject, getRolesByProject, addRole, deleteRole, roleCounts, deleteProject,
   type Project, type Role,
 } from "@/lib/projects-store";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export default function ProjectDetailPage() {
@@ -216,6 +217,7 @@ function RoleCard({ role, i, onDelete }: { role: Role; i: number; onDelete: () =
 }
 
 function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; onClose: () => void; onCreated: () => void }) {
+  const { t } = useT();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [sides, setSides] = useState("");
@@ -284,7 +286,7 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
               className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60 font-mono"
             />
           </Sect>
-          <Sect label="Sides file (אופציונלי)" hint="קובץ PDF / DOC / TXT שהשחקנים יוכלו להוריד">
+          <Sect label={t("proj.sidesFileLabel")} hint={t("proj.sidesFileHint")}>
             <SidesFileInput
               roleId={tempRoleId}
               value={sidesFile}

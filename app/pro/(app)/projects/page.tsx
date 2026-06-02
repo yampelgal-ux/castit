@@ -6,6 +6,7 @@ import { FolderOpen, Plus, ArrowRight, Film, Tv, Megaphone, Users, CheckCircle2,
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { loadProjects, projectCounts, addProject, type Project } from "@/lib/projects-store";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const TYPES: Project["type"][] = ["Feature Film", "TV Series", "Commercial", "Short Film", "Theater", "Music Video"];
@@ -147,6 +148,7 @@ function StatusBadge({ status }: { status: Project["status"] }) {
 }
 
 function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const { t } = useT();
   const [title, setTitle] = useState("");
   const [studio, setStudio] = useState("");
   const [type, setType] = useState<Project["type"]>("Feature Film");
@@ -202,7 +204,7 @@ function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreate
                   <span className="text-xs font-semibold">Full Casting</span>
                 </div>
                 <p className="text-[10px] text-text-muted leading-snug">
-                  Pipeline מלא 8 שלבים. לידים, סופורט, יומיים — עם callback/hold/avail/offer.
+                  {t("proj.fullDesc")}
                 </p>
               </button>
               <button
@@ -220,7 +222,7 @@ function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreate
                   <span className="text-xs font-semibold">Quick Cast</span>
                 </div>
                 <p className="text-[10px] text-text-muted leading-snug">
-                  3 שלבים בלבד. לניצבים, דוגמנים, פרסומות — Select/Pass.
+                  {t("proj.quickDesc")}
                 </p>
               </button>
             </div>
