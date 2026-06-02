@@ -13,6 +13,7 @@ import {
   type Submission, type Role, type Project,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
 
 type QueueItem = { submission: Submission; role: Role; project: Project };
@@ -20,6 +21,7 @@ type QueueItem = { submission: Submission; role: Role; project: Project };
 type Decision = "callback" | "hold" | "pass";
 
 export default function ProTriagePage() {
+  const { t, dir } = useT();
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [idx, setIdx] = useState(0);
   const [loaded, setLoaded] = useState(false);
@@ -89,14 +91,14 @@ export default function ProTriagePage() {
 
   if (queue.length === 0) {
     return (
-      <div className="min-h-dvh bg-bg">
-        <Header back title="Tape Triage" />
+      <div className="min-h-dvh bg-bg" dir={dir}>
+        <Header back title={t("tri.title")} />
         <EmptyState
           icon={Zap}
           tone="gold"
-          title="אין טייפים לסקירה"
-          description="כשטאלנטים ישלחו טייפים חדשים, הם יופיעו כאן לסקירה מהירה."
-          ctaLabel="חזור לדשבורד"
+          title={t("tri.empty")}
+          description={t("tri.emptyDesc")}
+          ctaLabel={t("tri.backDash")}
           ctaHref="/pro/dashboard"
         />
       </div>
@@ -105,40 +107,40 @@ export default function ProTriagePage() {
 
   if (!current) {
     return (
-      <div className="min-h-dvh bg-bg">
-        <Header back title="Tape Triage" />
+      <div className="min-h-dvh bg-bg" dir={dir}>
+        <Header back title={t("tri.title")} />
         <div className="px-4 mt-10 text-center">
           <Sparkles className="w-12 h-12 text-gold mx-auto" />
-          <h2 className="font-display text-2xl mt-4">סיימת!</h2>
+          <h2 className="font-display text-2xl mt-4">{t("tri.done")}</h2>
           <p className="text-sm text-text-muted mt-2">
-            סקרת {history.length} טייפ{history.length !== 1 ? "ים" : ""}.
+            {t("tri.reviewed", { n: history.length })}
           </p>
           <div className="mt-6 grid grid-cols-3 gap-2 max-w-xs mx-auto">
             <div className="text-center p-3 rounded-2xl bg-success/10 border border-success/30">
               <div className="font-display text-2xl text-success font-bold">
                 {history.filter((h) => h.decision === "callback").length}
               </div>
-              <div className="text-[10px] text-text-muted mt-1">Callback</div>
+              <div className="text-[10px] text-text-muted mt-1">{t("tri.callback")}</div>
             </div>
             <div className="text-center p-3 rounded-2xl bg-sage/10 border border-sage/30">
               <div className="font-display text-2xl text-sage font-bold">
                 {history.filter((h) => h.decision === "hold").length}
               </div>
-              <div className="text-[10px] text-text-muted mt-1">Hold</div>
+              <div className="text-[10px] text-text-muted mt-1">{t("tri.hold")}</div>
             </div>
             <div className="text-center p-3 rounded-2xl bg-bg-elevated border border-border">
               <div className="font-display text-2xl text-text-muted font-bold">
                 {history.filter((h) => h.decision === "pass").length}
               </div>
-              <div className="text-[10px] text-text-muted mt-1">Pass</div>
+              <div className="text-[10px] text-text-muted mt-1">{t("tri.pass")}</div>
             </div>
           </div>
           <div className="mt-8 flex gap-2 justify-center">
             <Link href="/pro/inbox" className="px-4 h-10 rounded-full bg-bg-elevated border border-border text-xs font-semibold inline-flex items-center">
-              Action Inbox
+              {t("tri.actionInbox")}
             </Link>
             <Link href="/pro/dashboard" className="px-4 h-10 rounded-full bg-gold text-bg text-xs font-semibold inline-flex items-center">
-              דשבורד
+              {t("tri.dashboard")}
             </Link>
           </div>
         </div>
@@ -153,14 +155,14 @@ export default function ProTriagePage() {
     <div className="min-h-dvh bg-bg overflow-hidden">
       <Header
         back
-        title={`Triage ${idx + 1}/${queue.length}`}
+        title={t("tri.titleCount", { a: idx + 1, b: queue.length })}
         right={
           <button
             onClick={undo}
             disabled={history.length === 0}
             className="text-[11px] text-text-muted disabled:opacity-40"
           >
-            Undo
+            {t("tri.undo")}
           </button>
         }
       />
@@ -229,7 +231,7 @@ export default function ProTriagePage() {
                 <img src={lastTape.posterUrl} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full grid place-items-center text-text-subtle text-xs">
-                  אין טייפ
+                  {t("tri.noTape")}
                 </div>
               )}
 
@@ -246,7 +248,7 @@ export default function ProTriagePage() {
               {/* Round indicator */}
               {sub.tapes.length > 1 && (
                 <div className="absolute top-3 right-3 text-[9px] px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-white font-semibold tracking-wider">
-                  ROUND {sub.tapes.length}
+                  {t("tri.round", { n: sub.tapes.length })}
                 </div>
               )}
             </div>

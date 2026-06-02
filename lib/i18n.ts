@@ -207,6 +207,23 @@ const DICT: Record<string, Entry> = {
   "disc.clearFilters": { en: "Clear filters", he: "נקה מסננים" },
   "disc.sortedBy":     { en: "Sorted by Typecast match.", he: "ממוין לפי התאמת Typecast." },
   "disc.showingFit":   { en: "Showing talents with ≥40% fit.", he: "מציג כישרונות עם התאמה ≥40%." },
+
+  // Tape Triage
+  "tri.title":         { en: "Tape Triage", he: "סקירת טייפים" },
+  "tri.titleCount":    { en: "Triage {a}/{b}", he: "סקירה {a}/{b}" },
+  "tri.undo":          { en: "Undo", he: "בטל" },
+  "tri.empty":         { en: "No tapes to review", he: "אין טייפים לסקירה" },
+  "tri.emptyDesc":     { en: "When talents send new tapes, they show up here for quick review.", he: "כשטאלנטים ישלחו טייפים חדשים, הם יופיעו כאן לסקירה מהירה." },
+  "tri.backDash":      { en: "Back to dashboard", he: "חזור לדשבורד" },
+  "tri.done":          { en: "All done!", he: "סיימת!" },
+  "tri.reviewed":      { en: "You reviewed {n} tapes.", he: "סקרת {n} טייפים." },
+  "tri.callback":      { en: "Callback", he: "Callback" },
+  "tri.hold":          { en: "Hold", he: "Hold" },
+  "tri.pass":          { en: "Pass", he: "Pass" },
+  "tri.dashboard":     { en: "Dashboard", he: "דשבורד" },
+  "tri.actionInbox":   { en: "Action Inbox", he: "תיבת פעולות" },
+  "tri.noTape":        { en: "No tape", he: "אין טייפ" },
+  "tri.round":         { en: "ROUND {n}", he: "סבב {n}" },
 };
 
 // The translation hook. Returns { t, lang, dir }.
