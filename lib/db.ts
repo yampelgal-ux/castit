@@ -6,6 +6,53 @@ import {
   type Talent, type ReelPost, type Casting,
 } from './mock-data'
 
+// ── Minimal row types matching supabase-schema.sql ────────────────────────
+// Source of truth: the CREATE TABLE statements in /supabase-schema.sql.
+// Update both files together when changing columns.
+
+export type ProfileRow = {
+  id: string
+  username: string
+  name: string | null
+  bio: string | null
+  photo_url: string | null
+  cover_url: string | null
+  role: string | null
+  verified: boolean | null
+  followers: number | null
+  likes: number | null
+  created_at?: string
+}
+
+export type ConversationRow = {
+  id: string
+  participant_a: string
+  participant_b: string
+  last_message: string | null
+  last_at: string
+  participant_a_profile?: ProfileRow | null
+  participant_b_profile?: ProfileRow | null
+}
+
+export type MessageRow = {
+  id: string
+  conversation_id: string
+  sender_id: string
+  text: string
+  sent_at: string
+  sender?: Pick<ProfileRow, 'username' | 'name' | 'photo_url'> | null
+}
+
+export type NotificationRow = {
+  id: string
+  profile_id: string
+  type: string | null
+  title: string | null
+  body: string | null
+  read: boolean
+  created_at: string
+}
+
 const configured = () =>
   typeof process !== 'undefined' &&
   !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -72,13 +119,13 @@ export async function getTalents(): Promise<Talent[]> {
   })
 }
 
-export async function getProfileById(id: string) {
+export async function getProfileById(id: string): Promise<ProfileRow | null> {
   const { data } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', id)
     .single()
-  return data
+  return (data as ProfileRow | null) ?? null
 }
 
 export async function updateProfile(id: string, updates: {
@@ -163,14 +210,14 @@ export async function uploadReel(
 
 // ── DM / Messages ─────────────────────────────────────────────────────────
 
-export async function getConversations(profileId: string) {
+export async function getConversations(profileId: string): Promise<ConversationRow[]> {
   if (!configured()) return []
   const { data } = await supabase
     .from('conversations')
     .select('*, participant_a_profile:profiles!conversations_participant_a_fkey(*), participant_b_profile:profiles!conversations_participant_b_fkey(*)')
     .or(`participant_a.eq.${profileId},participant_b.eq.${profileId}`)
     .order('last_at', { ascending: false })
-  return data ?? []
+  return (data as ConversationRow[] | null) ?? []
 }
 
 export async function getOrCreateConversation(myId: string, otherId: string) {
@@ -192,13 +239,13 @@ export async function getOrCreateConversation(myId: string, otherId: string) {
   return data.id as string
 }
 
-export async function getMessages(conversationId: string) {
+export async function getMessages(conversationId: string): Promise<MessageRow[]> {
   const { data } = await supabase
     .from('messages')
     .select('*, sender:profiles(username, name, photo_url)')
     .eq('conversation_id', conversationId)
     .order('sent_at', { ascending: true })
-  return data ?? []
+  return (data as MessageRow[] | null) ?? []
 }
 
 export async function sendMessage(conversationId: string, senderId: string, text: string) {
@@ -218,7 +265,7 @@ export async function sendMessage(conversationId: string, senderId: string, text
 
 // ── Notifications ─────────────────────────────────────────────────────────
 
-export async function getNotifications(profileId: string) {
+export async function getNotifications(profileId: string): Promise<NotificationRow[]> {
   if (!configured()) return []
   const { data } = await supabase
     .from('notifications')
@@ -226,7 +273,7 @@ export async function getNotifications(profileId: string) {
     .eq('profile_id', profileId)
     .order('created_at', { ascending: false })
     .limit(50)
-  return data ?? []
+  return (data as NotificationRow[] | null) ?? []
 }
 
 export async function markAllRead(profileId: string) {
