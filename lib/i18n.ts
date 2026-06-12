@@ -19,9 +19,9 @@ type LangState = {
 };
 
 function initialLang(): Lang {
-  if (typeof window === "undefined") return "en";
+  if (typeof window === "undefined") return "he";
   const stored = window.localStorage.getItem(KEY);
-  return stored === "he" || stored === "en" ? stored : "en";
+  return stored === "he" || stored === "en" ? stored : "he";
 }
 
 export const useLangStore = create<LangState>((set, get) => ({
@@ -325,6 +325,124 @@ const DICT: Record<string, Entry> = {
   "proj.quickDesc":    { en: "Just 3 stages. For extras, models, commercials — Select/Pass.", he: "3 שלבים בלבד. לניצבים, דוגמנים, פרסומות — Select/Pass." },
   "proj.sidesFileLabel": { en: "Sides file (optional)", he: "קובץ Sides (אופציונלי)" },
   "proj.sidesFileHint":  { en: "PDF / DOC / TXT the talents can download", he: "קובץ PDF / DOC / TXT שהשחקנים יוכלו להוריד" },
+
+  // Signup
+  "signup.headerTitle":  { en: "Create account", he: "יצירת חשבון" },
+  "signup.title":        { en: "Tell us who you are.", he: "ספרי לנו מי את." },
+  "signup.sub":          { en: "Two seconds. Then we get to the good part.", he: "שתי שניות. ואז מתחילים לעניין." },
+  "signup.role.talent":  { en: "Talent", he: "כישרון" },
+  "signup.role.talentSub": { en: "Actor · Model · Creator", he: "שחקן · דוגמן · יוצר" },
+  "signup.role.pro":     { en: "Casting Pro", he: "איש ליהוק" },
+  "signup.role.proSub":  { en: "Director · Casting · Studio", he: "במאי · ליהוק · סטודיו" },
+  "signup.fullName":     { en: "Full name", he: "שם מלא" },
+  "signup.email":        { en: "Email", he: "אימייל" },
+  "signup.password":     { en: "Password (min 6 chars)", he: "סיסמה (לפחות 6 תווים)" },
+  "signup.creating":     { en: "Creating account…", he: "יוצר חשבון…" },
+  "signup.continue":     { en: "Continue", he: "המשך" },
+
+  // Verify
+  "vfy.headerTitle":     { en: "Get verified", he: "אימות חשבון" },
+  "vfy.intro":           { en: "Verification helps casting pros trust your profile.", he: "אימות עוזר למלהקים לסמוך על הפרופיל שלך." },
+  "vfy.selfie":          { en: "Selfie", he: "סלפי" },
+  "vfy.selfieDesc":      { en: "A clear photo of your face, no filters.", he: "תמונה ברורה של הפנים שלך, ללא פילטרים." },
+  "vfy.id":              { en: "Government ID", he: "תעודה מזהה" },
+  "vfy.idDesc":          { en: "Driver's license or passport.", he: "רישיון נהיגה או דרכון." },
+  "vfy.submit":          { en: "Submit for review", he: "שלח לאישור" },
+  "vfy.reviewing":       { en: "Reviewing your details", he: "בודק את הפרטים שלך" },
+  "vfy.reviewingSub":    { en: "Usually takes under a minute.", he: "בדרך כלל פחות מדקה." },
+  "vfy.done":            { en: "You're verified ✓", he: "החשבון מאומת ✓" },
+  "vfy.doneSub":         { en: "Casting pros will see the blue badge on your profile.", he: "מלהקים יראו את התג הכחול בפרופיל שלך." },
+  "vfy.buildTypecast":   { en: "Build your Typecast", he: "בנה את ה-Typecast שלך" },
+
+  // Typecast onboarding flow
+  "tc.stepOf":           { en: "Step {n} of {total}", he: "שלב {n} מתוך {total}" },
+  "tc.idNotice":         { en: "Your typecast is your casting ID — required for verification", he: "ה-Typecast שלך הוא תעודת הליהוק — נדרש לאימות" },
+  "tc.photo.addTitle":   { en: "Add a profile photo", he: "הוסף תמונת פרופיל" },
+  "tc.photo.label":      { en: "Your profile photo", he: "תמונת הפרופיל שלך" },
+  "tc.photo.haveText":   { en: "This is what casting pros will see.", he: "זה מה שמלהקים יראו." },
+  "tc.photo.tapText":    { en: "Tap to upload — needed for verification.", he: "הקש להעלאה — נדרש לאימות." },
+  "tc.photo.hint":       { en: "Use a clear, recent headshot.", he: "השתמש בתמונת ראש ברורה ועדכנית." },
+  "tc.step.physical":    { en: "Physical", he: "פיזי" },
+  "tc.step.appearance":  { en: "Appearance", he: "מראה" },
+  "tc.step.skills":      { en: "Skills", he: "כישורים" },
+  "tc.step.range":       { en: "Range", he: "טווח" },
+  "tc.h.physical":       { en: "The physical basics.", he: "המאפיינים הפיזיים." },
+  "tc.h.appearance":     { en: "Your look.", he: "המראה שלך." },
+  "tc.h.skills":         { en: "Your craft.", he: "האומנות שלך." },
+  "tc.h.range":          { en: "Your range.", he: "הטווח שלך." },
+  "tc.sub.physical":     { en: "Casting pros filter by these exact stats.", he: "מלהקים מסננים לפי הנתונים האלה." },
+  "tc.sub.appearance":   { en: "Pick what's closest. Real reference visuals — not flat colors.", he: "בחר את הקרוב ביותר. דוגמאות חזותיות אמיתיות — לא צבעים שטוחים." },
+  "tc.sub.skills":       { en: "Be honest — it's what makes you castable.", he: "תהיה כן — זה מה שהופך אותך לבר-ליהוק." },
+  "tc.sub.range":        { en: "Tell us what you can play and love to do.", he: "ספר לנו מה אתה יודע לשחק ומה אתה אוהב." },
+  "tc.height":           { en: "Height", he: "גובה" },
+  "tc.weight":           { en: "Weight", he: "משקל" },
+  "tc.gender":           { en: "Gender", he: "מגדר" },
+  "tc.gender.female":    { en: "Female", he: "נקבה" },
+  "tc.gender.male":      { en: "Male", he: "זכר" },
+  "tc.gender.nb":        { en: "Non-binary", he: "לא-בינארי" },
+  "tc.skinTone":         { en: "Skin tone", he: "גוון עור" },
+  "tc.eyeColor":         { en: "Eye color", he: "צבע עיניים" },
+  "tc.hairColor":        { en: "Hair color", he: "צבע שיער" },
+  "tc.hairLength":       { en: "Hair length", he: "אורך שיער" },
+  "tc.hair.short":       { en: "Short", he: "קצר" },
+  "tc.hair.medium":      { en: "Medium", he: "בינוני" },
+  "tc.hair.long":        { en: "Long", he: "ארוך" },
+  "tc.languages":        { en: "Languages", he: "שפות" },
+  "tc.skills":           { en: "Special skills", he: "כישורים מיוחדים" },
+  "tc.ageRange":         { en: "Age range you can play", he: "טווח גילאים שאתה יכול לשחק" },
+  "tc.ageFrom":          { en: "From", he: "מ-" },
+  "tc.ageTo":            { en: "To", he: "עד" },
+  "tc.genres":           { en: "Genres you love", he: "ז'אנרים אהובים" },
+  "tc.continue":         { en: "Continue", he: "המשך" },
+  "tc.enterCastIt":      { en: "Enter CastIt", he: "כניסה ל-CastIt" },
+
+  // Avatar
+  "av.headerTitle":      { en: "Your avatar", he: "האווטאר שלך" },
+  "av.eyebrow":          { en: "Generated from your typecast", he: "נוצר מה-Typecast שלך" },
+  "av.titleA":           { en: "Meet your", he: "תכיר את ה-" },
+  "av.titleB":           { en: "double", he: "כפיל" },
+  "av.titleC":           { en: ".", he: " שלך." },
+  "av.sub":              { en: "Built from the skin, eye and hair colors you locked in. Pick a variation that feels most like you.", he: "נבנה מצבעי העור, העיניים והשיער שבחרת. בחר את הוואריאציה שמרגישה הכי נכון." },
+  "av.reflect.skin":     { en: "Skin", he: "עור" },
+  "av.reflect.closest":  { en: "closest match", he: "התאמה קרובה" },
+  "av.reflect.hair":     { en: "Hair", he: "שיער" },
+  "av.reflect.eyes":     { en: "Eyes", he: "עיניים" },
+  "av.reflect.matched":  { en: "matched", he: "תואמים" },
+  "av.variations":       { en: "Variations", he: "וואריאציות" },
+  "av.regenerate":       { en: "Regenerate", he: "צור מחדש" },
+  "av.enter":            { en: "Enter CastIt", he: "כניסה ל-CastIt" },
+
+  // Pro signup / login
+  "proAuth.signupHeader":{ en: "Open Pro account", he: "פתח חשבון Pro" },
+  "proAuth.signupTitleA":{ en: "Welcome to", he: "ברוכים הבאים ל-" },
+  "proAuth.signupTitleB":{ en: "CastIt Pro", he: "CastIt Pro" },
+  "proAuth.signupSub":   { en: "Tell us where you cast from.", he: "ספרי לנו מאיפה את מלהקת." },
+  "proAuth.yourFullName":{ en: "Your full name", he: "השם המלא שלך" },
+  "proAuth.company":     { en: "Company or studio", he: "חברה או סטודיו" },
+  "proAuth.role":        { en: "Role", he: "תפקיד" },
+  "proAuth.workEmail":   { en: "Work email", he: "אימייל עבודה" },
+  "proAuth.password":    { en: "Password (min 6 chars)", he: "סיסמה (לפחות 6 תווים)" },
+  "proAuth.creating":    { en: "Creating account…", he: "יוצר חשבון…" },
+  "proAuth.continue":    { en: "Continue", he: "המשך" },
+  "proAuth.alreadyPro":  { en: "Already a Pro?", he: "כבר יש לך חשבון Pro?" },
+  "proAuth.signIn":      { en: "Sign in", he: "התחבר" },
+  "proAuth.loginHeader": { en: "Pro sign in", he: "התחברות Pro" },
+  "proAuth.loginTitle":  { en: "Welcome back.", he: "ברוכים השבים." },
+  "proAuth.loginSub":    { en: "Pick up where you left off.", he: "המשך מהמקום שעצרת." },
+  "proAuth.passwordPlain": { en: "Password", he: "סיסמה" },
+  "proAuth.signingIn":   { en: "Signing in…", he: "מתחבר…" },
+  "proAuth.signInBtn":   { en: "Sign in", he: "התחבר" },
+  "proAuth.newHere":     { en: "New here?", he: "חדש כאן?" },
+  "proAuth.openAccount": { en: "Open an account", he: "פתח חשבון" },
+  "proAuth.role.director":  { en: "Casting Director", he: "במאי ליהוק" },
+  "proAuth.role.associate": { en: "Casting Associate", he: "עוזר ליהוק" },
+  "proAuth.role.agent":     { en: "Agent", he: "סוכן" },
+  "proAuth.role.manager":   { en: "Manager", he: "מנהל" },
+  "proAuth.role.producer":  { en: "Producer", he: "מפיק" },
+  "proAuth.role.dir":       { en: "Director", he: "במאי" },
+
+  // Header
+  "header.back":         { en: "Back", he: "חזור" },
 
   // Approvals (Director Reviews)
   "ap.new":            { en: "New", he: "חדש" },

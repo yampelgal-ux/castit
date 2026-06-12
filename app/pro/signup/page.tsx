@@ -7,12 +7,22 @@ import { Mail, Lock, User as UserIcon, Building2, ArrowRight, AlertCircle } from
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const ROLES = ["Casting Director", "Casting Associate", "Agent", "Manager", "Producer", "Director"] as const;
+const ROLE_KEYS: Record<typeof ROLES[number], string> = {
+  "Casting Director":  "proAuth.role.director",
+  "Casting Associate": "proAuth.role.associate",
+  "Agent":             "proAuth.role.agent",
+  "Manager":           "proAuth.role.manager",
+  "Producer":          "proAuth.role.producer",
+  "Director":          "proAuth.role.dir",
+};
 
 export default function ProSignupPage() {
   const router = useRouter();
+  const { t } = useT();
   const { setProfile, signIn, completeOnboarding } = useStore();
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
@@ -57,21 +67,21 @@ export default function ProSignupPage() {
 
   return (
     <div className="min-h-dvh bg-bg">
-      <Header back title="Open Pro account" />
+      <Header back title={t("proAuth.signupHeader")} />
       <form onSubmit={submit} className="px-6 pt-4 space-y-5">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           <h2 className="font-display text-3xl leading-tight">
-            Welcome to <em className="text-gold-gradient not-italic">CastIt Pro</em>.
+            {t("proAuth.signupTitleA")} <em className="text-gold-gradient not-italic">{t("proAuth.signupTitleB")}</em>.
           </h2>
-          <p className="text-text-muted text-sm mt-1.5">Tell us where you cast from.</p>
+          <p className="text-text-muted text-sm mt-1.5">{t("proAuth.signupSub")}</p>
         </motion.div>
 
         <div className="space-y-3">
-          <Field icon={UserIcon} placeholder="Your full name" value={name} onChange={setName} />
-          <Field icon={Building2} placeholder="Company or studio" value={company} onChange={setCompany} />
+          <Field icon={UserIcon} placeholder={t("proAuth.yourFullName")} value={name} onChange={setName} />
+          <Field icon={Building2} placeholder={t("proAuth.company")} value={company} onChange={setCompany} />
 
           <div>
-            <label className="text-[10px] uppercase tracking-wider text-text-muted px-1">Role</label>
+            <label className="text-[10px] uppercase tracking-wider text-text-muted px-1">{t("proAuth.role")}</label>
             <div className="mt-1.5 grid grid-cols-2 gap-2">
               {ROLES.map((r) => (
                 <button
@@ -85,14 +95,14 @@ export default function ProSignupPage() {
                       : "border-border bg-bg-elevated text-text-muted"
                   )}
                 >
-                  {r}
+                  {t(ROLE_KEYS[r])}
                 </button>
               ))}
             </div>
           </div>
 
-          <Field icon={Mail} placeholder="Work email" type="email" value={email} onChange={setEmail} />
-          <Field icon={Lock} placeholder="Password (min 6 chars)" type="password" value={password} onChange={setPassword} />
+          <Field icon={Mail} placeholder={t("proAuth.workEmail")} type="email" value={email} onChange={setEmail} />
+          <Field icon={Lock} placeholder={t("proAuth.password")} type="password" value={password} onChange={setPassword} />
         </div>
 
         {error && (
@@ -109,12 +119,12 @@ export default function ProSignupPage() {
             valid && !loading ? "bg-gold text-bg" : "bg-bg-elevated text-text-subtle"
           )}
         >
-          {loading ? "Creating account…" : "Continue"}
+          {loading ? t("proAuth.creating") : t("proAuth.continue")}
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
 
         <p className="text-center text-[11px] text-text-subtle">
-          Already a Pro? <Link href="/pro/login" className="text-gold font-semibold">Sign in</Link>
+          {t("proAuth.alreadyPro")} <Link href="/pro/login" className="text-gold font-semibold">{t("proAuth.signIn")}</Link>
         </p>
       </form>
     </div>

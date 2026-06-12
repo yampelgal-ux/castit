@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export function Header({
   title,
@@ -14,6 +15,7 @@ export function Header({
   transparent?: boolean;
 }) {
   const router = useRouter();
+  const { t } = useT();
   return (
     <header
       className={`sticky top-0 z-40 px-4 h-14 flex items-center justify-between ${
@@ -25,7 +27,7 @@ export function Header({
           <button
             onClick={() => router.back()}
             className="-ml-2 p-2 rounded-full hover:bg-bg-elevated"
-            aria-label="Back"
+            aria-label={t("header.back")}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
