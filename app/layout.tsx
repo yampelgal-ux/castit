@@ -1,20 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Heebo, Frank_Ruhl_Libre } from "next/font/google";
+import { Heebo } from "next/font/google";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { DemoSeeder } from "@/components/DemoSeeder";
 import { LanguageHydrator } from "@/components/LanguageToggle";
 
+// Single-family typography (Bank Hapoalim style): one Hebrew-compatible sans
+// drives both body and display. Weight + size carry the hierarchy.
+// Heebo is the closest free equivalent to Hapoalim's proprietary Almoni / Hapoalim Sans.
 const heebo = Heebo({
   subsets: ["latin", "hebrew"],
+  weight: ["300", "400", "500", "700", "800", "900"],
   variable: "--font-inter",
-  display: "swap",
-});
-
-const frankRuhl = Frank_Ruhl_Libre({
-  subsets: ["latin", "hebrew"],
-  variable: "--font-playfair",
   display: "swap",
 });
 
@@ -54,7 +52,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${heebo.variable} ${frankRuhl.variable}`}>
+    <html lang="en" className={heebo.variable}>
       <body className="font-sans">
         <a href="#main-content" className="skip-link">Skip to content</a>
         <div className="device-frame">

@@ -8,21 +8,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Warm theatrical darks — like a darkened stage, not cold black
+        // Neutral palette — backed by CSS vars so it inverts when
+        // [data-theme="light"] is set on <html>. See app/globals.css.
         bg: {
-          DEFAULT: "#0F0C09",      // warm near-black (theater)
-          elevated: "#1A1612",     // warm dark (raised surface)
-          muted: "#241F1A",        // warmer card / input
+          DEFAULT:  "rgb(var(--bg) / <alpha-value>)",
+          elevated: "rgb(var(--bg-elevated) / <alpha-value>)",
+          muted:    "rgb(var(--bg-muted) / <alpha-value>)",
         },
         border: {
-          DEFAULT: "#2D2823",      // warm subtle divider
-          strong: "#46403A",       // hairline emphasis
+          DEFAULT: "rgb(var(--border) / <alpha-value>)",
+          strong:  "rgb(var(--border-strong) / <alpha-value>)",
         },
-        // Cream text instead of cold white — easier on eyes, editorial feel
         text: {
-          DEFAULT: "#F5EFE6",      // warm parchment
-          muted: "#A8A095",        // muted warm gray
-          subtle: "#6E665C",       // softer
+          DEFAULT: "rgb(var(--text) / <alpha-value>)",
+          muted:   "rgb(var(--text-muted) / <alpha-value>)",
+          subtle:  "rgb(var(--text-subtle) / <alpha-value>)",
         },
         // Refined gold — brass, less yellow, more sophisticated
         gold: {
@@ -63,8 +63,10 @@ export default {
         danger: "#C75D3F",    // terracotta-based (warmer than red)
       },
       fontFamily: {
+        // Single-family typography. Both body + display share Heebo —
+        // hierarchy carried by weight + size, like Bank Hapoalim's app.
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        display: ["var(--font-playfair)", "Georgia", "serif"],
+        display: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
       borderRadius: {
         "2xl": "1.25rem",

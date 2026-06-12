@@ -14,7 +14,16 @@ import {
 import { createApprovalSession } from "@/lib/approval-store";
 import { addNotification } from "@/lib/notifications-store";
 
-const SEED_FLAG = "castit_demo_seeded_v2";
+// Bump SEED_FLAG when demo content changes — older v* keys are auto-purged
+// on next mount so users see the latest Hebrew demo without manual reset.
+const SEED_FLAG = "castit_demo_seeded_v3_he";
+const STALE_FLAGS = ["castit_demo_seeded_v2", "castit_demo_seeded_v1"];
+const DEMO_STORAGE_KEYS = [
+  "castit_projects_v2", "castit_roles_v3", "castit_submissions_v3",
+  "castit_approval_sessions_v1", "castit_share_packets_v1",
+  "castit_coach_scenes_v1", "castit_coach_takes_v1",
+  "castit_notifications_v1",
+];
 
 export function isDemoSeeded(): boolean {
   if (typeof window === "undefined") return true;
@@ -23,15 +32,7 @@ export function isDemoSeeded(): boolean {
 
 export function resetDemo(): void {
   if (typeof window === "undefined") return;
-  // Clear everything relevant
-  const keys = [
-    "castit_projects_v2", "castit_roles_v3", "castit_submissions_v3",
-    "castit_approval_sessions_v1", "castit_share_packets_v1",
-    "castit_coach_scenes_v1", "castit_coach_takes_v1",
-    SEED_FLAG,
-  ];
-  for (const k of keys) localStorage.removeItem(k);
-  // Reload to trigger reseed
+  for (const k of [...DEMO_STORAGE_KEYS, SEED_FLAG, ...STALE_FLAGS]) localStorage.removeItem(k);
   window.location.href = "/welcome";
 }
 
@@ -40,6 +41,12 @@ const DAYS = 86_400_000;
 
 export function seedDemo(): void {
   if (typeof window === "undefined") return;
+  // Migration: if any older seed flag exists, this is stale demo data —
+  // purge it so the new Hebrew content takes over without a manual reset.
+  const hasStaleFlag = STALE_FLAGS.some((k) => localStorage.getItem(k) != null);
+  if (hasStaleFlag) {
+    for (const k of [...DEMO_STORAGE_KEYS, ...STALE_FLAGS]) localStorage.removeItem(k);
+  }
   if (isDemoSeeded()) return;
   if (loadProjects().length > 0) {
     // Already has real data — don't overwrite

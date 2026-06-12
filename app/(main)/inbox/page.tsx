@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
-import { StageBadge } from "@/components/StageBadge";
 import {
   getAuditionsForTalent, loadSubmissions, type Submission, type Role, type Project,
 } from "@/lib/projects-store";
@@ -138,23 +137,24 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: i * 0.04 }}
       className={cn(
-        "rounded-2xl border overflow-hidden",
-        urgent ? "border-gold/50 bg-gold/5" : "border-border bg-bg-elevated"
+        "rounded-2xl overflow-hidden transition-colors",
+        urgent
+          ? "bg-gold/[0.04] ring-1 ring-gold/30"
+          : "bg-bg-elevated/40 ring-1 ring-border/60"
       )}
     >
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] uppercase tracking-widest text-gold">{t(`value.type.${project.type}`)}</div>
-            <h3 className="font-display text-lg leading-tight truncate">{project.title}</h3>
-            <p className="text-[11px] text-text-muted truncate">{project.studio} · {role.name}</p>
+            <div className="text-[10px] uppercase tracking-widest text-gold/80">{t(`value.type.${project.type}`)}</div>
+            <h3 className="font-display text-xl leading-tight truncate mt-0.5">{project.title}</h3>
+            <p className="text-xs text-text-muted truncate mt-1">{project.studio} · {role.name}</p>
           </div>
-          <StageBadge stage={s.stage} size="md" />
         </div>
 
         <Timeline stage={s.stage} />
 
-        <div className="flex flex-wrap items-center gap-3 mt-3 text-[11px]">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-[11px]">
           {deadline && (
             <span className={cn("inline-flex items-center gap-1", urgent ? "text-gold font-semibold" : "text-text-muted")}>
               <Clock className="w-3 h-3" />
@@ -168,13 +168,13 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
             </span>
           )}
           {role.shootDates && <span className="text-text-muted">{t("inbox.shoot")} {role.shootDates}</span>}
-          {role.payRange && <span className="text-success font-semibold">{role.payRange}</span>}
+          {role.payRange && <span className="text-success font-semibold tnum">{role.payRange}</span>}
         </div>
 
         {s.proMessage && <p className="text-xs text-text-muted leading-relaxed mt-3 line-clamp-2">{s.proMessage}</p>}
       </div>
 
-      <div className="border-t border-border bg-bg/40 px-3 py-2.5">
+      <div className="px-4 py-3 border-t border-border/40">
         {needsTape || callbackTape ? (
           <Link
             href={`/inbox/${s.id}/record`}
@@ -198,14 +198,6 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
 
 function Timeline({ stage }: { stage: Submission["stage"] }) {
   const { t } = useT();
-  const steps: { id: Submission["stage"]; label: string }[] = [
-    { id: "invited",     label: t("stage.invited") },
-    { id: "submitted",   label: t("stage.submitted") },
-    { id: "callback",    label: t("stage.callback") },
-    { id: "avail_check", label: t("stage.avail") },
-    { id: "offered",     label: t("stage.offer") },
-    { id: "booked",      label: t("stage.booked") },
-  ];
   const order: Submission["stage"][] = ["invited", "submitted", "callback", "avail_check", "offered", "booked"];
   const currentIdx = stage === "rejected"
     ? -1
@@ -221,26 +213,35 @@ function Timeline({ stage }: { stage: Submission["stage"] }) {
     );
   }
 
+  // Hapoalim-style: single current-stage label + thin segmented bar instead of 6 cramped labels
+  const currentLabelMap: Record<Submission["stage"], string> = {
+    invited:     t("stage.invited"),
+    submitted:   t("stage.submitted"),
+    callback:    t("stage.callback"),
+    avail_check: t("stage.avail"),
+    offered:     t("stage.offer"),
+    booked:      t("stage.booked"),
+    hold:        t("stage.label.hold"),
+    rejected:    t("stage.label.rejected"),
+  };
+
   return (
-    <div className="mt-3 flex items-center gap-1">
-      {steps.map((s, i) => {
-        const reached = i <= currentIdx;
-        const isCurrent = i === currentIdx;
-        return (
-          <div key={s.id} className="flex-1 flex flex-col items-center gap-1">
-            <div className={cn(
-              "h-1 w-full rounded-full transition-all",
-              reached ? (isCurrent ? "bg-gold" : "bg-gold/60") : "bg-bg"
-            )} />
-            <div className={cn(
-              "text-[8px] uppercase tracking-wider text-center",
-              isCurrent ? "text-gold font-semibold" : reached ? "text-text" : "text-text-subtle"
-            )}>
-              {s.label}
-            </div>
-          </div>
-        );
-      })}
+    <div className="mt-3">
+      <div className="flex items-center justify-between text-[10px] mb-1.5">
+        <span className="text-gold font-semibold uppercase tracking-wider">{currentLabelMap[stage]}</span>
+        <span className="text-text-subtle tnum">{Math.max(0, currentIdx + 1)}/{order.length}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        {order.map((step, i) => (
+          <div
+            key={step}
+            className={cn(
+              "flex-1 h-0.5 rounded-full transition-all",
+              i === currentIdx ? "bg-gold" : i < currentIdx ? "bg-gold/50" : "bg-border/60"
+            )}
+          />
+        ))}
+      </div>
     </div>
   );
 }

@@ -530,6 +530,7 @@ const DICT: Record<string, Entry> = {
   // Settings sheet
   "prof.settings.title":   { en: "Settings", he: "הגדרות" },
   "prof.settings.language":{ en: "Language", he: "שפה" },
+  "prof.settings.theme":   { en: "Appearance", he: "מראה" },
   "prof.settings.close":   { en: "Close", he: "סגור" },
   // Typecast card on profile
   "prof.tc.title":     { en: "Typecast Card", he: "כרטיס Typecast" },

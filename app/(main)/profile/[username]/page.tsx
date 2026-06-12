@@ -14,7 +14,7 @@ import { TypecastBadge } from "@/components/TypecastBadge";
 import { useStore } from "@/lib/store";
 import { updateProfile } from "@/lib/db";
 import { ProfileProgress } from "@/components/ProfileProgress";
-import { LanguageToggle } from "@/components/LanguageToggle";
+import { LanguageToggle, ThemeToggle } from "@/components/LanguageToggle";
 import { useT } from "@/lib/i18n";
 import { cn, formatNumber } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -364,9 +364,15 @@ function SettingsSheet({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        <div className="flex items-center justify-between rounded-2xl bg-bg border border-border px-4 py-3">
-          <span className="text-sm font-medium">{t("prof.settings.language")}</span>
-          <LanguageToggle />
+        <div className="space-y-2">
+          <div className="flex items-center justify-between rounded-2xl bg-bg border border-border px-4 py-3">
+            <span className="text-sm font-medium">{t("prof.settings.language")}</span>
+            <LanguageToggle />
+          </div>
+          <div className="flex items-center justify-between rounded-2xl bg-bg border border-border px-4 py-3">
+            <span className="text-sm font-medium">{t("prof.settings.theme")}</span>
+            <ThemeToggle />
+          </div>
         </div>
       </motion.div>
     </div>
