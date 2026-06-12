@@ -7,16 +7,19 @@ import { useStore } from "@/lib/store";
 import { SKIN_TONES, EYE_COLORS, HAIR_COLORS } from "@/lib/typecast-palette";
 import { TypecastPicker } from "@/components/TypecastPicker";
 import { PhotoPicker } from "@/components/PhotoPicker";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const LANGUAGES = ["Hebrew", "English", "Arabic", "Russian", "French", "Spanish", "German", "Italian"];
 const SKILLS = ["Stage Combat", "Singing", "Dance", "Improv", "Horseback Riding", "Martial Arts", "Piano", "Guitar", "Driving (Stick)", "Surfing", "Skateboarding", "Dialects"];
 const GENRES = ["Drama", "Comedy", "Thriller", "Action", "Romance", "Indie", "Period", "Horror", "Musical", "Commercial"];
 
-const STEPS = ["Physical", "Appearance", "Skills", "Range"] as const;
+const STEP_KEYS = ["tc.step.physical", "tc.step.appearance", "tc.step.skills", "tc.step.range"] as const;
+const STEPS_COUNT = STEP_KEYS.length;
 
 export default function TypecastPage() {
   const router = useRouter();
+  const { t } = useT();
   const { setTypecast, setProfile, signIn, profile } = useStore();
   const [step, setStep] = useState(0);
   const [tc, setTc] = useState({
@@ -35,7 +38,7 @@ export default function TypecastPage() {
   });
 
   function next() {
-    if (step < STEPS.length - 1) setStep(step + 1);
+    if (step < STEPS_COUNT - 1) setStep(step + 1);
     else {
       setTypecast(tc);
       signIn();
@@ -70,14 +73,14 @@ export default function TypecastPage() {
           <button onClick={back} className="-ml-2 p-2 rounded-full hover:bg-bg-elevated">
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <span className="text-xs text-text-muted tnum">Step {step + 1} of {STEPS.length}</span>
+          <span className="text-xs text-text-muted tnum">{t("tc.stepOf", { n: step + 1, total: STEPS_COUNT })}</span>
           <div className="w-9" />
         </div>
         <div className="h-0.5 bg-border">
           <motion.div
             className="h-full bg-gold"
             initial={false}
-            animate={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
+            animate={{ width: `${((step + 1) / STEPS_COUNT) * 100}%` }}
             transition={{ type: "spring", stiffness: 120, damping: 20 }}
           />
         </div>
@@ -87,7 +90,7 @@ export default function TypecastPage() {
       <div className="px-6 pt-3">
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gold/8 border border-gold/20 text-[11px] text-gold">
           <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-          <span>Your typecast is your casting ID — required for verification</span>
+          <span>{t("tc.idNotice")}</span>
         </div>
       </div>
 
@@ -104,7 +107,7 @@ export default function TypecastPage() {
               <PhotoPicker
                 onPick={onPhoto}
                 cameraFacing="user"
-                title="הוסף תמונת פרופיל"
+                title={t("tc.photo.addTitle")}
                 className="relative shrink-0 cursor-pointer"
               >
                 {profile.photoUrl ? (
@@ -124,31 +127,31 @@ export default function TypecastPage() {
               </PhotoPicker>
               <div className="flex-1 min-w-0">
                 <div className="text-[10px] uppercase tracking-widest text-gold mb-1">
-                  Your profile photo
+                  {t("tc.photo.label")}
                 </div>
                 <div className="text-sm font-medium leading-snug">
-                  {profile.photoUrl ? "This is what casting pros will see." : "Tap to upload — needed for verification."}
+                  {profile.photoUrl ? t("tc.photo.haveText") : t("tc.photo.tapText")}
                 </div>
                 <div className="text-[11px] text-text-muted mt-1">
-                  Use a clear, recent headshot.
+                  {t("tc.photo.hint")}
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="text-[11px] uppercase tracking-widest text-gold mb-2">{STEPS[step]}</div>
+        <div className="text-[11px] uppercase tracking-widest text-gold mb-2">{t(STEP_KEYS[step])}</div>
         <h2 className="font-display text-3xl leading-tight mb-1">
-          {step === 0 && "The physical basics."}
-          {step === 1 && "Your look."}
-          {step === 2 && "Your craft."}
-          {step === 3 && "Your range."}
+          {step === 0 && t("tc.h.physical")}
+          {step === 1 && t("tc.h.appearance")}
+          {step === 2 && t("tc.h.skills")}
+          {step === 3 && t("tc.h.range")}
         </h2>
         <p className="text-text-muted text-sm mb-7">
-          {step === 0 && "Casting pros filter by these exact stats."}
-          {step === 1 && "Pick what's closest. Real reference visuals — not flat colors."}
-          {step === 2 && "Be honest — it's what makes you castable."}
-          {step === 3 && "Tell us what you can play and love to do."}
+          {step === 0 && t("tc.sub.physical")}
+          {step === 1 && t("tc.sub.appearance")}
+          {step === 2 && t("tc.sub.skills")}
+          {step === 3 && t("tc.sub.range")}
         </p>
 
         <AnimatePresence mode="wait">
@@ -162,11 +165,16 @@ export default function TypecastPage() {
           >
             {step === 0 && (
               <>
-                <Slider label="Height" value={tc.heightCm} min={140} max={210} unit="cm" onChange={(v) => setTc({ ...tc, heightCm: v })} />
-                <Slider label="Weight" value={tc.weightKg} min={40} max={130} unit="kg" onChange={(v) => setTc({ ...tc, weightKg: v })} />
+                <Slider label={t("tc.height")} value={tc.heightCm} min={140} max={210} unit="cm" onChange={(v) => setTc({ ...tc, heightCm: v })} />
+                <Slider label={t("tc.weight")} value={tc.weightKg} min={40} max={130} unit="kg" onChange={(v) => setTc({ ...tc, weightKg: v })} />
                 <div>
-                  <Label>Gender</Label>
-                  <Chips options={["Female", "Male", "Non-binary"]} selected={[tc.gender]} onToggle={(v) => setTc({ ...tc, gender: v })} />
+                  <Label>{t("tc.gender")}</Label>
+                  <Chips
+                    options={["Female", "Male", "Non-binary"]}
+                    labels={[t("tc.gender.female"), t("tc.gender.male"), t("tc.gender.nb")]}
+                    selected={[tc.gender]}
+                    onToggle={(v) => setTc({ ...tc, gender: v })}
+                  />
                 </div>
               </>
             )}
@@ -174,7 +182,7 @@ export default function TypecastPage() {
             {step === 1 && (
               <>
                 <div>
-                  <Label>Skin tone</Label>
+                  <Label>{t("tc.skinTone")}</Label>
                   <TypecastPicker
                     kind="skin"
                     palette={SKIN_TONES}
@@ -183,7 +191,7 @@ export default function TypecastPage() {
                   />
                 </div>
                 <div>
-                  <Label>Eye color</Label>
+                  <Label>{t("tc.eyeColor")}</Label>
                   <TypecastPicker
                     kind="eye"
                     palette={EYE_COLORS}
@@ -192,7 +200,7 @@ export default function TypecastPage() {
                   />
                 </div>
                 <div>
-                  <Label>Hair color</Label>
+                  <Label>{t("tc.hairColor")}</Label>
                   <TypecastPicker
                     kind="hair"
                     palette={HAIR_COLORS}
@@ -201,8 +209,13 @@ export default function TypecastPage() {
                   />
                 </div>
                 <div>
-                  <Label>Hair length</Label>
-                  <Chips options={["Short", "Medium", "Long"]} selected={[tc.hairLength]} onToggle={(v) => setTc({ ...tc, hairLength: v })} />
+                  <Label>{t("tc.hairLength")}</Label>
+                  <Chips
+                    options={["Short", "Medium", "Long"]}
+                    labels={[t("tc.hair.short"), t("tc.hair.medium"), t("tc.hair.long")]}
+                    selected={[tc.hairLength]}
+                    onToggle={(v) => setTc({ ...tc, hairLength: v })}
+                  />
                 </div>
               </>
             )}
@@ -210,9 +223,10 @@ export default function TypecastPage() {
             {step === 2 && (
               <>
                 <div>
-                  <Label>Languages</Label>
+                  <Label>{t("tc.languages")}</Label>
                   <Chips
                     options={LANGUAGES}
+                    labels={LANGUAGES.map((l) => t(`value.lang.${l}`))}
                     selected={tc.languages}
                     multi
                     onToggle={(v) => setTc({
@@ -222,9 +236,10 @@ export default function TypecastPage() {
                   />
                 </div>
                 <div>
-                  <Label>Special skills</Label>
+                  <Label>{t("tc.skills")}</Label>
                   <Chips
                     options={SKILLS}
+                    labels={SKILLS.map((s) => t(`value.skill.${s}`))}
                     selected={tc.skills}
                     multi
                     onToggle={(v) => setTc({
@@ -239,17 +254,18 @@ export default function TypecastPage() {
             {step === 3 && (
               <>
                 <div>
-                  <Label>Age range you can play</Label>
+                  <Label>{t("tc.ageRange")}</Label>
                   <div className="flex items-center gap-4 mt-3">
-                    <NumberBox label="From" value={tc.ageRangeMin} onChange={(v) => setTc({ ...tc, ageRangeMin: v })} />
+                    <NumberBox label={t("tc.ageFrom")} value={tc.ageRangeMin} onChange={(v) => setTc({ ...tc, ageRangeMin: v })} />
                     <div className="text-text-subtle">→</div>
-                    <NumberBox label="To" value={tc.ageRangeMax} onChange={(v) => setTc({ ...tc, ageRangeMax: v })} />
+                    <NumberBox label={t("tc.ageTo")} value={tc.ageRangeMax} onChange={(v) => setTc({ ...tc, ageRangeMax: v })} />
                   </div>
                 </div>
                 <div>
-                  <Label>Genres you love</Label>
+                  <Label>{t("tc.genres")}</Label>
                   <Chips
                     options={GENRES}
+                    labels={GENRES.map((g) => t(`value.genre.${g}`))}
                     selected={tc.genres}
                     multi
                     onToggle={(v) => setTc({
@@ -270,7 +286,7 @@ export default function TypecastPage() {
           onClick={next}
           className="w-full h-14 rounded-2xl bg-gold text-bg font-semibold hover:bg-gold-light flex items-center justify-center gap-2"
         >
-          {step < STEPS.length - 1 ? "Continue" : "Enter CastIt"}
+          {step < STEPS_COUNT - 1 ? t("tc.continue") : t("tc.enterCastIt")}
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
@@ -303,11 +319,11 @@ function Slider({
 }
 
 function Chips({
-  options, selected, onToggle, multi,
-}: { options: string[]; selected: string[]; onToggle: (v: string) => void; multi?: boolean }) {
+  options, labels, selected, onToggle, multi,
+}: { options: string[]; labels?: string[]; selected: string[]; onToggle: (v: string) => void; multi?: boolean }) {
   return (
     <div className="flex flex-wrap gap-2">
-      {options.map((o) => {
+      {options.map((o, i) => {
         const active = selected.includes(o);
         return (
           <button
@@ -319,7 +335,7 @@ function Chips({
               active ? "bg-gold text-bg border-gold" : "bg-bg-elevated text-text border-border hover:border-border-strong"
             )}
           >
-            {o}
+            {labels?.[i] ?? o}
           </button>
         );
       })}

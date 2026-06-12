@@ -49,62 +49,62 @@ export function seedDemo(): void {
 
   // ─── Project 1: Feature film, full casting ──────────
   const after = addProject({
-    title: "After the Rain",
-    studio: "Northwind Pictures",
+    title: "אחרי הגשם",
+    studio: "אולפני צפון-רוח",
     type: "Feature Film",
     status: "casting",
     posterColor: "#8B5A3C",
-    description: "Drama set in a small fishing village. Returning daughter, estranged father, and the storm season closing in.",
+    description: "דרמה בכפר דייגים קטן. הבת חוזרת הביתה, האב מנוכר, ועונת הסערות מתקרבת.",
     mode: "full",
   });
 
   const mayaRole = addRole({
     projectId: after.id,
-    name: "Maya — Lead",
-    description: "Female, 25-32, Mediterranean. Returns home after 8 years away. Controlled, watchful, breaks open in act 3.",
-    sides: "INT. KITCHEN — NIGHT\n\nMAYA: I told you I'm not doing it.\nDAVID: It's not about you anymore.\nMAYA: It was never about me. That's the problem.",
-    selfTapeInstructions: "Slate first. Vertical, well-lit. Two takes — one held back, one open.",
+    name: "מאיה — תפקיד ראשי",
+    description: "נשית, 25-32, מראה ים-תיכוני. חוזרת הביתה אחרי 8 שנים. מאופקת, ערנית, נשברת באקט 3.",
+    sides: "פנים. מטבח — לילה\n\nמאיה: אמרתי לך, אני לא עושה את זה.\nדוד: זה כבר לא קשור אלייך.\nמאיה: זה אף פעם לא היה קשור אליי. זאת הבעיה.",
+    selfTapeInstructions: "סלייט קודם. מסך אנכי, תאורה טובה. שני טייקים — אחד מאופק, אחד פתוח.",
     deadline: new Date(Date.now() + 3 * DAYS).toISOString().slice(0, 10),
-    shootDates: "Aug 12 – Sep 25",
-    payRange: "$1.8-2.2K/day + travel",
+    shootDates: "12 באוג׳ – 25 בספט׳",
+    payRange: "₪6,500-8,000 ליום + נסיעות",
   });
 
   const davidRole = addRole({
     projectId: after.id,
-    name: "David — Father",
-    description: "Male, 55-65. Quiet, weathered, carrying decades of regret. Hands matter.",
-    sides: "INT. KITCHEN — NIGHT\n\nDAVID: It's not about you anymore.\nMAYA: It was never about me. That's the problem.",
+    name: "דוד — אבא",
+    description: "גברי, 55-65. שקט, חרוש קמטים, נושא עשרות שנים של חרטה. הידיים חשובות.",
+    sides: "פנים. מטבח — לילה\n\nדוד: זה כבר לא קשור אלייך.\nמאיה: זה אף פעם לא היה קשור אליי. זאת הבעיה.",
     deadline: new Date(Date.now() + 5 * DAYS).toISOString().slice(0, 10),
-    shootDates: "Aug 12 – Sep 25",
-    payRange: "$1.5K/day",
+    shootDates: "12 באוג׳ – 25 בספט׳",
+    payRange: "₪5,400 ליום",
   });
 
   // Maya submissions — varied pipeline stages
   const s_maya_t1 = inviteTalent(mayaRole.id,
     { id: TALENTS[0].id, name: TALENTS[0].name, photo: TALENTS[0].photo },
-    { message: "Loved your reel — would love you to read for Maya.", deadline: mayaRole.deadline },
+    { message: "אהבתי את הריל שלך — אשמח שתקראי למאיה.", deadline: mayaRole.deadline },
   );
-  addTape(s_maya_t1.id, { note: "Submitted on time. Clean two-take read." });
+  addTape(s_maya_t1.id, { note: "הוגש בזמן. קריאה נקייה בשני טייקים." });
   // Maya's callback is scheduled in-person, not yet completed (showcases new flow)
   moveToCallback(s_maya_t1.id, {
-    message: "Strong submission. Let's bring you in for an in-person callback.",
+    message: "הגשה מצוינת. נשמח לראות אותך בקולבק פרונטלי.",
     type: "in_person",
     scheduledAt: new Date(Date.now() + 2 * DAYS + 4 * HOURS).toISOString(),
-    location: "Tagada Studios, Tel Aviv — Room 3",
+    location: "אולפני תגדה, תל אביב — חדר 3",
   });
   const s_maya_t3 = inviteTalent(mayaRole.id,
     { id: TALENTS[2].id, name: TALENTS[2].name, photo: TALENTS[2].photo },
-    { message: "Read for Maya?", deadline: mayaRole.deadline },
+    { message: "לקרוא למאיה?", deadline: mayaRole.deadline },
   );
-  addTape(s_maya_t3.id, { note: "Round 1 tape — bold choice on opening line." });
+  addTape(s_maya_t3.id, { note: "טייפ סבב 1 — בחירה אמיצה בשורת הפתיחה." });
   // leave at "submitted" — appears in Triage
 
   const s_maya_t5 = inviteTalent(mayaRole.id,
     { id: TALENTS[4].id, name: TALENTS[4].name, photo: TALENTS[4].photo },
-    { message: "Heard from your agent — please record.", deadline: mayaRole.deadline },
+    { message: "שמענו מהסוכן שלך — אנא הקליטי.", deadline: mayaRole.deadline },
   );
-  addTape(s_maya_t5.id, { note: "Self-tape" });
-  moveToHold(s_maya_t5.id, "Strong work — placing you on a 48h hold while we finalize.", 36);
+  addTape(s_maya_t5.id, { note: "סלף-טייפ" });
+  moveToHold(s_maya_t5.id, "עבודה מצוינת — נשהה ל-48 שעות בזמן שאנו מסיימים.", 36);
 
   const s_maya_t6 = inviteTalent(mayaRole.id,
     { id: TALENTS[5].id, name: TALENTS[5].name, photo: TALENTS[5].photo },
@@ -115,78 +115,78 @@ export function seedDemo(): void {
   // David submissions
   const s_david_t4 = inviteTalent(davidRole.id,
     { id: TALENTS[3].id, name: TALENTS[3].name, photo: TALENTS[3].photo },
-    { message: "Would love you to read for David." },
+    { message: "נשמח שתקרא לדוד." },
   );
-  addTape(s_david_t4.id, { note: "Beautifully understated read." });
+  addTape(s_david_t4.id, { note: "קריאה מאופקת ויפהפייה." });
   // David's callback was scheduled in-person AND completed → unblocks avail check
   moveToCallback(s_david_t4.id, {
-    message: "We loved this. Callback?",
+    message: "אהבנו. קולבק?",
     type: "in_person",
     scheduledAt: new Date(Date.now() - 1 * DAYS).toISOString(),
-    location: "Northwind Office",
+    location: "משרדי צפון-רוח",
   });
-  markCallbackDone(s_david_t4.id, "Great chemistry with the energy. Confident in the role.");
-  addTape(s_david_t4.id, { note: "Round 2 — even better. Adjustments landed." });
-  moveToAvailCheck(s_david_t4.id, "Aug 12 – Sep 25", "Checking your availability for the shoot window.");
+  markCallbackDone(s_david_t4.id, "כימיה מצוינת עם האנרגיה. אנו בטוחים בתפקיד.");
+  addTape(s_david_t4.id, { note: "סבב 2 — אפילו יותר טוב. ההתאמות תפסו." });
+  moveToAvailCheck(s_david_t4.id, "12 באוג׳ – 25 בספט׳", "בודקים את הזמינות שלך לחלון הצילום.");
 
   const s_david_t2 = inviteTalent(davidRole.id,
     { id: TALENTS[1].id, name: TALENTS[1].name, photo: TALENTS[1].photo },
   );
-  addTape(s_david_t2.id, { note: "Initial read" });
-  rejectSubmission(s_david_t2.id, "Thank you — we've gone in a different direction.");
+  addTape(s_david_t2.id, { note: "קריאה ראשונה" });
+  rejectSubmission(s_david_t2.id, "תודה — לקחנו כיוון אחר.");
 
   // ─── Project 2: TV Series, full casting ─────────────
   const wave = addProject({
-    title: "The Wave Below",
-    studio: "Plume Studios",
+    title: "הגל שמתחת",
+    studio: "אולפני פלום",
     type: "TV Series",
     status: "callbacks",
     posterColor: "#3C5A8B",
-    description: "8-episode psychological thriller. Three timelines, one apartment, one secret.",
+    description: "מותחן פסיכולוגי ב-8 פרקים. שלושה צירי זמן, דירה אחת, סוד אחד.",
     mode: "full",
   });
 
   const detRole = addRole({
     projectId: wave.id,
-    name: "Detective Ben",
-    description: "Male, 40-50. Methodical, controlled. Carries a quiet limp from an old injury.",
-    sides: "INT. INTERROGATION ROOM\n\nBEN: I'm not asking again.\nSUSPECT: Then don't.",
-    shootDates: "Oct 1 – Dec 15",
-    payRange: "Series rate",
+    name: "הבלש בן",
+    description: "גברי, 40-50. שיטתי, מאופק. נושא צליעה שקטה מפציעה ישנה.",
+    sides: "פנים. חדר חקירות\n\nבן: אני לא שואל שוב.\nחשוד: אז אל תשאל.",
+    shootDates: "1 באוק׳ – 15 בדצמ׳",
+    payRange: "תעריף סדרה" ,
   });
 
   const s_ben_t4 = inviteTalent(detRole.id,
     { id: TALENTS[3].id, name: TALENTS[3].name, photo: TALENTS[3].photo },
   );
-  addTape(s_ben_t4.id, { note: "Round 1" });
+  addTape(s_ben_t4.id, { note: "סבב 1" });
   // Ben's callback was a tape callback that has been completed → moved to offer
-  moveToCallback(s_ben_t4.id, { type: "tape", message: "New sides attached — send a callback tape." });
-  addTape(s_ben_t4.id, { note: "Round 2 callback — sharper" }); // auto-completes the tape callback
-  sendOffer(s_ben_t4.id, "$2.5K/episode × 8 + back-end", "Formal offer on the table. Looking forward to making this official.");
+  moveToCallback(s_ben_t4.id, { type: "tape", message: "צורפו קטעי טקסט חדשים — שלחי טייפ לקולבק." });
+  addTape(s_ben_t4.id, { note: "טייפ קולבק סבב 2 — חד יותר" }); // auto-completes the tape callback
+  sendOffer(s_ben_t4.id, "₪9,000 לפרק × 8 + תמלוגים", "הצעה רשמית על השולחן. נשמח להפוך את זה לרשמי.");
 
   const s_ben_t6 = inviteTalent(detRole.id,
     { id: TALENTS[5].id, name: TALENTS[5].name, photo: TALENTS[5].photo },
   );
-  addTape(s_ben_t6.id, { note: "Strong round 1" });
-  moveToHold(s_ben_t6.id, "Holding while we sort offers.", 18); // hold_expiring within 24h
+  addTape(s_ben_t6.id, { note: "סבב 1 חזק" });
+  moveToHold(s_ben_t6.id, "משהים בזמן שאנחנו ממיינים הצעות.", 18); // hold_expiring within 24h
 
   // ─── Project 3: Commercial, QUICK CAST ──────────────
   const aroma = addProject({
-    title: "Aroma — Summer Spot",
-    studio: "Tagada Agency",
+    title: "ארומה — פרסומת קיץ",
+    studio: "סוכנות תגדה",
     type: "Commercial",
     status: "casting",
     posterColor: "#5C7548",
-    description: "60-second spot. Beach café, three friends, golden-hour magic.",
+    description: "פרסומת של 60 שניות. בית קפה על החוף, שלושה חברים, קסם של שעת הזהב.",
     mode: "quick",
   });
 
   const friendsRole = addRole({
     projectId: aroma.id,
-    name: "Friend Group (3 types)",
-    description: "20-35, varied looks. Background/non-speaking but featured.",
-    shootDates: "Jun 10-12",
-    payRange: "₪800/day",
+    name: "קבוצת חברים (3 טיפוסים)",
+    description: "20-35, מראים מגוונים. רקע/לא דיבורי אבל מודגש.",
+    shootDates: "10-12 ביוני",
+    payRange: "₪800 ליום",
   });
 
   // Bulk invite for quick cast
@@ -210,16 +210,16 @@ export function seedDemo(): void {
     talentId: s.talentId,
     talentName: s.talentName,
     talentPhoto: s.talentPhoto,
-    roleName: "Maya — Lead",
+    roleName: "מאיה — תפקיד ראשי",
     tapeBlobKey: undefined,
     tapeUrl: undefined,
   }));
 
   createApprovalSession({
-    proName: "Casting Director",
+    proName: "במאי ליהוק",
     projectTitle: after.title,
-    roleName: "Maya — Lead",
-    greeting: "Hey — top 2 for Maya. Tag your gut: Yes / Maybe / No. I'll see it sync in real-time.",
+    roleName: "מאיה — תפקיד ראשי",
+    greeting: "היי — שתי המועמדות המובילות למאיה. סמני את האינטואיציה: כן / אולי / לא. אני אראה זאת מסונכרן בזמן אמת.",
     talents: callbackSubs,
     expiresAt: new Date(Date.now() + 14 * DAYS).toISOString(),
   });
@@ -229,29 +229,29 @@ export function seedDemo(): void {
   addNotification({
     audience: "talent",
     kind: "callback",
-    title: "🎉 Callback ל-Maya",
-    body: "Northwind Pictures רוצה אותך לסיבוב הבא של After the Rain",
+    title: "🎉 קולבק למאיה",
+    body: "אולפני צפון-רוח רוצים אותך לסיבוב הבא של 'אחרי הגשם'",
     href: "/inbox",
   });
   addNotification({
     audience: "talent",
     kind: "invite",
-    title: "הזמנה חדשה: Detective Ben",
-    body: "Plume Studios — קרא לתפקיד ב-The Wave Below",
+    title: "הזמנה חדשה: הבלש בן",
+    body: "אולפני פלום — קרא לתפקיד ב'הגל שמתחת'",
     href: "/inbox",
   });
   addNotification({
     audience: "talent",
     kind: "casting",
     title: "התאמת קסטינג חדשה",
-    body: "תפקיד חדש שמתאים לפרופיל שלך — Lead Female 25-32",
+    body: "תפקיד חדש שמתאים לפרופיל שלך — תפקיד ראשי נשי 25-32",
     href: "/auditions",
   });
   addNotification({
     audience: "talent",
     kind: "like",
-    title: "Daniel Cohen אהב את הריל שלך",
-    body: "Monologue from 'A Streetcar Named Desire'",
+    title: "דניאל כהן אהב את הריל שלך",
+    body: "מונולוג מ'חשמלית ושמה תשוקה'",
     href: "/feed",
   });
 
@@ -259,22 +259,22 @@ export function seedDemo(): void {
   addNotification({
     audience: "pro",
     kind: "tape_in",
-    title: "טייפ חדש מ-Noa Yadid",
-    body: `עבור Maya — Lead. מחכה לסקירה שלך.`,
+    title: "טייפ חדש מנועה ידיד",
+    body: `עבור מאיה — תפקיד ראשי. מחכה לסקירה שלך.`,
     href: `/pro/projects/${after.id}/role/${mayaRole.id}/submission/${s_maya_t3.id}`,
   });
   addNotification({
     audience: "pro",
     kind: "hold",
-    title: "Hold עומד לפוג: Shiran Mor",
-    body: "Maya — Lead · נשארו 12 שעות, החליטי בהקדם",
+    title: "השהיה עומדת לפוג: שירן מור",
+    body: "מאיה — תפקיד ראשי · נשארו 12 שעות, החליטי בהקדם",
     href: `/pro/projects/${after.id}/role/${mayaRole.id}/submission/${s_maya_t5.id}`,
   });
   addNotification({
     audience: "pro",
     kind: "vote",
-    title: "המפיק הצביע 👍 על Maya Levi",
-    body: "Director Review של After the Rain — 1/2 הצביעו",
+    title: "המפיק הצביע 👍 על מאיה לוי",
+    body: "סקירת במאי של 'אחרי הגשם' — 1/2 הצביעו",
     href: "/pro/approvals",
   });
 

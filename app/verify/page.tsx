@@ -4,11 +4,13 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Camera, IdCard, Check, ShieldCheck, ArrowRight } from "lucide-react";
 import { Header } from "@/components/Header";
+import { useT } from "@/lib/i18n";
 
 type Step = "selfie" | "id" | "verifying" | "done";
 
 export default function VerifyPage() {
   const router = useRouter();
+  const { t } = useT();
   const [step, setStep] = useState<Step>("selfie");
   const [selfie, setSelfie] = useState(false);
   const [id, setId] = useState(false);
@@ -22,25 +24,25 @@ export default function VerifyPage() {
 
   return (
     <div className="min-h-dvh">
-      <Header back title="Get verified" />
+      <Header back title={t("vfy.headerTitle")} />
       <div className="px-6 pt-4">
         <div className="flex items-center gap-2 text-xs text-text-muted">
           <ShieldCheck className="w-4 h-4 text-violet" />
-          Verification helps casting pros trust your profile.
+          {t("vfy.intro")}
         </div>
 
         <div className="mt-8 space-y-4">
           <UploadCard
             icon={Camera}
-            title="Selfie"
-            description="A clear photo of your face, no filters."
+            title={t("vfy.selfie")}
+            description={t("vfy.selfieDesc")}
             done={selfie}
             onClick={() => setSelfie(true)}
           />
           <UploadCard
             icon={IdCard}
-            title="Government ID"
-            description="Driver's license or passport."
+            title={t("vfy.id")}
+            description={t("vfy.idDesc")}
             done={id}
             onClick={() => setId(true)}
           />
@@ -56,7 +58,7 @@ export default function VerifyPage() {
                 : "bg-bg-elevated text-text-subtle"
             }`}
           >
-            Submit for review <ArrowRight className="w-4 h-4" />
+            {t("vfy.submit")} <ArrowRight className="w-4 h-4" />
           </button>
         )}
 
@@ -67,8 +69,8 @@ export default function VerifyPage() {
               transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
               className="w-14 h-14 rounded-full border-2 border-gold border-t-transparent"
             />
-            <p className="mt-6 font-display text-xl">Reviewing your details</p>
-            <p className="text-text-muted text-sm mt-1">Usually takes under a minute.</p>
+            <p className="mt-6 font-display text-xl">{t("vfy.reviewing")}</p>
+            <p className="text-text-muted text-sm mt-1">{t("vfy.reviewingSub")}</p>
           </div>
         )}
 
@@ -81,15 +83,15 @@ export default function VerifyPage() {
             <div className="mx-auto w-16 h-16 rounded-full bg-violet/15 grid place-items-center">
               <Check className="w-8 h-8 text-violet" strokeWidth={3} />
             </div>
-            <p className="mt-5 font-display text-2xl">You're verified ✓</p>
+            <p className="mt-5 font-display text-2xl">{t("vfy.done")}</p>
             <p className="text-text-muted text-sm mt-1 max-w-xs mx-auto">
-              Casting pros will see the blue badge on your profile.
+              {t("vfy.doneSub")}
             </p>
             <button
               onClick={() => router.push("/typecast")}
               className="mt-10 w-full h-14 rounded-2xl bg-gold text-bg font-semibold hover:bg-gold-light flex items-center justify-center gap-2"
             >
-              Build your Typecast <ArrowRight className="w-4 h-4" />
+              {t("vfy.buildTypecast")} <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>
         )}

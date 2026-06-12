@@ -6,10 +6,12 @@ import { Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export default function ProLoginPage() {
   const router = useRouter();
+  const { t } = useT();
   const { setProfile, signIn } = useStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,17 +57,17 @@ export default function ProLoginPage() {
 
   return (
     <div className="min-h-dvh bg-bg">
-      <Header back title="Pro sign in" />
+      <Header back title={t("proAuth.loginHeader")} />
       <form onSubmit={submit} className="px-6 pt-6 space-y-5">
-        <h2 className="font-display text-3xl leading-tight">Welcome back.</h2>
-        <p className="text-text-muted text-sm -mt-3">Pick up where you left off.</p>
+        <h2 className="font-display text-3xl leading-tight">{t("proAuth.loginTitle")}</h2>
+        <p className="text-text-muted text-sm -mt-3">{t("proAuth.loginSub")}</p>
 
         <div className="space-y-3 pt-2">
           <label className="flex items-center gap-3 h-14 px-4 rounded-2xl bg-bg-elevated border border-border focus-within:border-gold/50">
             <Mail className="w-4 h-4 text-text-subtle" />
             <input
               type="email"
-              placeholder="Work email"
+              placeholder={t("proAuth.workEmail")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="flex-1 bg-transparent outline-none text-sm"
@@ -75,7 +77,7 @@ export default function ProLoginPage() {
             <Lock className="w-4 h-4 text-text-subtle" />
             <input
               type="password"
-              placeholder="Password"
+              placeholder={t("proAuth.passwordPlain")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="flex-1 bg-transparent outline-none text-sm"
@@ -97,12 +99,12 @@ export default function ProLoginPage() {
             valid && !loading ? "bg-gold text-bg" : "bg-bg-elevated text-text-subtle"
           )}
         >
-          {loading ? "Signing in…" : "Sign in"}
+          {loading ? t("proAuth.signingIn") : t("proAuth.signInBtn")}
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
 
         <p className="text-center text-[11px] text-text-subtle">
-          New here? <Link href="/pro/signup" className="text-gold font-semibold">Open an account</Link>
+          {t("proAuth.newHere")} <Link href="/pro/signup" className="text-gold font-semibold">{t("proAuth.openAccount")}</Link>
         </p>
       </form>
     </div>

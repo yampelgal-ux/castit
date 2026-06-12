@@ -11,6 +11,7 @@ import { StageBadge } from "@/components/StageBadge";
 import {
   getAuditionsForTalent, loadSubmissions, type Submission, type Role, type Project,
 } from "@/lib/projects-store";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 // Demo-mode: in localStorage there's no real "me" talent matching pro invites.
@@ -22,6 +23,7 @@ type AuditionItem = { submission: Submission; role?: Role; project?: Project };
 type TabId = "active" | "history";
 
 export default function InboxPage() {
+  const { t } = useT();
   const [items, setItems] = useState<AuditionItem[]>([]);
   const [tab, setTab] = useState<TabId>("active");
 
@@ -56,18 +58,18 @@ export default function InboxPage() {
         title={
           <span className="flex items-center gap-2">
             <Inbox className="w-4 h-4 text-gold" />
-            <span className="font-display text-lg">Auditions</span>
+            <span className="font-display text-lg">{t("inbox.headerTitle")}</span>
           </span>
         }
       />
 
-      <div className="px-5 pt-3 space-y-4">
+      <div className="px-5 pt-4 space-y-5">
         <div>
-          <h1 className="font-display text-3xl tracking-editorial">
-            Your <em className="text-gold-gradient not-italic">audition inbox</em>.
+          <h1 className="font-display text-3xl tracking-editorial leading-tight">
+            <span className="text-gold-gradient">{t("inbox.titleA")}</span> {t("inbox.titleB")}
           </h1>
-          <p className="text-text-muted text-sm mt-1">
-            Every invite, every status, in one place.
+          <p className="text-text-muted text-sm mt-1.5">
+            {t("inbox.sub")}
           </p>
         </div>
 
@@ -77,27 +79,29 @@ export default function InboxPage() {
               <Video className="w-4 h-4" />
             </div>
             <div className="flex-1 text-sm">
-              <span className="font-semibold text-gold">{counts.needTape} tape{counts.needTape > 1 ? "s" : ""} to record.</span>
-              <span className="text-text-muted ml-1">Tap any invite below to start.</span>
+              <span className="font-semibold text-gold">
+                {counts.needTape === 1 ? t("inbox.tapeToRecord") : t("inbox.tapesToRecord", { n: counts.needTape })}
+              </span>
+              <span className="text-text-muted ml-1">{t("inbox.tapStart")}</span>
             </div>
           </div>
         )}
 
         <div className="flex gap-1 border-b border-border">
           {([
-            { id: "active",  label: "Active",  count: counts.active },
-            { id: "history", label: "History", count: counts.history },
-          ] as { id: TabId; label: string; count: number }[]).map((t) => (
+            { id: "active",  label: t("inbox.tab.active"),  count: counts.active },
+            { id: "history", label: t("inbox.tab.history"), count: counts.history },
+          ] as { id: TabId; label: string; count: number }[]).map((tab2) => (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              key={tab2.id}
+              onClick={() => setTab(tab2.id)}
               className={cn(
                 "flex-1 h-10 text-xs font-semibold uppercase tracking-wider border-b-2 -mb-px transition-colors inline-flex items-center justify-center gap-2",
-                tab === t.id ? "border-gold text-gold" : "border-transparent text-text-muted"
+                tab === tab2.id ? "border-gold text-gold" : "border-transparent text-text-muted"
               )}
             >
-              {t.label}
-              <span className="tnum opacity-70">{t.count}</span>
+              {tab2.label}
+              <span className="tnum opacity-70">{tab2.count}</span>
             </button>
           ))}
         </div>
@@ -105,15 +109,11 @@ export default function InboxPage() {
         {shown.length === 0 ? (
           <EmptyState
             icon={Inbox}
-            title={tab === "active" ? "No active auditions" : "No history yet"}
-            description={
-              tab === "active"
-                ? "When a casting pro invites you to read for a role, the invite shows up here."
-                : "Past auditions you've completed or that were closed appear here."
-            }
+            title={tab === "active" ? t("inbox.empty.activeTitle") : t("inbox.empty.historyTitle")}
+            description={tab === "active" ? t("inbox.empty.activeDesc") : t("inbox.empty.historyDesc")}
           />
         ) : (
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {shown.map((i, idx) => <AuditionCard key={i.submission.id} item={i} i={idx} />)}
           </div>
         )}
@@ -123,6 +123,7 @@ export default function InboxPage() {
 }
 
 function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
+  const { t } = useT();
   const { submission: s, role, project } = item;
   if (!role || !project) return null;
   const needsTape = s.stage === "invited";
@@ -144,7 +145,7 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] uppercase tracking-widest text-gold">{project.type}</div>
+            <div className="text-[10px] uppercase tracking-widest text-gold">{t(`value.type.${project.type}`)}</div>
             <h3 className="font-display text-lg leading-tight truncate">{project.title}</h3>
             <p className="text-[11px] text-text-muted truncate">{project.studio} · {role.name}</p>
           </div>
@@ -158,11 +159,15 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
             <span className={cn("inline-flex items-center gap-1", urgent ? "text-gold font-semibold" : "text-text-muted")}>
               <Clock className="w-3 h-3" />
               {needsTape
-                ? daysToDeadline! < 0 ? "Deadline passed" : daysToDeadline === 0 ? "Due today" : `Due in ${daysToDeadline}d`
-                : `Deadline ${deadline.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`}
+                ? daysToDeadline! < 0
+                    ? t("inbox.deadlinePassed")
+                    : daysToDeadline === 0
+                      ? t("inbox.dueToday")
+                      : t("inbox.dueIn", { n: daysToDeadline! })
+                : t("inbox.deadline", { date: deadline.toLocaleDateString(undefined, { month: "short", day: "numeric" }) })}
             </span>
           )}
-          {role.shootDates && <span className="text-text-muted">Shoot: {role.shootDates}</span>}
+          {role.shootDates && <span className="text-text-muted">{t("inbox.shoot")} {role.shootDates}</span>}
           {role.payRange && <span className="text-success font-semibold">{role.payRange}</span>}
         </div>
 
@@ -179,11 +184,11 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
             )}
           >
             <Video className="w-4 h-4" />
-            {callbackTape ? "Record callback tape" : "Record self-tape"}
+            {callbackTape ? t("inbox.recordCallback") : t("inbox.recordSelfTape")}
           </Link>
         ) : (
           <div className="text-[11px] text-text-muted text-center px-2">
-            {statusMessage(s.stage)}
+            {statusMessage(s.stage, t)}
           </div>
         )}
       </div>
@@ -192,13 +197,14 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
 }
 
 function Timeline({ stage }: { stage: Submission["stage"] }) {
+  const { t } = useT();
   const steps: { id: Submission["stage"]; label: string }[] = [
-    { id: "invited",     label: "Invited" },
-    { id: "submitted",   label: "Submitted" },
-    { id: "callback",    label: "Callback" },
-    { id: "avail_check", label: "Avail" },
-    { id: "offered",     label: "Offer" },
-    { id: "booked",      label: "Booked" },
+    { id: "invited",     label: t("stage.invited") },
+    { id: "submitted",   label: t("stage.submitted") },
+    { id: "callback",    label: t("stage.callback") },
+    { id: "avail_check", label: t("stage.avail") },
+    { id: "offered",     label: t("stage.offer") },
+    { id: "booked",      label: t("stage.booked") },
   ];
   const order: Submission["stage"][] = ["invited", "submitted", "callback", "avail_check", "offered", "booked"];
   const currentIdx = stage === "rejected"
@@ -210,7 +216,7 @@ function Timeline({ stage }: { stage: Submission["stage"] }) {
   if (stage === "rejected") {
     return (
       <div className="mt-3 inline-flex items-center gap-1.5 text-[10px] text-text-muted">
-        <AlertCircle className="w-3 h-3" /> Casting moved in a different direction
+        <AlertCircle className="w-3 h-3" /> {t("inbox.rejected")}
       </div>
     );
   }
@@ -247,14 +253,14 @@ function urgencyScore(s: Submission, role?: Role) {
   if (!role?.deadline) return 100;
   return +new Date(role.deadline) - Date.now();
 }
-function statusMessage(stage: Submission["stage"]) {
+function statusMessage(stage: Submission["stage"], t: (k: string) => string) {
   switch (stage) {
-    case "submitted":   return "Your tape was received — awaiting decision.";
-    case "hold":        return "Casting placed you on hold — they'll update you soon.";
-    case "avail_check": return "Confirm your availability — production will follow up.";
-    case "offered":     return "You have an offer — check your messages.";
-    case "booked":      return "🎉 Booked. Production will be in touch.";
-    case "rejected":    return "Casting passed on this role.";
+    case "submitted":   return t("inbox.status.submitted");
+    case "hold":        return t("inbox.status.hold");
+    case "avail_check": return t("inbox.status.avail_check");
+    case "offered":     return t("inbox.status.offered");
+    case "booked":      return t("inbox.status.booked");
+    case "rejected":    return t("inbox.status.rejected");
     default:            return "";
   }
 }

@@ -4,95 +4,48 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sparkles, Search, Video, Inbox, Wand2, ChevronLeft, ChevronRight,
-  X, Check, Users, Megaphone, Zap, ClipboardCheck, Disc, Camera,
+  Sparkles, Search, Inbox, Wand2, ChevronLeft, ChevronRight,
+  Check, Zap, ClipboardCheck, Camera,
 } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 const KEY = "castit_onboarding_done_v1";
 
 type Step = {
   icon: typeof Sparkles;
   tone: "gold" | "plum" | "sage";
-  title: string;
-  body: string;
-  cta?: { label: string; href: string };
+  titleKey: string;
+  bodyKey: string;
+  cta?: { labelKey: string; href: string };
 };
 
 const TALENT_STEPS: Step[] = [
-  {
-    icon: Sparkles,
-    tone: "gold",
-    title: "ברוך הבא ל-CastIt",
-    body: "פלטפורמת הליהוק הראשונה שעובדת בשבילך — לא בשבילם. נראה לך מה נמצא היכן ב-60 שניות.",
-  },
-  {
-    icon: Camera,
-    tone: "gold",
-    title: "Self-tape בתוך האפליקציה",
-    body: "כשתקבל הזמנה, תוכל להקליט טייפ עם framing guide, sides על המסך, וכמה לקיחות. Aria אפילו תיתן לך הוראות בימוי לפני שתתחיל.",
-    cta: { label: "Audition Inbox", href: "/inbox" },
-  },
-  {
-    icon: Wand2,
-    tone: "plum",
-    title: "AI Coach להכנה",
-    body: "העלה סצנה (תמונה או טקסט) → בחר את התפקיד שלך, את הקול והטונציה של השותף → תרגל איתה כמו עם מאמן אמיתי. נשמר בספרייה.",
-    cta: { label: "פתח Coach", href: "/studio/coach" },
-  },
-  {
-    icon: Search,
-    tone: "sage",
-    title: "אתה גלוי בחיפוש",
-    body: "מלהקים מחפשים לפי 17 פרמטרים — גובה, שפות, מבטאים, כישורים. ככל שהפרופיל שלך מלא יותר, כך תופיע יותר.",
-    cta: { label: "Typecast Profile", href: "/typecast" },
-  },
+  { icon: Sparkles, tone: "gold", titleKey: "tour.t1.title", bodyKey: "tour.t1.body" },
+  { icon: Camera,   tone: "gold", titleKey: "tour.t2.title", bodyKey: "tour.t2.body", cta: { labelKey: "tour.t2.cta", href: "/inbox" } },
+  { icon: Wand2,    tone: "plum", titleKey: "tour.t3.title", bodyKey: "tour.t3.body", cta: { labelKey: "tour.t3.cta", href: "/studio/coach" } },
+  { icon: Search,   tone: "sage", titleKey: "tour.t4.title", bodyKey: "tour.t4.body", cta: { labelKey: "tour.t4.cta", href: "/typecast" } },
 ];
 
 const PRO_STEPS: Step[] = [
-  {
-    icon: Sparkles,
-    tone: "gold",
-    title: "ברוך הבא ל-CastIt Pro",
-    body: "Pipeline ליהוק מלא + AI שעובד בשבילך. נסקור 4 כלים שתשתמש בהם כל יום.",
-  },
-  {
-    icon: Inbox,
-    tone: "gold",
-    title: "Action Inbox מאוחד",
-    body: "כל הפעולות הדורשות תשומת לב — חוצה פרויקטים — במקום אחד. Holds שעומדים לפוג, טייפים לסקירה, offers שמחכים.",
-    cta: { label: "Action Inbox", href: "/pro/inbox" },
-  },
-  {
-    icon: Zap,
-    tone: "plum",
-    title: "Tape Triage Mode",
-    body: "החלק ימינה=Callback, שמאלה=Pass, למעלה=Hold. סקור 50 טייפים ב-5 דקות במקום שעה.",
-    cta: { label: "Triage", href: "/pro/triage" },
-  },
-  {
-    icon: Wand2,
-    tone: "plum",
-    title: "AI לכל שלב",
-    body: "Bulk Roles מקבלים breakdown ובונים את כל התפקידים. Tape Analysis סורק כל טייפ ומכין דוח. Comm Automation כותב הודעות במקומך.",
-    cta: { label: "פרויקטים", href: "/pro/projects" },
-  },
-  {
-    icon: ClipboardCheck,
-    tone: "sage",
-    title: "Director Reviews",
-    body: "בוחר 5 טייפים → שולח קישור לבמאי → הוא מצביע 👍/🤔/👎 → אתה רואה בזמן אמת. בלי WeTransfer, בלי שיחות.",
-    cta: { label: "Director Reviews", href: "/pro/approvals" },
-  },
+  { icon: Sparkles,        tone: "gold", titleKey: "tour.p1.title", bodyKey: "tour.p1.body" },
+  { icon: Inbox,           tone: "gold", titleKey: "tour.p2.title", bodyKey: "tour.p2.body", cta: { labelKey: "tour.p2.cta", href: "/pro/inbox" } },
+  { icon: Zap,             tone: "plum", titleKey: "tour.p3.title", bodyKey: "tour.p3.body", cta: { labelKey: "tour.p3.cta", href: "/pro/triage" } },
+  { icon: Wand2,           tone: "plum", titleKey: "tour.p4.title", bodyKey: "tour.p4.body", cta: { labelKey: "tour.p4.cta", href: "/pro/projects" } },
+  { icon: ClipboardCheck,  tone: "sage", titleKey: "tour.p5.title", bodyKey: "tour.p5.body", cta: { labelKey: "tour.p5.cta", href: "/pro/approvals" } },
 ];
 
 export function OnboardingTour() {
   const pathname = usePathname();
+  const { t, dir } = useT();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
 
   // Detect mode (pro vs talent) from URL
   const isPro = pathname?.startsWith("/pro") ?? false;
   const steps = isPro ? PRO_STEPS : TALENT_STEPS;
+  // Forward/back arrows mirror in RTL
+  const ForwardChevron = dir === "rtl" ? ChevronLeft : ChevronRight;
+  const BackChevron = dir === "rtl" ? ChevronRight : ChevronLeft;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -150,7 +103,7 @@ export function OnboardingTour() {
             onClick={dismiss}
             className="absolute top-4 left-4 text-[11px] text-text-muted"
           >
-            דלג
+            {t("tour.skip")}
           </button>
 
           {/* Progress dots */}
@@ -171,9 +124,9 @@ export function OnboardingTour() {
           </div>
 
           {/* Title + body */}
-          <h2 className="font-display text-2xl tracking-editorial text-center">{current.title}</h2>
+          <h2 className="font-display text-2xl tracking-editorial text-center">{t(current.titleKey)}</h2>
           <p className="text-sm text-text-muted text-center mt-2 leading-relaxed">
-            {current.body}
+            {t(current.bodyKey)}
           </p>
 
           {/* Optional CTA */}
@@ -183,7 +136,7 @@ export function OnboardingTour() {
               onClick={dismiss}
               className="block mt-4 h-10 rounded-full bg-bg border border-gold/30 text-xs font-semibold text-gold inline-flex items-center justify-center gap-1.5 w-full"
             >
-              {current.cta.label} <ChevronLeft className="w-3 h-3" />
+              {t(current.cta.labelKey)} <ForwardChevron className="w-3 h-3" />
             </Link>
           )}
 
@@ -194,7 +147,7 @@ export function OnboardingTour() {
                 onClick={prev}
                 className="h-11 px-4 rounded-full bg-bg border border-border text-xs font-semibold inline-flex items-center justify-center gap-1.5 text-text-muted"
               >
-                <ChevronRight className="w-3.5 h-3.5" /> חזור
+                <BackChevron className="w-3.5 h-3.5" /> {t("tour.back")}
               </button>
             )}
             <button
@@ -202,9 +155,9 @@ export function OnboardingTour() {
               className="flex-1 h-11 rounded-full bg-gold text-bg font-semibold text-sm inline-flex items-center justify-center gap-1.5"
             >
               {isLast ? (
-                <><Check className="w-4 h-4" /> בואו נתחיל</>
+                <><Check className="w-4 h-4" /> {t("tour.lets")}</>
               ) : (
-                <>הבא ({step + 1}/{steps.length}) <ChevronLeft className="w-4 h-4" /></>
+                <>{t("tour.next", { n: step + 1, total: steps.length })} <ForwardChevron className="w-4 h-4" /></>
               )}
             </button>
           </div>

@@ -6,10 +6,12 @@ import { Mail, Lock, User as UserIcon, Drama, Briefcase, ArrowRight, AlertCircle
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { t } = useT();
   const { setProfile, signIn } = useStore();
   const [role, setRole] = useState<"Talent" | "Casting Pro">("Talent");
   const [name, setName] = useState("");
@@ -66,17 +68,17 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-dvh">
-      <Header back title="Create account" />
+      <Header back title={t("signup.headerTitle")} />
       <form onSubmit={handleSubmit} className="px-6 pt-6 space-y-6">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <h2 className="font-display text-3xl leading-tight">Tell us who you are.</h2>
-          <p className="text-text-muted text-sm mt-1">Two seconds. Then we get to the good part.</p>
+          <h2 className="font-display text-3xl leading-tight">{t("signup.title")}</h2>
+          <p className="text-text-muted text-sm mt-1">{t("signup.sub")}</p>
         </motion.div>
 
         <div className="grid grid-cols-2 gap-3">
           {[
-            { id: "Talent", icon: Drama, title: "Talent", sub: "Actor · Model · Creator" },
-            { id: "Casting Pro", icon: Briefcase, title: "Casting Pro", sub: "Director · Casting · Studio" },
+            { id: "Talent", icon: Drama, title: t("signup.role.talent"), sub: t("signup.role.talentSub") },
+            { id: "Casting Pro", icon: Briefcase, title: t("signup.role.pro"), sub: t("signup.role.proSub") },
           ].map((r) => {
             const Icon = r.icon;
             const active = role === r.id;
@@ -99,9 +101,9 @@ export default function SignupPage() {
         </div>
 
         <div className="space-y-3">
-          <Field icon={UserIcon} placeholder="Full name" value={name} onChange={setName} />
-          <Field icon={Mail} placeholder="Email" type="email" value={email} onChange={setEmail} />
-          <Field icon={Lock} placeholder="Password (min 6 chars)" type="password" value={password} onChange={setPassword} />
+          <Field icon={UserIcon} placeholder={t("signup.fullName")} value={name} onChange={setName} />
+          <Field icon={Mail} placeholder={t("signup.email")} type="email" value={email} onChange={setEmail} />
+          <Field icon={Lock} placeholder={t("signup.password")} type="password" value={password} onChange={setPassword} />
         </div>
 
         {error && (
@@ -119,7 +121,7 @@ export default function SignupPage() {
             valid && !loading ? "bg-gold text-bg hover:bg-gold-light" : "bg-bg-elevated text-text-subtle"
           )}
         >
-          {loading ? "Creating account…" : "Continue"}
+          {loading ? t("signup.creating") : t("signup.continue")}
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
       </form>

@@ -1,19 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Heebo, Frank_Ruhl_Libre } from "next/font/google";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { DemoSeeder } from "@/components/DemoSeeder";
 import { LanguageHydrator } from "@/components/LanguageToggle";
 
-const inter = Inter({
-  subsets: ["latin"],
+const heebo = Heebo({
+  subsets: ["latin", "hebrew"],
   variable: "--font-inter",
   display: "swap",
 });
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
+const frankRuhl = Frank_Ruhl_Libre({
+  subsets: ["latin", "hebrew"],
   variable: "--font-playfair",
   display: "swap",
 });
@@ -54,7 +54,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${heebo.variable} ${frankRuhl.variable}`}>
       <body className="font-sans">
         <a href="#main-content" className="skip-link">Skip to content</a>
         <div className="device-frame">

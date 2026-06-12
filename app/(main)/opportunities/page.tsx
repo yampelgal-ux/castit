@@ -11,38 +11,46 @@ import { useStore } from "@/lib/store";
 import { applyToCasting } from "@/lib/db";
 import { loadAuditions } from "@/lib/auditions-store";
 import { matchTalent } from "@/lib/matching";
+import { useT } from "@/lib/i18n";
 import { cn, formatNumber } from "@/lib/utils";
 
-const TABS = ["Daily", "Auditions", "Castings", "Stars"] as const;
+const TABS = [
+  { id: "Daily", key: "opp.tab.daily" },
+  { id: "Auditions", key: "opp.tab.auditions" },
+  { id: "Castings", key: "opp.tab.castings" },
+  { id: "Stars", key: "opp.tab.stars" },
+] as const;
+type OppTabId = typeof TABS[number]["id"];
 
 export default function OpportunitiesPage() {
-  const [tab, setTab] = useState<typeof TABS[number]>("Daily");
+  const { t } = useT();
+  const [tab, setTab] = useState<OppTabId>("Castings");
   const streak = useStore((s) => s.streak);
 
   return (
     <div>
       <Header
-        title={<span>For <em className="text-gold-gradient not-italic">You</em></span>}
+        title={<span>{t("opp.headerA")}{t("opp.headerB") ? <em className="text-gold-gradient not-italic"> {t("opp.headerB")}</em> : null}</span>}
         right={
           <button className="px-3 py-1.5 text-xs rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 font-semibold flex items-center gap-1.5">
             <Flame className="w-3 h-3" />
-            {streak} day streak
+            {t("opp.streak", { n: streak })}
           </button>
         }
       />
 
       <div className="px-4 pt-2">
         <div className="flex gap-1 p-1 rounded-2xl bg-bg-elevated border border-border">
-          {TABS.map((t) => (
+          {TABS.map((tabDef) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={tabDef.id}
+              onClick={() => setTab(tabDef.id)}
               className={cn(
                 "flex-1 h-9 rounded-xl text-xs font-medium transition-all",
-                tab === t ? "bg-gold text-bg" : "text-text-muted"
+                tab === tabDef.id ? "bg-gold text-bg" : "text-text-muted"
               )}
             >
-              {t}
+              {t(tabDef.key)}
             </button>
           ))}
         </div>
@@ -169,6 +177,7 @@ function DailyView() {
 }
 
 function CastingsView() {
+  const { t } = useT();
   const [selected, setSelected] = useState<Casting | null>(null);
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
 
@@ -177,7 +186,7 @@ function CastingsView() {
   return (
     <>
       <p className="text-[11px] text-text-muted px-1">
-        Swipe right to apply · swipe left to skip
+        {t("opp.cast.hint")}
       </p>
       {visible.map((c) => (
         <SwipeCastingCard
@@ -191,9 +200,9 @@ function CastingsView() {
         <EmptyState
           icon={Megaphone}
           tone="gold"
-          title="All caught up"
-          description="You've reviewed all castings. Check back tomorrow for new roles."
-          ctaLabel="View auditions"
+          title={t("opp.cast.allCaughtUp.title")}
+          description={t("opp.cast.allCaughtUp.desc")}
+          ctaLabel={t("opp.cast.viewAuditions")}
           ctaHref="/opportunities"
         />
       )}
@@ -213,6 +222,7 @@ function SwipeCastingCard({
   onApply: () => void;
   onSkip: () => void;
 }) {
+  const { t } = useT();
   const applied = useStore((s) => s.appliedCastings.has(c.id));
   const x = useMotionValue(0);
   const applyOpacity = useTransform(x, [20, 80], [0, 1]);
@@ -239,7 +249,7 @@ function SwipeCastingCard({
         style={{ opacity: applyOpacity, scale: applyScale }}
         className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-success text-white text-xs font-bold"
       >
-        <Check className="w-3.5 h-3.5" /> Apply
+        <Check className="w-3.5 h-3.5" /> {t("opp.cast.apply")}
       </motion.div>
 
       {/* Skip indicator */}
@@ -247,7 +257,7 @@ function SwipeCastingCard({
         style={{ opacity: skipOpacity, scale: skipScale }}
         className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-danger text-white text-xs font-bold"
       >
-        Skip <X className="w-3.5 h-3.5" />
+        {t("opp.cast.skip")} <X className="w-3.5 h-3.5" />
       </motion.div>
 
       <motion.div
@@ -271,13 +281,13 @@ function SwipeCastingCard({
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-text-muted truncate">{c.studio}</span>
                   {c.paid && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/15 text-success font-semibold">PAID</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/15 text-success font-semibold">{t("opp.cast.paid")}</span>
                   )}
                 </div>
                 <h4 className="font-display text-base leading-tight mt-0.5">{c.title}</h4>
                 <div className="flex items-center gap-3 text-[11px] text-text-muted mt-1.5">
                   <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {c.location}</span>
-                  <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> by {c.deadline}</span>
+                  <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> {t("opp.cast.by", { date: c.deadline })}</span>
                 </div>
               </div>
             </div>
@@ -285,36 +295,37 @@ function SwipeCastingCard({
 
             {(c.requirements.gender || c.requirements.languages || c.requirements.skills) && (
               <div className="flex flex-wrap gap-1.5 mt-3">
-                {c.requirements.gender?.map((g) => (
-                  <span key={g} className="text-[10px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">{g}</span>
-                ))}
+                {c.requirements.gender?.map((g) => {
+                  const k = g === "Female" ? "tc.gender.female" : g === "Male" ? "tc.gender.male" : "tc.gender.nb";
+                  return <span key={g} className="text-[10px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">{t(k)}</span>;
+                })}
                 {c.requirements.ageRange && (
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">
-                    {c.requirements.ageRange[0]}–{c.requirements.ageRange[1]} yrs
+                    {t("opp.cast.years", { a: c.requirements.ageRange[0], b: c.requirements.ageRange[1] })}
                   </span>
                 )}
                 {c.requirements.languages?.map((l) => (
-                  <span key={l} className="text-[10px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">{l}</span>
+                  <span key={l} className="text-[10px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">{t(`value.lang.${l}`)}</span>
                 ))}
                 {c.requirements.skills?.map((s) => (
-                  <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-violet/10 border border-violet/30 text-violet">{s}</span>
+                  <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-violet/10 border border-violet/30 text-violet">{t(`value.skill.${s}`)}</span>
                 ))}
               </div>
             )}
           </div>
 
           <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-bg/40">
-            <span className="text-[11px] text-text-muted tnum">{c.applicants} applied</span>
+            <span className="text-[11px] text-text-muted tnum">{t("opp.cast.applied", { n: c.applicants })}</span>
             {applied ? (
               <span className="h-9 px-4 rounded-full bg-success/15 text-success text-xs font-semibold inline-flex items-center gap-1">
-                <Check className="w-3 h-3" /> Applied
+                <Check className="w-3 h-3" /> {t("opp.cast.youApplied")}
               </span>
             ) : (
               <button
                 onClick={onApply}
                 className="h-9 px-4 rounded-full bg-gold text-bg text-xs font-semibold"
               >
-                Apply
+                {t("opp.cast.apply")}
               </button>
             )}
           </div>
@@ -415,6 +426,7 @@ function AuditionsView() {
 }
 
 function ApplyModal({ casting, onClose }: { casting: Casting; onClose: () => void }) {
+  const { t } = useT();
   const { userId, profile, markApplied } = useStore();
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -443,8 +455,8 @@ function ApplyModal({ casting, onClose }: { casting: Casting; onClose: () => voi
             <div className="w-14 h-14 rounded-full bg-success/15 grid place-items-center">
               <Check className="w-7 h-7 text-success" strokeWidth={2.5} />
             </div>
-            <p className="font-display text-xl">Application sent!</p>
-            <p className="text-text-muted text-sm text-center">You'll hear back via Aria when there's news.</p>
+            <p className="font-display text-xl">{t("opp.apply.sent")}</p>
+            <p className="text-text-muted text-sm text-center">{t("opp.apply.aria")}</p>
           </div>
         ) : (
           <>
@@ -459,18 +471,18 @@ function ApplyModal({ casting, onClose }: { casting: Casting; onClose: () => voi
             </div>
 
             <div>
-              <label className="text-xs text-text-muted uppercase tracking-wider">Cover note (optional)</label>
+              <label className="text-xs text-text-muted uppercase tracking-wider">{t("opp.apply.coverLabel")}</label>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Tell them why you're a great fit…"
+                placeholder={t("opp.apply.coverPh")}
                 rows={4}
                 className="mt-2 w-full px-4 py-3 rounded-2xl bg-bg border border-border outline-none text-sm placeholder:text-text-subtle resize-none focus:border-gold/50 transition-colors"
               />
             </div>
 
             <div className="text-[11px] text-text-muted">
-              Applying as <span className="text-text font-semibold">@{profile.username || "you"}</span>
+              {t("opp.apply.as")} <span className="text-text font-semibold">@{profile.username || "you"}</span>
             </div>
 
             <button
@@ -478,7 +490,7 @@ function ApplyModal({ casting, onClose }: { casting: Casting; onClose: () => voi
               disabled={loading}
               className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
             >
-              {loading ? "Sending…" : <>Submit Application <Send className="w-4 h-4" /></>}
+              {loading ? t("opp.apply.sending") : <>{t("opp.apply.submit")} <Send className="w-4 h-4" /></>}
             </button>
           </>
         )}
