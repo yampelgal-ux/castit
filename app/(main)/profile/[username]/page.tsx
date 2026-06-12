@@ -33,6 +33,10 @@ export default function ProfilePage() {
   const { profile: myProfile, userId, setProfile, streak } = useStore();
   const isMe = username === "me";
 
+  const [tab, setTab] = useState<(typeof TABS)[number]>("Reels");
+  const [showEdit, setShowEdit] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+
   // Pro looking at their own profile (or another pro) → distinct industry-focused view
   if (isMe && myProfile.role === "Casting Pro") {
     return (
@@ -73,9 +77,6 @@ export default function ProfilePage() {
       }
     : TALENTS.find((t) => t.username === username) ?? TALENTS[0];
 
-  const [tab, setTab] = useState<typeof TABS[number]>("Reels");
-  const [showEdit, setShowEdit] = useState(false);
-  const [showInvite, setShowInvite] = useState(false);
   const isPro = myProfile.role === "Casting Pro";
   const myReels = REELS.filter((r) => r.talentId === talent.id);
 
