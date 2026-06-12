@@ -19,7 +19,6 @@ export function LanguageToggle({ className }: { className?: string }) {
   function pick(l: "he" | "en") {
     if (l === lang) return;
     setLang(l);
-    if (typeof document !== "undefined") document.documentElement.lang = l;
     haptic("light");
   }
 

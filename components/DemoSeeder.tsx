@@ -42,9 +42,12 @@ export function DemoSeeder() {
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             className="fixed bottom-24 right-4 z-40 max-w-[300px]"
           >
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => { setShowSheet(true); dismissBadge(); }}
-              className="rounded-2xl bg-gold/95 backdrop-blur text-bg px-4 py-3 shadow-2xl flex items-center gap-2.5 text-right"
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { setShowSheet(true); dismissBadge(); } }}
+              className="rounded-2xl bg-gold/95 backdrop-blur text-bg px-4 py-3 shadow-2xl flex items-center gap-2.5 text-right cursor-pointer"
             >
               <Sparkles className="w-4 h-4 shrink-0" />
               <div className="flex-1 min-w-0">
@@ -54,10 +57,11 @@ export function DemoSeeder() {
               <button
                 onClick={(e) => { e.stopPropagation(); dismissBadge(); }}
                 className="ml-1 opacity-70"
+                aria-label="Dismiss"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
-            </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

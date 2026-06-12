@@ -3,10 +3,11 @@ import { create } from "zustand";
 import { useEffect, useState } from "react";
 
 // ─── Lightweight i18n ──────────────────────────────────
-// Document stays LTR (the UI was built LTR-first with physical CSS props).
-// Hebrew text renders correctly via the browser's bidi algorithm + dir="auto"
-// on text containers. The toggle swaps copy, not layout — keeps every screen
-// visually stable in both languages.
+// When Hebrew is active, the document switches to dir="rtl" so the entire
+// layout mirrors. Physical CSS props (ml-/mr-, left/right) still resolve as
+// written — most of those will visually flip because their container flips,
+// but a handful (back chevrons, icon-side affordances) may need per-component
+// adjustments based on `dir` from useT().
 
 export type Lang = "he" | "en";
 
@@ -40,14 +41,17 @@ export const useLangStore = create<LangState>((set, get) => ({
 // Hydrate from localStorage on first client mount (avoids SSR mismatch)
 export function useHydrateLang() {
   const setLang = useLangStore((s) => s.setLang);
+  const lang = useLangStore((s) => s.lang);
   useEffect(() => {
     const l = initialLang();
     setLang(l);
-    // Reflect on <html> for a11y + screen readers (lang only, not dir)
-    if (typeof document !== "undefined") {
-      document.documentElement.lang = l;
-    }
   }, [setLang]);
+  // Reflect lang + dir on <html> whenever language changes.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "he" ? "rtl" : "ltr";
+  }, [lang]);
 }
 
 // ─── Dictionary ────────────────────────────────────────
@@ -443,6 +447,229 @@ const DICT: Record<string, Entry> = {
 
   // Header
   "header.back":         { en: "Back", he: "חזור" },
+
+  // Opportunities (For You) page
+  "opp.headerA":      { en: "For", he: "בשבילך" },
+  "opp.headerB":      { en: "You", he: "" },
+  "opp.streak":       { en: "{n} day streak", he: "{n} ימי רצף" },
+  "opp.tab.daily":    { en: "Daily",     he: "יומי" },
+  "opp.tab.auditions":{ en: "Auditions", he: "אודישנים" },
+  "opp.tab.castings": { en: "Castings",  he: "קסטינגים" },
+  "opp.tab.stars":    { en: "Stars",     he: "כוכבים" },
+  // Castings (search projects → apply)
+  "opp.cast.hint":    { en: "Swipe right to apply · swipe left to skip", he: "החלק ימינה להגשה · שמאלה לדילוג" },
+  "opp.cast.apply":   { en: "Apply", he: "הגש" },
+  "opp.cast.skip":    { en: "Skip",  he: "דלג" },
+  "opp.cast.paid":    { en: "PAID",  he: "בתשלום" },
+  "opp.cast.by":      { en: "by {date}", he: "עד {date}" },
+  "opp.cast.years":   { en: "{a}–{b} yrs", he: "גילאי {a}–{b}" },
+  "opp.cast.applied": { en: "{n} applied",  he: "{n} הגישו" },
+  "opp.cast.youApplied": { en: "Applied", he: "הוגש" },
+  "opp.cast.allCaughtUp.title": { en: "All caught up", he: "סיימת לעבור על הכל" },
+  "opp.cast.allCaughtUp.desc":  { en: "You've reviewed all castings. Check back tomorrow for new roles.", he: "עברת על כל הקסטינגים. תחזור מחר לתפקידים חדשים." },
+  "opp.cast.viewAuditions":     { en: "View auditions", he: "צפה באודישנים" },
+  // Apply modal
+  "opp.apply.sent":      { en: "Application sent!", he: "ההגשה נשלחה!" },
+  "opp.apply.aria":      { en: "You'll hear back via Aria when there's news.", he: "תקבל עדכון מ-Aria כשיש חדשות." },
+  "opp.apply.coverLabel":{ en: "Cover note (optional)", he: "מכתב מקדים (אופציונלי)" },
+  "opp.apply.coverPh":   { en: "Tell them why you're a great fit…", he: "ספר להם למה אתה מתאים…" },
+  "opp.apply.as":        { en: "Applying as", he: "מגיש בשם" },
+  "opp.apply.sending":   { en: "Sending…", he: "שולח…" },
+  "opp.apply.submit":    { en: "Submit Application", he: "שלח הגשה" },
+  // Auditions sub-tab
+  "opp.aud.sorted":      { en: "Sorted by match to your typecast", he: "ממוין לפי התאמה ל-Typecast שלך" },
+  "opp.aud.empty.title": { en: "No live auditions for you yet", he: "אין אודישנים פעילים בשבילך" },
+  "opp.aud.empty.desc":  { en: "Casting pros post here. Complete your typecast so you appear in their search.", he: "מלהקים מפרסמים כאן. השלם את ה-Typecast שלך כדי להופיע בחיפושים שלהם." },
+  "opp.aud.empty.cta":   { en: "Edit my typecast", he: "ערוך את ה-Typecast" },
+  "opp.aud.paid":        { en: "Paid", he: "בתשלום" },
+  // Daily sub-tab
+  "opp.daily.digestEyebrow": { en: "Weekly digest", he: "סיכום שבועי" },
+  "opp.daily.digestTitle":   { en: "This week in casting", he: "השבוע בליהוק" },
+  "opp.daily.viewAll":       { en: "View all opportunities", he: "כל ההזדמנויות" },
+  "opp.daily.todaysChallenge": { en: "Today's challenge", he: "האתגר היומי" },
+  "opp.daily.daysLeft": { en: "{n} days left", he: "{n} ימים נותרו" },
+  "opp.daily.joined":   { en: "{n} joined", he: "{n} הצטרפו" },
+  "opp.daily.submit":   { en: "Submit your take", he: "שלח את הגרסה שלך" },
+  "opp.daily.more":     { en: "More this week", he: "עוד השבוע" },
+  "opp.daily.daysLeftShort": { en: "{n}d left", he: "{n} ימים" },
+  "opp.daily.join":     { en: "Join →", he: "הצטרף →" },
+  // Stars sub-tab
+  "opp.stars.thisWeek": { en: "This week", he: "השבוע" },
+  "opp.stars.rising":   { en: "Rising", he: "בעלייה" },
+
+  // Talent profile page
+  "prof.bioDefault":   { en: "Welcome to your profile.", he: "ברוכים הבאים לפרופיל שלך." },
+  "prof.stat.followers":   { en: "Followers",   he: "עוקבים" },
+  "prof.stat.likes":       { en: "Likes",       he: "לייקים" },
+  "prof.stat.submissions": { en: "Submissions", he: "הגשות" },
+  "prof.stat.dayStreak":   { en: "Day Streak",  he: "ימי רצף" },
+  "prof.complete":         { en: "Complete →",  he: "← השלם" },
+  "prof.viewers.title":    { en: "Who viewed you", he: "מי צפה בך" },
+  "prof.viewers.thisWeek": { en: "{n} this week",  he: "{n} השבוע" },
+  "prof.viewers.upgrade":  { en: "Upgrade to see all viewers", he: "שדרג כדי לראות את כל הצופים" },
+  "prof.role.castingDirector": { en: "Casting Director", he: "במאי ליהוק" },
+  "prof.role.talentAgent":     { en: "Talent Agent",     he: "סוכן כישרונות" },
+  "prof.role.productionCo":    { en: "Production Co.",   he: "חברת הפקה" },
+  "prof.edit":         { en: "Edit profile", he: "ערוך פרופיל" },
+  "prof.saved":        { en: "Saved",        he: "שמורים" },
+  "prof.calendar":     { en: "Calendar",     he: "יומן" },
+  "prof.sendAudition": { en: "Send audition", he: "שלח אודישן" },
+  "prof.follow":       { en: "Follow",       he: "עקוב" },
+  "prof.message":      { en: "Message",      he: "הודעה" },
+  "prof.tab.reels":     { en: "Reels",     he: "רילים" },
+  "prof.tab.headshots": { en: "Headshots", he: "תמונות ראש" },
+  "prof.tab.typecast":  { en: "Typecast",  he: "Typecast" },
+  // Edit modal
+  "prof.edit.title":   { en: "Edit profile", he: "ערוך פרופיל" },
+  "prof.edit.updated": { en: "Profile updated!", he: "הפרופיל עודכן!" },
+  "prof.edit.changePhoto": { en: "Tap to change photo", he: "הקש להחלפת תמונה" },
+  "prof.edit.name":    { en: "Name", he: "שם" },
+  "prof.edit.bio":     { en: "Bio",  he: "ביוגרפיה" },
+  "prof.edit.saving":  { en: "Saving…", he: "שומר…" },
+  "prof.edit.save":    { en: "Save changes", he: "שמור שינויים" },
+  // Settings sheet
+  "prof.settings.title":   { en: "Settings", he: "הגדרות" },
+  "prof.settings.language":{ en: "Language", he: "שפה" },
+  "prof.settings.close":   { en: "Close", he: "סגור" },
+  // Typecast card on profile
+  "prof.tc.title":     { en: "Typecast Card", he: "כרטיס Typecast" },
+  "prof.tc.height":    { en: "Height", he: "גובה" },
+  "prof.tc.weight":    { en: "Weight", he: "משקל" },
+  "prof.tc.gender":    { en: "Gender", he: "מגדר" },
+  "prof.tc.ageRange":  { en: "Age range", he: "טווח גילאים" },
+  "prof.tc.skin":      { en: "Skin",  he: "עור" },
+  "prof.tc.eyes":      { en: "Eyes",  he: "עיניים" },
+  "prof.tc.hair":      { en: "Hair",  he: "שיער" },
+  "prof.tc.hairLength":{ en: "Hair length", he: "אורך שיער" },
+  "prof.tc.languages": { en: "Languages",  he: "שפות" },
+  "prof.tc.skills":    { en: "Skills",  he: "כישורים" },
+  "prof.tc.genres":    { en: "Genres",  he: "ז'אנרים" },
+
+  // Audition inbox
+  "inbox.headerTitle":   { en: "Auditions", he: "אודישנים" },
+  "inbox.titleA":        { en: "Your", he: "האודישנים" },
+  "inbox.titleB":        { en: "audition inbox", he: "שלך" },
+  "inbox.sub":           { en: "Every invite, every status, in one place.", he: "כל הזמנה, כל סטטוס, במקום אחד." },
+  "inbox.tapesToRecord": { en: "{n} tape to record.", he: "{n} טייפים להקלטה." },
+  "inbox.tapeToRecord":  { en: "1 tape to record.", he: "טייפ אחד להקלטה." },
+  "inbox.tapStart":      { en: "Tap any invite below to start.", he: "הקש על הזמנה למטה כדי להתחיל." },
+  "inbox.tab.active":    { en: "Active", he: "פעיל" },
+  "inbox.tab.history":   { en: "History", he: "היסטוריה" },
+  "inbox.empty.activeTitle":    { en: "No active auditions", he: "אין אודישנים פעילים" },
+  "inbox.empty.activeDesc":     { en: "When a casting pro invites you to read for a role, the invite shows up here.", he: "כשמלהק יזמין אותך לתפקיד, ההזמנה תופיע כאן." },
+  "inbox.empty.historyTitle":   { en: "No history yet", he: "עדיין אין היסטוריה" },
+  "inbox.empty.historyDesc":    { en: "Past auditions you've completed or that were closed appear here.", he: "אודישנים שסיימת או שנסגרו יופיעו כאן." },
+  "inbox.deadlinePassed": { en: "Deadline passed", he: "הדדליין עבר" },
+  "inbox.dueToday":       { en: "Due today", he: "נדרש היום" },
+  "inbox.dueIn":          { en: "Due in {n}d", he: "תוך {n} ימים" },
+  "inbox.deadline":       { en: "Deadline {date}", he: "דדליין {date}" },
+  "inbox.shoot":          { en: "Shoot:", he: "צילום:" },
+  "inbox.recordSelfTape": { en: "Record self-tape", he: "הקלט סלף-טייפ" },
+  "inbox.recordCallback": { en: "Record callback tape", he: "הקלט טייפ לקולבק" },
+  "inbox.rejected":       { en: "Casting moved in a different direction", he: "הליהוק לקח כיוון אחר" },
+  "inbox.status.submitted":   { en: "Your tape was received — awaiting decision.", he: "הטייפ שלך התקבל — ממתין להחלטה." },
+  "inbox.status.hold":        { en: "Casting placed you on hold — they'll update you soon.", he: "הליהוק העבירו אותך ל-Hold — יעדכנו בקרוב." },
+  "inbox.status.avail_check": { en: "Confirm your availability — production will follow up.", he: "אשר את הזמינות שלך — ההפקה תחזור אליך." },
+  "inbox.status.offered":     { en: "You have an offer — check your messages.", he: "יש לך הצעה — בדוק את ההודעות." },
+  "inbox.status.booked":      { en: "🎉 Booked. Production will be in touch.", he: "🎉 אושרת. ההפקה תיצור קשר." },
+  "inbox.status.rejected":    { en: "Casting passed on this role.", he: "הליהוק העביר את התפקיד הזה." },
+
+  // Submission pipeline stages (timeline labels)
+  "stage.invited":     { en: "Invited",     he: "הוזמן" },
+  "stage.submitted":   { en: "Submitted",   he: "הוגש" },
+  "stage.callback":    { en: "Callback",    he: "קולבק" },
+  "stage.avail":       { en: "Avail",       he: "זמינות" },
+  "stage.offer":       { en: "Offer",       he: "הצעה" },
+  "stage.booked":      { en: "Booked",      he: "אושר" },
+  "stage.toReview":    { en: "To Review",   he: "לסקירה" },
+  "stage.label.invited":     { en: "Invited",     he: "הוזמן" },
+  "stage.label.submitted":   { en: "To review",   he: "לסקירה" },
+  "stage.label.callback":    { en: "Callback",    he: "קולבק" },
+  "stage.label.hold":        { en: "Hold",        he: "השהיה" },
+  "stage.label.avail_check": { en: "Avail check", he: "זמינות" },
+  "stage.label.offered":     { en: "Offer out",   he: "הצעה" },
+  "stage.label.booked":      { en: "Booked",      he: "אושר" },
+  "stage.label.rejected":    { en: "Passed",      he: "נדחה" },
+
+  // Talent attribute values — canonical English stored, Hebrew shown
+  "value.lang.Hebrew":   { en: "Hebrew",   he: "עברית" },
+  "value.lang.English":  { en: "English",  he: "אנגלית" },
+  "value.lang.Arabic":   { en: "Arabic",   he: "ערבית" },
+  "value.lang.Russian":  { en: "Russian",  he: "רוסית" },
+  "value.lang.French":   { en: "French",   he: "צרפתית" },
+  "value.lang.Spanish":  { en: "Spanish",  he: "ספרדית" },
+  "value.lang.German":   { en: "German",   he: "גרמנית" },
+  "value.lang.Italian":  { en: "Italian",  he: "איטלקית" },
+  "value.skill.Stage Combat":     { en: "Stage Combat",     he: "קרב במה" },
+  "value.skill.Singing":          { en: "Singing",          he: "שירה" },
+  "value.skill.Dance":            { en: "Dance",            he: "ריקוד" },
+  "value.skill.Improv":           { en: "Improv",           he: "אלתור" },
+  "value.skill.Horseback Riding": { en: "Horseback Riding", he: "רכיבה על סוסים" },
+  "value.skill.Martial Arts":     { en: "Martial Arts",     he: "אומנויות לחימה" },
+  "value.skill.Piano":            { en: "Piano",            he: "פסנתר" },
+  "value.skill.Guitar":           { en: "Guitar",           he: "גיטרה" },
+  "value.skill.Driving (Stick)":  { en: "Driving (Stick)",  he: "נהיגה בידנית" },
+  "value.skill.Surfing":          { en: "Surfing",          he: "גלישת גלים" },
+  "value.skill.Skateboarding":    { en: "Skateboarding",    he: "סקייטבורד" },
+  "value.skill.Dialects":         { en: "Dialects",         he: "דיאלקטים" },
+  "value.skill.Drama":            { en: "Drama",            he: "דרמה" },
+  "value.skill.Comedy":           { en: "Comedy",           he: "קומדיה" },
+  "value.genre.Drama":      { en: "Drama",      he: "דרמה" },
+  "value.genre.Comedy":     { en: "Comedy",     he: "קומדיה" },
+  "value.genre.Thriller":   { en: "Thriller",   he: "מותחן" },
+  "value.genre.Action":     { en: "Action",     he: "אקשן" },
+  "value.genre.Romance":    { en: "Romance",    he: "רומנטיקה" },
+  "value.genre.Indie":      { en: "Indie",      he: "אינדי" },
+  "value.genre.Period":     { en: "Period",     he: "פרק זמן" },
+  "value.genre.Horror":     { en: "Horror",     he: "אימה" },
+  "value.genre.Musical":    { en: "Musical",    he: "מיוזיקל" },
+  "value.genre.Commercial": { en: "Commercial", he: "פרסומת" },
+  "value.hair.Short":  { en: "Short",  he: "קצר" },
+  "value.hair.Medium": { en: "Medium", he: "בינוני" },
+  "value.hair.Long":   { en: "Long",   he: "ארוך" },
+
+  // Project type display
+  "value.type.Feature Film": { en: "Feature Film",  he: "סרט עלילתי" },
+  "value.type.TV Series":    { en: "TV Series",     he: "סדרת טלוויזיה" },
+  "value.type.Commercial":   { en: "Commercial",    he: "פרסומת" },
+  "value.type.Short Film":   { en: "Short Film",    he: "סרט קצר" },
+  "value.type.Theater":      { en: "Theater",       he: "תיאטרון" },
+  "value.type.Theatre":      { en: "Theatre",       he: "תיאטרון" },
+  "value.type.Music Video":  { en: "Music Video",   he: "קליפ" },
+  "value.type.Voice-over":   { en: "Voice-over",    he: "דיבוב" },
+
+  // Onboarding tour (modal)
+  "tour.skip":           { en: "Skip", he: "דלג" },
+  "tour.back":           { en: "Back", he: "חזור" },
+  "tour.lets":           { en: "Let's go", he: "בואו נתחיל" },
+  "tour.next":           { en: "Next ({n}/{total})", he: "הבא ({n}/{total})" },
+  // Talent steps
+  "tour.t1.title":       { en: "Welcome to CastIt", he: "ברוכים הבאים ל-CastIt" },
+  "tour.t1.body":        { en: "The first casting platform that works for you — not against you. We'll show you what lives where in 60 seconds.", he: "פלטפורמת הליהוק הראשונה שעובדת בשבילך — לא בשבילם. נראה לך מה נמצא היכן ב-60 שניות." },
+  "tour.t2.title":       { en: "Self-tape inside the app", he: "הקלטת טייפ בתוך האפליקציה" },
+  "tour.t2.body":        { en: "When you get an invite, you can record a tape with a framing guide, your lines on screen, and multiple takes. Aria will even give you directing notes before you start.", he: "כשתקבל הזמנה, תוכל להקליט טייפ עם מדריך מסגרת, הטקסט על המסך, וכמה לקיחות. Aria אפילו תיתן לך הוראות בימוי לפני שתתחיל." },
+  "tour.t2.cta":         { en: "Auditions inbox", he: "תיבת אודישנים" },
+  "tour.t3.title":       { en: "AI Coach for prep", he: "מאמן AI להכנה" },
+  "tour.t3.body":        { en: "Upload a scene (image or text) → pick your role and your partner's voice and tone → rehearse with her like a real coach. Saved to your library.", he: "העלה סצנה (תמונה או טקסט) → בחר את התפקיד שלך, את הקול והטונציה של השותף → תרגל איתה כמו עם מאמן אמיתי. נשמר בספרייה." },
+  "tour.t3.cta":         { en: "Open Coach", he: "פתח את המאמן" },
+  "tour.t4.title":       { en: "You're visible in search", he: "אתה גלוי בחיפוש" },
+  "tour.t4.body":        { en: "Casting pros search by 17 parameters — height, languages, accents, skills. The fuller your profile, the more often you'll appear.", he: "מלהקים מחפשים לפי 17 פרמטרים — גובה, שפות, מבטאים, כישורים. ככל שהפרופיל שלך מלא יותר, כך תופיע יותר." },
+  "tour.t4.cta":         { en: "Build your typecast", he: "בנה את ה-Typecast שלך" },
+  // Pro steps
+  "tour.p1.title":       { en: "Welcome to CastIt Pro", he: "ברוכים הבאים ל-CastIt Pro" },
+  "tour.p1.body":        { en: "A full casting pipeline + AI working for you. We'll cover the 4 tools you'll use every day.", he: "Pipeline ליהוק מלא + AI שעובד בשבילך. נסקור 4 כלים שתשתמש בהם כל יום." },
+  "tour.p2.title":       { en: "Unified action inbox", he: "תיבת פעולות מאוחדת" },
+  "tour.p2.body":        { en: "Every action that needs your attention — across all projects — in one place. Holds about to expire, tapes to review, offers waiting.", he: "כל הפעולות הדורשות תשומת לב — חוצה פרויקטים — במקום אחד. Holds שעומדים לפוג, טייפים לסקירה, offers שמחכים." },
+  "tour.p2.cta":         { en: "Action inbox", he: "תיבת פעולות" },
+  "tour.p3.title":       { en: "Tape triage mode", he: "מצב סקירת טייפים" },
+  "tour.p3.body":        { en: "Swipe right=Callback, left=Pass, up=Hold. Triage 50 tapes in 5 minutes instead of an hour.", he: "החלק ימינה=Callback, שמאלה=Pass, למעלה=Hold. סקור 50 טייפים ב-5 דקות במקום שעה." },
+  "tour.p3.cta":         { en: "Triage", he: "סקירה" },
+  "tour.p4.title":       { en: "AI at every stage", he: "AI לכל שלב" },
+  "tour.p4.body":        { en: "Bulk roles get a breakdown and build all your roles. Tape analysis scans every tape and prepares a report. Comm automation writes messages for you.", he: "תפקידים במצב Bulk מקבלים breakdown ובונים את כל התפקידים. ניתוח טייפים סורק כל טייפ ומכין דוח. אוטומציית תקשורת כותבת הודעות במקומך." },
+  "tour.p4.cta":         { en: "Projects", he: "פרויקטים" },
+  "tour.p5.title":       { en: "Director reviews", he: "סקירות במאי" },
+  "tour.p5.body":        { en: "Pick 5 tapes → send a link to the director → they vote 👍/🤔/👎 → you see it in real time. No more WeTransfer, no more calls.", he: "בוחר 5 טייפים → שולח קישור לבמאי → הוא מצביע 👍/🤔/👎 → אתה רואה בזמן אמת. בלי WeTransfer, בלי שיחות." },
+  "tour.p5.cta":         { en: "Director reviews", he: "סקירות במאי" },
 
   // Approvals (Director Reviews)
   "ap.new":            { en: "New", he: "חדש" },

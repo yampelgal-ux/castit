@@ -14,22 +14,30 @@ import { TypecastBadge } from "@/components/TypecastBadge";
 import { useStore } from "@/lib/store";
 import { updateProfile } from "@/lib/db";
 import { ProfileProgress } from "@/components/ProfileProgress";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useT } from "@/lib/i18n";
 import { cn, formatNumber } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { nameOf, SKIN_TONES, EYE_COLORS, HAIR_COLORS } from "@/lib/typecast-palette";
 
-const TABS = ["Reels", "Headshots", "Typecast"] as const;
+const TABS = [
+  { id: "Reels", key: "prof.tab.reels" },
+  { id: "Headshots", key: "prof.tab.headshots" },
+  { id: "Typecast", key: "prof.tab.typecast" },
+] as const;
+type TabId = typeof TABS[number]["id"];
 
 // Mock profile viewers for "Who viewed you" feature
 const MOCK_VIEWERS = [
-  { name: "Sarah K.", role: "Casting Director", photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80&auto=format&fit=crop" },
-  { name: "James M.", role: "Talent Agent", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&q=80&auto=format&fit=crop" },
-  { name: "Noa B.", role: "Production Co.", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&q=80&auto=format&fit=crop" },
+  { name: "Sarah K.", roleKey: "prof.role.castingDirector", photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80&auto=format&fit=crop" },
+  { name: "James M.", roleKey: "prof.role.talentAgent",     photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&q=80&auto=format&fit=crop" },
+  { name: "Noa B.",   roleKey: "prof.role.productionCo",    photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&q=80&auto=format&fit=crop" },
 ];
 
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
   const router = useRouter();
+  const { t } = useT();
   const { profile: myProfile, userId, setProfile, streak } = useStore();
   const isMe = username === "me";
 
@@ -52,7 +60,7 @@ export default function ProfilePage() {
         verified: true,
         photo: myProfile.photoUrl || "",
         cover: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1200",
-        bio: myProfile.bio || "Welcome to your profile.",
+        bio: myProfile.bio || t("prof.bioDefault"),
         followers: 0,
         likes: 0,
         submissions: 0,
@@ -73,9 +81,10 @@ export default function ProfilePage() {
       }
     : TALENTS.find((t) => t.username === username) ?? TALENTS[0];
 
-  const [tab, setTab] = useState<typeof TABS[number]>("Reels");
+  const [tab, setTab] = useState<TabId>("Reels");
   const [showEdit, setShowEdit] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const isPro = myProfile.role === "Casting Pro";
   const myReels = REELS.filter((r) => r.talentId === talent.id);
 
@@ -88,7 +97,17 @@ export default function ProfilePage() {
       <Header
         back={!isMe}
         title={`@${talent.username}`}
-        right={isMe ? <Settings className="w-5 h-5 text-text-muted" /> : <Share2 className="w-5 h-5 text-text-muted" />}
+        right={isMe ? (
+          <button
+            onClick={() => setShowSettings(true)}
+            aria-label={t("prof.settings.title")}
+            className="w-9 h-9 grid place-items-center rounded-full hover:bg-bg-elevated"
+          >
+            <Settings className="w-5 h-5 text-text-muted" />
+          </button>
+        ) : (
+          <Share2 className="w-5 h-5 text-text-muted" />
+        )}
         transparent
       />
 
@@ -122,10 +141,10 @@ export default function ProfilePage() {
           <p className="text-sm text-text-muted mt-1 leading-relaxed">{talent.bio}</p>
 
           <div className="flex items-center gap-6 mt-4">
-            <Stat label="Followers" value={formatNumber(talent.followers)} />
-            <Stat label="Likes" value={formatNumber(talent.likes)} />
-            <Stat label="Submissions" value={String(talent.submissions)} />
-            {isMe && <Stat label="Day Streak" value={`${streak} 🔥`} />}
+            <Stat label={t("prof.stat.followers")} value={formatNumber(talent.followers)} />
+            <Stat label={t("prof.stat.likes")} value={formatNumber(talent.likes)} />
+            <Stat label={t("prof.stat.submissions")} value={String(talent.submissions)} />
+            {isMe && <Stat label={t("prof.stat.dayStreak")} value={`${streak} 🔥`} />}
           </div>
 
           {isMe && (
@@ -140,7 +159,7 @@ export default function ProfilePage() {
                 }}
                 action={
                   <button onClick={() => setShowEdit(true)} className="text-[11px] text-gold font-semibold">
-                    Complete →
+                    {t("prof.complete")}
                   </button>
                 }
               />
@@ -153,9 +172,9 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Eye className="w-4 h-4 text-gold" />
-                  <span className="text-xs font-semibold text-gold">Who viewed you</span>
+                  <span className="text-xs font-semibold text-gold">{t("prof.viewers.title")}</span>
                 </div>
-                <span className="text-[10px] text-text-muted tnum">12 this week</span>
+                <span className="text-[10px] text-text-muted tnum">{t("prof.viewers.thisWeek", { n: 12 })}</span>
               </div>
               <div className="flex items-center gap-2">
                 {MOCK_VIEWERS.map((v, i) => (
@@ -178,7 +197,7 @@ export default function ProfilePage() {
                     {i < 2 && (
                       <>
                         <span className="text-[10px] font-medium truncate w-full text-center">{v.name}</span>
-                        <span className="text-[9px] text-text-muted truncate w-full text-center">{v.role}</span>
+                        <span className="text-[9px] text-text-muted truncate w-full text-center">{t(v.roleKey)}</span>
                       </>
                     )}
                   </div>
@@ -190,7 +209,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               <button className="mt-3 w-full h-9 rounded-xl border border-gold/30 text-gold text-xs font-semibold bg-gold/5">
-                Upgrade to see all viewers
+                {t("prof.viewers.upgrade")}
               </button>
             </div>
           )}
@@ -202,19 +221,19 @@ export default function ProfilePage() {
                   onClick={() => setShowEdit(true)}
                   className="flex-1 h-11 rounded-full bg-bg-elevated border border-border text-sm font-semibold"
                 >
-                  Edit profile
+                  {t("prof.edit")}
                 </button>
                 <button
                   onClick={() => router.push("/saved")}
                   className="h-11 px-4 rounded-full bg-bg-elevated border border-border text-sm font-semibold"
                 >
-                  Saved
+                  {t("prof.saved")}
                 </button>
                 <button
                   onClick={() => router.push("/calendar")}
                   className="h-11 px-4 rounded-full bg-bg-elevated border border-border text-sm font-semibold"
                 >
-                  Calendar
+                  {t("prof.calendar")}
                 </button>
               </>
             ) : isPro ? (
@@ -223,7 +242,7 @@ export default function ProfilePage() {
                   onClick={() => setShowInvite(true)}
                   className="flex-1 h-11 rounded-full bg-gold text-bg text-sm font-semibold inline-flex items-center justify-center gap-1.5"
                 >
-                  <Send className="w-4 h-4" /> Send audition
+                  <Send className="w-4 h-4" /> {t("prof.sendAudition")}
                 </button>
                 <button
                   onClick={handleMessage}
@@ -234,12 +253,12 @@ export default function ProfilePage() {
               </>
             ) : (
               <>
-                <button className="flex-1 h-11 rounded-full bg-gold text-bg text-sm font-semibold">Follow</button>
+                <button className="flex-1 h-11 rounded-full bg-gold text-bg text-sm font-semibold">{t("prof.follow")}</button>
                 <button
                   onClick={handleMessage}
                   className="h-11 px-4 rounded-full bg-bg-elevated border border-border text-sm font-semibold inline-flex items-center gap-1.5"
                 >
-                  <MessageCircle className="w-4 h-4" /> Message
+                  <MessageCircle className="w-4 h-4" /> {t("prof.message")}
                 </button>
               </>
             )}
@@ -250,16 +269,16 @@ export default function ProfilePage() {
       {/* Tabs */}
       <div className="mt-6 px-5">
         <div className="flex gap-1 border-b border-border">
-          {TABS.map((t) => (
+          {TABS.map((tabDef) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={tabDef.id}
+              onClick={() => setTab(tabDef.id)}
               className={cn(
                 "flex-1 h-10 text-xs font-semibold uppercase tracking-wider border-b-2 -mb-px transition-colors",
-                tab === t ? "border-gold text-gold" : "border-transparent text-text-muted"
+                tab === tabDef.id ? "border-gold text-gold" : "border-transparent text-text-muted"
               )}
             >
-              {t}
+              {t(tabDef.key)}
             </button>
           ))}
         </div>
@@ -288,7 +307,7 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 gap-2">
               {[talent.photo, talent.cover, talent.photo, talent.cover].map((src, i) => (
                 <div key={i} className="aspect-[3/4] rounded-2xl overflow-hidden bg-bg-elevated">
-                  <img src={src} alt="" className="w-full h-full object-cover" />
+                  {src ? <img src={src} alt="" className="w-full h-full object-cover" /> : null}
                 </div>
               ))}
             </div>
@@ -309,6 +328,8 @@ export default function ProfilePage() {
         />
       )}
 
+      {showSettings && <SettingsSheet onClose={() => setShowSettings(false)} />}
+
       <SendAuditionSheet
         open={showInvite}
         onClose={() => setShowInvite(false)}
@@ -326,11 +347,38 @@ export default function ProfilePage() {
   );
 }
 
+function SettingsSheet({ onClose }: { onClose: () => void }) {
+  const { t } = useT();
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm px-4 pb-6" onClick={onClose}>
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-[440px] bg-bg-elevated border border-border rounded-3xl p-6 space-y-5"
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-xl">{t("prof.settings.title")}</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-bg grid place-items-center" aria-label={t("prof.settings.close")}>
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between rounded-2xl bg-bg border border-border px-4 py-3">
+          <span className="text-sm font-medium">{t("prof.settings.language")}</span>
+          <LanguageToggle />
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function EditProfileModal({
   talent, onClose, onSave, userId,
 }: {
   talent: any; onClose: () => void; onSave: (u: any) => void; userId: string | null;
 }) {
+  const { t } = useT();
   const [name, setName] = useState(talent.name);
   const [bio, setBio] = useState(talent.bio);
   const [loading, setLoading] = useState(false);
@@ -356,12 +404,12 @@ function EditProfileModal({
             <div className="w-14 h-14 rounded-full bg-success/15 grid place-items-center">
               <Check className="w-7 h-7 text-success" strokeWidth={2.5} />
             </div>
-            <p className="font-display text-xl">Profile updated!</p>
+            <p className="font-display text-xl">{t("prof.edit.updated")}</p>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-xl">Edit profile</h2>
+              <h2 className="font-display text-xl">{t("prof.edit.title")}</h2>
               <button onClick={onClose} className="w-8 h-8 rounded-full bg-bg grid place-items-center">
                 <X className="w-4 h-4" />
               </button>
@@ -369,17 +417,23 @@ function EditProfileModal({
 
             <div className="flex flex-col items-center gap-3">
               <div className="relative">
-                <img src={talent.photo} alt="" className="w-20 h-20 rounded-full object-cover" />
+                {talent.photo ? (
+                  <img src={talent.photo} alt="" className="w-20 h-20 rounded-full object-cover" />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-bg grid place-items-center font-display text-2xl text-gold">
+                    {(talent.name || "?").split(/\s+/).map((p: string) => p[0]).join("").slice(0, 2).toUpperCase()}
+                  </div>
+                )}
                 <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-gold text-bg grid place-items-center shadow">
                   <Camera className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <p className="text-xs text-text-muted">Tap to change photo</p>
+              <p className="text-xs text-text-muted">{t("prof.edit.changePhoto")}</p>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-text-muted uppercase tracking-wider">Name</label>
+                <label className="text-xs text-text-muted uppercase tracking-wider">{t("prof.edit.name")}</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -387,7 +441,7 @@ function EditProfileModal({
                 />
               </div>
               <div>
-                <label className="text-xs text-text-muted uppercase tracking-wider">Bio</label>
+                <label className="text-xs text-text-muted uppercase tracking-wider">{t("prof.edit.bio")}</label>
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
@@ -402,7 +456,7 @@ function EditProfileModal({
               disabled={loading}
               className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold disabled:opacity-60"
             >
-              {loading ? "Saving…" : "Save changes"}
+              {loading ? t("prof.edit.saving") : t("prof.edit.save")}
             </button>
           </>
         )}
@@ -421,42 +475,45 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 function TypecastCard({ talent }: { talent: any }) {
+  const { t } = useT();
   const tc = talent.typecast;
+  const genderKeyMap: Record<string, string> = { Female: "tc.gender.female", Male: "tc.gender.male", "Non-binary": "tc.gender.nb" };
+  const genderLabel = genderKeyMap[tc.gender] ? t(genderKeyMap[tc.gender]) : tc.gender;
   return (
     <div className="rounded-3xl p-6 bg-gradient-to-br from-bg-elevated to-bg border border-border">
       <div className="flex items-center justify-between mb-5">
-        <div className="text-[10px] uppercase tracking-widest text-gold">Typecast Card</div>
+        <div className="text-[10px] uppercase tracking-widest text-gold">{t("prof.tc.title")}</div>
         <div className="text-[10px] text-text-muted tnum">@{talent.username}</div>
       </div>
       <div className="grid grid-cols-2 gap-y-5">
-        <Field icon={Ruler} label="Height" value={`${tc.heightCm} cm`} />
-        <Field icon={Ruler} label="Weight" value={`${tc.weightKg} kg`} />
-        <Field icon={Globe} label="Gender" value={tc.gender} />
-        <Field icon={Globe} label="Age range" value={`${tc.ageRange[0]}–${tc.ageRange[1]}`} />
-        <ColorField label="Skin" color={tc.skinTone} paletteName={nameOf(SKIN_TONES, tc.skinTone)} />
-        <ColorField label="Eyes" color={tc.eyeColor} paletteName={nameOf(EYE_COLORS, tc.eyeColor)} />
-        <ColorField label="Hair" color={tc.hairColor} paletteName={nameOf(HAIR_COLORS, tc.hairColor)} />
-        <Field icon={Languages} label="Hair length" value={tc.hairLength} />
+        <Field icon={Ruler} label={t("prof.tc.height")} value={`${tc.heightCm} cm`} />
+        <Field icon={Ruler} label={t("prof.tc.weight")} value={`${tc.weightKg} kg`} />
+        <Field icon={Globe} label={t("prof.tc.gender")} value={genderLabel} />
+        <Field icon={Globe} label={t("prof.tc.ageRange")} value={`${tc.ageRange[0]}–${tc.ageRange[1]}`} />
+        <ColorField label={t("prof.tc.skin")} color={tc.skinTone} paletteName={nameOf(SKIN_TONES, tc.skinTone)} />
+        <ColorField label={t("prof.tc.eyes")} color={tc.eyeColor} paletteName={nameOf(EYE_COLORS, tc.eyeColor)} />
+        <ColorField label={t("prof.tc.hair")} color={tc.hairColor} paletteName={nameOf(HAIR_COLORS, tc.hairColor)} />
+        <Field icon={Languages} label={t("prof.tc.hairLength")} value={t(`value.hair.${tc.hairLength}`)} />
       </div>
       <div className="mt-6 pt-5 border-t border-border">
-        <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2">Languages</div>
+        <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2">{t("prof.tc.languages")}</div>
         <div className="flex flex-wrap gap-1.5">
-          {tc.languages.map((l: string) => <TypecastBadge key={l}>{l}</TypecastBadge>)}
+          {tc.languages.map((l: string) => <TypecastBadge key={l}>{t(`value.lang.${l}`)}</TypecastBadge>)}
         </div>
       </div>
       {tc.skills?.length > 0 && (
         <div className="mt-5">
-          <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2">Skills</div>
+          <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2">{t("prof.tc.skills")}</div>
           <div className="flex flex-wrap gap-1.5">
-            {tc.skills.map((s: string) => <TypecastBadge key={s}>{s}</TypecastBadge>)}
+            {tc.skills.map((s: string) => <TypecastBadge key={s}>{t(`value.skill.${s}`)}</TypecastBadge>)}
           </div>
         </div>
       )}
       {tc.genres?.length > 0 && (
         <div className="mt-5">
-          <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2">Genres</div>
+          <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2">{t("prof.tc.genres")}</div>
           <div className="flex flex-wrap gap-1.5">
-            {tc.genres.map((g: string) => <TypecastBadge key={g}>{g}</TypecastBadge>)}
+            {tc.genres.map((g: string) => <TypecastBadge key={g}>{t(`value.genre.${g}`)}</TypecastBadge>)}
           </div>
         </div>
       )}

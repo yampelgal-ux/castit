@@ -110,8 +110,8 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
         <div className="flex flex-wrap gap-1.5 mb-3">
           <TypecastBadge>{talent.typecast.heightCm}cm</TypecastBadge>
           <TypecastBadge color={talent.typecast.eyeColor}>{t("feed.eyes")}</TypecastBadge>
-          <TypecastBadge color={talent.typecast.hairColor}>{talent.typecast.hairLength} {t("feed.hair")}</TypecastBadge>
-          <TypecastBadge>{talent.typecast.languages.slice(0, 2).join(" · ")}</TypecastBadge>
+          <TypecastBadge color={talent.typecast.hairColor}>{t(`value.hair.${talent.typecast.hairLength}`)} {t("feed.hair")}</TypecastBadge>
+          <TypecastBadge>{talent.typecast.languages.slice(0, 2).map((l: string) => t(`value.lang.${l}`)).join(" · ")}</TypecastBadge>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-white/80">

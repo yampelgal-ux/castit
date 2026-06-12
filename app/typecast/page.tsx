@@ -226,6 +226,7 @@ export default function TypecastPage() {
                   <Label>{t("tc.languages")}</Label>
                   <Chips
                     options={LANGUAGES}
+                    labels={LANGUAGES.map((l) => t(`value.lang.${l}`))}
                     selected={tc.languages}
                     multi
                     onToggle={(v) => setTc({
@@ -238,6 +239,7 @@ export default function TypecastPage() {
                   <Label>{t("tc.skills")}</Label>
                   <Chips
                     options={SKILLS}
+                    labels={SKILLS.map((s) => t(`value.skill.${s}`))}
                     selected={tc.skills}
                     multi
                     onToggle={(v) => setTc({
@@ -263,6 +265,7 @@ export default function TypecastPage() {
                   <Label>{t("tc.genres")}</Label>
                   <Chips
                     options={GENRES}
+                    labels={GENRES.map((g) => t(`value.genre.${g}`))}
                     selected={tc.genres}
                     multi
                     onToggle={(v) => setTc({
