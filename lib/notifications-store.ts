@@ -182,6 +182,16 @@ export function notifyTalentStageChange(
   });
 }
 
+export function notifyProOfferResponse(talentName: string, roleName: string, accepted: boolean) {
+  addNotification({
+    audience: "pro",
+    kind: accepted ? "booked" : "rejected",
+    title: accepted ? `✅ ${talentName} קיבל/ה את ההצעה` : `${talentName} דחה/תה את ההצעה`,
+    body: accepted ? `${roleName} — אפשר לאשר את הבוקינג` : `${roleName} — חזר/ה לחיפוש`,
+    href: "/pro/projects",
+  });
+}
+
 export function notifyProDirectorVote(directorName: string, talentName: string, vote: "yes" | "maybe" | "no", slug: string) {
   const voteLabel = vote === "yes" ? "👍 Yes" : vote === "maybe" ? "🤔 Maybe" : "👎 No";
   addNotification({

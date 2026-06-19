@@ -86,8 +86,9 @@ export default function SubmissionPage() {
     );
   }
 
-  // Which actions are available given the current stage
-  const actions = getActions(sub);
+  // Which actions are available given the current stage (+ project mode)
+  const isQuick = project?.mode === "quick";
+  const actions = getActions(sub, isQuick);
 
   function openAction(a: Action) {
     setAction(a);
@@ -208,6 +209,11 @@ export default function SubmissionPage() {
         {/* Callback status banner — visible when a callback is scheduled or completed */}
         {sub.stage === "callback" && sub.callbackType && (
           <CallbackStatusBanner sub={sub} />
+        )}
+
+        {/* Offer status banner — two-sided offer response */}
+        {sub.stage === "offered" && (
+          <OfferStatusBanner sub={sub} />
         )}
 
         {/* Optional private notes & tags */}
@@ -532,7 +538,30 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 // ---- Stage-driven action menus ----
 // Now sub-aware so the "callback" stage shows different actions depending on
 // whether the callback session has already happened.
-function getActions(sub: Submission): Action[] {
+function getActions(sub: Submission, isQuick = false): Action[] {
+  // ── Quick Cast: 3-stage flow, one-tap decisions only ──
+  if (isQuick) {
+    switch (sub.stage) {
+      case "invited":
+        return [{ kind: "reject", label: "Withdraw invite", tone: "danger" }];
+      case "submitted":
+        return [
+          { kind: "book",   label: "Select", tone: "success" },
+          { kind: "reject", label: "Pass",   tone: "danger" },
+        ];
+      case "booked":
+      case "rejected":
+        return [{ kind: "reopen", label: "Reopen", tone: "muted" }];
+      default:
+        // Any legacy stage in a quick project — collapse to select/pass
+        return [
+          { kind: "book",   label: "Select", tone: "success" },
+          { kind: "reject", label: "Pass",   tone: "danger" },
+        ];
+    }
+  }
+
+  // ── Full Casting: 8-stage pipeline ──
   switch (sub.stage) {
     case "invited":
       return [
@@ -542,6 +571,7 @@ function getActions(sub: Submission): Action[] {
       return [
         { kind: "callback", label: "Schedule callback", tone: "success" },
         { kind: "hold",     label: "Hold (1st refusal)", tone: "sage" },
+        { kind: "offer",    label: "Send offer (skip callback)", tone: "violet" },
         { kind: "reject",   label: "Pass",      tone: "danger" },
       ];
     case "callback": {
@@ -582,9 +612,16 @@ function getActions(sub: Submission): Action[] {
         { kind: "reject", label: "Pass",       tone: "danger" },
       ];
     case "offered":
+      // Two-sided offer: pro can only confirm booking once the talent accepts.
+      if (sub.offerResponse === "accepted") {
+        return [
+          { kind: "book",   label: "Confirm booked", tone: "success" },
+          { kind: "reject", label: "Rescind offer",  tone: "danger" },
+        ];
+      }
+      // Pending — waiting for the talent to respond
       return [
-        { kind: "book",   label: "Confirm booked", tone: "success" },
-        { kind: "reject", label: "Rescind offer",  tone: "danger" },
+        { kind: "reject", label: "Rescind offer", tone: "danger" },
       ];
     case "booked":
       return [
@@ -688,6 +725,41 @@ function fmtDate(iso: string) {
     if (isNaN(+d)) return iso;
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
   } catch { return iso; }
+}
+
+// ─── Offer status banner (two-sided) ───────────────────
+function OfferStatusBanner({ sub }: { sub: Submission }) {
+  const first = sub.talentName.split(" ")[0];
+  if (sub.offerResponse === "accepted") {
+    return (
+      <div className="rounded-2xl bg-success/10 border border-success/30 p-4">
+        <div className="flex items-center gap-2 mb-1.5">
+          <CheckCircle2 className="w-4 h-4 text-success" />
+          <div className="text-[10px] uppercase tracking-widest text-success font-semibold">
+            Offer accepted
+          </div>
+        </div>
+        <p className="text-xs text-text leading-relaxed">
+          {first} accepted the offer{sub.payOffered ? ` (${sub.payOffered})` : ""}. Confirm the booking to lock it in.
+        </p>
+      </div>
+    );
+  }
+  // Pending
+  return (
+    <div className="rounded-2xl bg-violet/10 border border-violet/30 p-4">
+      <div className="flex items-center gap-2 mb-1.5">
+        <Clock className="w-4 h-4 text-violet" />
+        <div className="text-[10px] uppercase tracking-widest text-violet font-semibold">
+          Offer sent — awaiting response
+        </div>
+      </div>
+      <p className="text-xs text-text-muted leading-relaxed">
+        Waiting for {first} to accept or decline{sub.payOffered ? ` · ${sub.payOffered}` : ""}.
+        You'll be able to confirm the booking once they accept.
+      </p>
+    </div>
+  );
 }
 
 // ─── Callback status banner ────────────────────────────

@@ -9,8 +9,10 @@ import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
 import {
-  getAuditionsForTalent, loadSubmissions, type Submission, type Role, type Project,
+  getAuditionsForTalent, loadSubmissions, acceptOffer, declineOffer,
+  type Submission, type Role, type Project,
 } from "@/lib/projects-store";
+import { notifyProOfferResponse } from "@/lib/notifications-store";
 import { cn } from "@/lib/utils";
 
 // Demo-mode: in localStorage there's no real "me" talent matching pro invites.
@@ -124,9 +126,17 @@ export default function InboxPage() {
 
 function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
   const { submission: s, role, project } = item;
+  const [offerState, setOfferState] = useState<"idle" | "accepted" | "declined">("idle");
   if (!role || !project) return null;
   const needsTape = s.stage === "invited";
   const callbackTape = s.stage === "callback";
+  const offerPending = s.stage === "offered" && s.offerResponse !== "accepted" && s.offerResponse !== "declined" && offerState === "idle";
+
+  function respondOffer(accept: boolean) {
+    if (accept) { acceptOffer(s.id); setOfferState("accepted"); }
+    else { declineOffer(s.id); setOfferState("declined"); }
+    notifyProOfferResponse(s.talentName, role!.name, accept);
+  }
   const deadline = role.deadline ? new Date(role.deadline) : null;
   const daysToDeadline = deadline ? Math.ceil((+deadline - Date.now()) / 86400000) : null;
   const urgent = daysToDeadline != null && daysToDeadline >= 0 && daysToDeadline <= 2 && needsTape;
@@ -170,7 +180,33 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
       </div>
 
       <div className="border-t border-border bg-bg/40 px-3 py-2.5">
-        {needsTape || callbackTape ? (
+        {offerState === "accepted" ? (
+          <div className="text-[11px] text-success font-semibold text-center px-2 inline-flex items-center justify-center gap-1.5 w-full">
+            <CheckCircle2 className="w-3.5 h-3.5" /> קיבלת את ההצעה — מזל טוב! המלהק/ת יאשר/תאשר את הבוקינג.
+          </div>
+        ) : offerState === "declined" ? (
+          <div className="text-[11px] text-text-muted text-center px-2 w-full">דחית את ההצעה. המלהק/ת עודכן/ה.</div>
+        ) : offerPending ? (
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-violet font-semibold text-center mb-2">
+              קיבלת הצעה{s.payOffered ? ` · ${s.payOffered}` : ""}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => respondOffer(false)}
+                className="h-10 rounded-xl bg-bg border border-border text-text-muted text-sm font-semibold"
+              >
+                דחה
+              </button>
+              <button
+                onClick={() => respondOffer(true)}
+                className="h-10 rounded-xl bg-success text-bg text-sm font-semibold inline-flex items-center justify-center gap-1.5"
+              >
+                <CheckCircle2 className="w-4 h-4" /> קבל הצעה
+              </button>
+            </div>
+          </div>
+        ) : needsTape || callbackTape ? (
           <Link
             href={`/inbox/${s.id}/record`}
             className={cn(

@@ -93,6 +93,17 @@ export type Submission = {
   payOffered?: string;
   holdUntil?: string;         // ISO — auto-expiring hold (1st refusal)
   decidedAt?: string;
+
+  // Offer response from the talent (two-sided offer flow)
+  // "pending"  = offer sent, awaiting the talent's answer
+  // "accepted" = talent accepted — pro can confirm booking
+  // "declined" = talent declined — submission moves to rejected
+  offerResponse?: "pending" | "accepted" | "declined";
+
+  // Stage the submission was in before being booked/rejected — lets Reopen
+  // restore the talent to where they actually were, not back to "submitted".
+  prevStage?: Stage;
+
   createdAt: string;
 };
 
@@ -326,19 +337,41 @@ export function moveToAvailCheck(id: string, shootDates?: string, message?: stri
   patchSubmission(id, { stage: "avail_check", shootDates, proMessage: message });
 }
 export function sendOffer(id: string, payOffered?: string, message?: string) {
-  patchSubmission(id, { stage: "offered", payOffered, proMessage: message });
+  // Offer starts "pending" — the talent must accept before it can be booked.
+  patchSubmission(id, { stage: "offered", payOffered, proMessage: message, offerResponse: "pending" });
 }
+
+// Talent accepts the offer — pro can now confirm the booking.
+export function acceptOffer(id: string) {
+  patchSubmission(id, { offerResponse: "accepted" });
+}
+
+// Talent declines the offer — moves to rejected (remembers it came from "offered").
+export function declineOffer(id: string) {
+  patchSubmission(id, { stage: "rejected", offerResponse: "declined", prevStage: "offered" });
+}
+
 export function confirmBooked(id: string, message?: string) {
-  patchSubmission(id, { stage: "booked", proMessage: message });
+  const sub = getSubmission(id);
+  patchSubmission(id, { stage: "booked", proMessage: message, prevStage: sub?.stage });
 }
 export function rejectSubmission(id: string, message?: string) {
-  patchSubmission(id, { stage: "rejected", proMessage: message });
+  const sub = getSubmission(id);
+  // Remember where they were so Reopen can restore it (unless already tracked)
+  const prev = sub && sub.stage !== "rejected" ? sub.stage : sub?.prevStage;
+  patchSubmission(id, { stage: "rejected", proMessage: message, prevStage: prev });
 }
 export function reopenSubmission(id: string) {
   const sub = getSubmission(id);
   if (!sub) return;
-  const target: Stage = sub.tapes.length > 0 ? "submitted" : "invited";
-  patchSubmission(id, { stage: target });
+  // Restore the remembered stage; fall back to submitted/invited by tape state.
+  const restored: Stage = sub.prevStage ?? (sub.tapes.length > 0 ? "submitted" : "invited");
+  patchSubmission(id, {
+    stage: restored,
+    prevStage: undefined,
+    // If restoring into "offered", reset the offer to pending so it's actionable again.
+    offerResponse: restored === "offered" ? "pending" : undefined,
+  });
 }
 
 // === Tape comments (time-coded notes) ===
