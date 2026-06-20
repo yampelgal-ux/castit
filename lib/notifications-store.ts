@@ -182,6 +182,16 @@ export function notifyTalentStageChange(
   });
 }
 
+export function notifyProAvailResponse(talentName: string, roleName: string, available: boolean) {
+  addNotification({
+    audience: "pro",
+    kind: available ? "avail_check" : "rejected",
+    title: available ? `📅 ${talentName} פנוי/ה` : `${talentName} לא פנוי/ה`,
+    body: available ? `${roleName} — אפשר לשלוח הצעה` : `${roleName} — לא פנוי/ה לתאריכים`,
+    href: "/pro/projects",
+  });
+}
+
 export function notifyProOfferResponse(talentName: string, roleName: string, accepted: boolean) {
   addNotification({
     audience: "pro",

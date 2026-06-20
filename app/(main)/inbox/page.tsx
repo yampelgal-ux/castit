@@ -10,9 +10,10 @@ import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
 import {
   getAuditionsForTalent, loadSubmissions, acceptOffer, declineOffer,
+  confirmAvailable, markUnavailable,
   type Submission, type Role, type Project,
 } from "@/lib/projects-store";
-import { notifyProOfferResponse } from "@/lib/notifications-store";
+import { notifyProOfferResponse, notifyProAvailResponse } from "@/lib/notifications-store";
 import { cn } from "@/lib/utils";
 
 // Demo-mode: in localStorage there's no real "me" talent matching pro invites.
@@ -127,15 +128,23 @@ export default function InboxPage() {
 function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
   const { submission: s, role, project } = item;
   const [offerState, setOfferState] = useState<"idle" | "accepted" | "declined">("idle");
+  const [availState, setAvailState] = useState<"idle" | "available" | "unavailable">("idle");
   if (!role || !project) return null;
   const needsTape = s.stage === "invited";
   const callbackTape = s.stage === "callback";
   const offerPending = s.stage === "offered" && s.offerResponse !== "accepted" && s.offerResponse !== "declined" && offerState === "idle";
+  const availPending = s.stage === "avail_check" && s.availResponse !== "available" && s.availResponse !== "unavailable" && availState === "idle";
 
   function respondOffer(accept: boolean) {
     if (accept) { acceptOffer(s.id); setOfferState("accepted"); }
     else { declineOffer(s.id); setOfferState("declined"); }
     notifyProOfferResponse(s.talentName, role!.name, accept);
+  }
+
+  function respondAvail(available: boolean) {
+    if (available) { confirmAvailable(s.id); setAvailState("available"); }
+    else { markUnavailable(s.id); setAvailState("unavailable"); }
+    notifyProAvailResponse(s.talentName, role!.name, available);
   }
   const deadline = role.deadline ? new Date(role.deadline) : null;
   const daysToDeadline = deadline ? Math.ceil((+deadline - Date.now()) / 86400000) : null;
@@ -180,7 +189,33 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
       </div>
 
       <div className="border-t border-border bg-bg/40 px-3 py-2.5">
-        {offerState === "accepted" ? (
+        {availState === "available" ? (
+          <div className="text-[11px] text-success font-semibold text-center px-2 w-full inline-flex items-center justify-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5" /> אישרת זמינות — המלהק/ת עודכן/ה.
+          </div>
+        ) : availState === "unavailable" ? (
+          <div className="text-[11px] text-text-muted text-center px-2 w-full">סימנת שאינך פנוי/ה. המלהק/ת עודכן/ה.</div>
+        ) : availPending ? (
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-plum-light font-semibold text-center mb-2">
+              בדיקת זמינות{s.shootDates ? ` · ${s.shootDates}` : ""}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => respondAvail(false)}
+                className="h-10 rounded-xl bg-bg border border-border text-text-muted text-sm font-semibold"
+              >
+                לא פנוי/ה
+              </button>
+              <button
+                onClick={() => respondAvail(true)}
+                className="h-10 rounded-xl bg-success text-bg text-sm font-semibold inline-flex items-center justify-center gap-1.5"
+              >
+                <CheckCircle2 className="w-4 h-4" /> פנוי/ה
+              </button>
+            </div>
+          </div>
+        ) : offerState === "accepted" ? (
           <div className="text-[11px] text-success font-semibold text-center px-2 inline-flex items-center justify-center gap-1.5 w-full">
             <CheckCircle2 className="w-3.5 h-3.5" /> קיבלת את ההצעה — מזל טוב! המלהק/ת יאשר/תאשר את הבוקינג.
           </div>

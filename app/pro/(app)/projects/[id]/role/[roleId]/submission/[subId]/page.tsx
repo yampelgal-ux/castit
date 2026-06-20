@@ -214,6 +214,11 @@ export default function SubmissionPage() {
           <CallbackStatusBanner sub={sub} />
         )}
 
+        {/* Availability status banner — two-sided avail-check response */}
+        {sub.stage === "avail_check" && (
+          <AvailStatusBanner sub={sub} />
+        )}
+
         {/* Offer status banner — two-sided offer response */}
         {sub.stage === "offered" && (
           <OfferStatusBanner sub={sub} />
@@ -615,9 +620,16 @@ function getActions(sub: Submission, isQuick = false): Action[] {
       ];
     }
     case "avail_check":
+      // Two-sided: pro can only send an offer once the talent confirms availability.
+      if (sub.availResponse === "available") {
+        return [
+          { kind: "offer",  label: "Send offer", tone: "violet" },
+          { kind: "reject", label: "Pass",       tone: "danger" },
+        ];
+      }
+      // Pending or unavailable — can't offer yet
       return [
-        { kind: "offer",  label: "Send offer", tone: "violet" },
-        { kind: "reject", label: "Pass",       tone: "danger" },
+        { kind: "reject", label: "Pass", tone: "danger" },
       ];
     case "offered":
       // Two-sided offer: pro can only confirm booking once the talent accepts.
@@ -738,6 +750,52 @@ function fmtDate(iso: string) {
     if (isNaN(+d)) return iso;
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
   } catch { return iso; }
+}
+
+// ─── Availability status banner (two-sided) ─────────────
+function AvailStatusBanner({ sub }: { sub: Submission }) {
+  const first = sub.talentName.split(" ")[0];
+  if (sub.availResponse === "available") {
+    return (
+      <div className="rounded-2xl bg-success/10 border border-success/30 p-4">
+        <div className="flex items-center gap-2 mb-1.5">
+          <CheckCircle2 className="w-4 h-4 text-success" />
+          <div className="text-[10px] uppercase tracking-widest text-success font-semibold">Available</div>
+        </div>
+        <p className="text-xs text-text leading-relaxed">
+          {first} confirmed availability{sub.shootDates ? ` for ${sub.shootDates}` : ""}. You can send the offer.
+        </p>
+      </div>
+    );
+  }
+  if (sub.availResponse === "unavailable") {
+    return (
+      <div className="rounded-2xl bg-danger/10 border border-danger/30 p-4">
+        <div className="flex items-center gap-2 mb-1.5">
+          <XCircle className="w-4 h-4 text-danger" />
+          <div className="text-[10px] uppercase tracking-widest text-danger font-semibold">Not available</div>
+        </div>
+        <p className="text-xs text-text-muted leading-relaxed">
+          {first} isn't free{sub.shootDates ? ` for ${sub.shootDates}` : ""}. Consider passing or adjusting dates.
+        </p>
+      </div>
+    );
+  }
+  // Pending
+  return (
+    <div className="rounded-2xl bg-plum/10 border border-plum/30 p-4">
+      <div className="flex items-center gap-2 mb-1.5">
+        <Clock className="w-4 h-4 text-plum-light" />
+        <div className="text-[10px] uppercase tracking-widest text-plum-light font-semibold">
+          Availability check sent
+        </div>
+      </div>
+      <p className="text-xs text-text-muted leading-relaxed">
+        Waiting for {first} to confirm availability{sub.shootDates ? ` for ${sub.shootDates}` : ""}.
+        You'll be able to send the offer once they confirm.
+      </p>
+    </div>
+  );
 }
 
 // ─── Offer status banner (two-sided) ───────────────────

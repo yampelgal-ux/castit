@@ -94,6 +94,12 @@ export type Submission = {
   holdUntil?: string;         // ISO — auto-expiring hold (1st refusal)
   decidedAt?: string;
 
+  // Availability response from the talent (two-sided avail-check flow)
+  // "pending"     = pro asked, awaiting the talent's answer
+  // "available"   = talent confirmed availability — pro can send offer
+  // "unavailable" = talent isn't free for the dates
+  availResponse?: "pending" | "available" | "unavailable";
+
   // Offer response from the talent (two-sided offer flow)
   // "pending"  = offer sent, awaiting the talent's answer
   // "accepted" = talent accepted — pro can confirm booking
@@ -334,7 +340,18 @@ export function moveToHold(id: string, message?: string, holdHours?: number) {
   patchSubmission(id, { stage: "hold", proMessage: message, holdUntil });
 }
 export function moveToAvailCheck(id: string, shootDates?: string, message?: string) {
-  patchSubmission(id, { stage: "avail_check", shootDates, proMessage: message });
+  // Availability check starts "pending" — the talent must respond.
+  patchSubmission(id, { stage: "avail_check", shootDates, proMessage: message, availResponse: "pending" });
+}
+
+// Talent confirms they're available for the shoot dates — pro can send the offer.
+export function confirmAvailable(id: string) {
+  patchSubmission(id, { availResponse: "available" });
+}
+
+// Talent isn't free for the dates.
+export function markUnavailable(id: string) {
+  patchSubmission(id, { availResponse: "unavailable" });
 }
 export function sendOffer(id: string, payOffered?: string, message?: string) {
   // Offer starts "pending" — the talent must accept before it can be booked.
