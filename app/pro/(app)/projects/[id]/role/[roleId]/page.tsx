@@ -5,14 +5,14 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   FileVideo, Calendar, DollarSign, ChevronRight, ScrollText, Clock, Edit3, Columns,
-  Check, X, Zap,
+  Check, X, Zap, CheckSquare, Square, Sparkles, PauseCircle, XCircle,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
 import {
   getRole, getProject, getSubmissionsByRole, roleCounts, updateRole,
-  confirmBooked, rejectSubmission,
+  confirmBooked, rejectSubmission, moveToCallback, moveToHold,
   type Role, type Project, type Submission, type Stage, STAGE_META, type RoleSidesFile,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
@@ -47,6 +47,8 @@ export default function RoleDetailPage() {
   const [subs, setSubs] = useState<Submission[]>([]);
   const [stage, setStage] = useState<"all" | Stage>("all");
   const [editingBrief, setEditingBrief] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   function reload() {
     setRole(getRole(roleId) ?? null);
@@ -55,6 +57,24 @@ export default function RoleDetailPage() {
   }
 
   useEffect(() => { reload(); }, [roleId, id]);
+
+  function toggleSelect(subId: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(subId)) next.delete(subId); else next.add(subId);
+      return next;
+    });
+  }
+
+  function exitSelect() { setSelectMode(false); setSelected(new Set()); }
+
+  // Apply a bulk decision to every selected submission, then reset.
+  function bulkApply(fn: (id: string) => void) {
+    selected.forEach((sid) => fn(sid));
+    haptic("medium");
+    reload();
+    exitSelect();
+  }
 
   const isQuick = project?.mode === "quick";
   const PIPELINE = isQuick ? PIPELINE_QUICK : PIPELINE_FULL;
@@ -82,7 +102,18 @@ export default function RoleDetailPage() {
 
   return (
     <div className="min-h-dvh bg-bg pb-24">
-      <Header back title={role.name} />
+      <Header
+        back
+        title={role.name}
+        right={subs.length > 0 && (
+          <button
+            onClick={() => selectMode ? exitSelect() : setSelectMode(true)}
+            className="text-[11px] text-gold font-semibold"
+          >
+            {selectMode ? "ביטול" : "בחירה"}
+          </button>
+        )}
+      />
 
       <div className="px-5 pt-3 space-y-4">
         {/* Brief */}
@@ -209,11 +240,56 @@ export default function RoleDetailPage() {
                 i={i}
                 isQuick={isQuick}
                 onAction={reload}
+                selectMode={selectMode}
+                selected={selected.has(s.id)}
+                onToggleSelect={() => toggleSelect(s.id)}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Floating bulk-action bar */}
+      {selectMode && selected.size > 0 && (
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="fixed bottom-0 inset-x-0 z-40 max-w-[440px] mx-auto p-3"
+        >
+          <div className="rounded-2xl bg-bg-elevated border border-gold/30 shadow-2xl p-3">
+            <div className="text-[11px] text-text-muted mb-2 text-center">
+              <span className="text-gold font-bold tnum">{selected.size}</span> נבחרו
+            </div>
+            {isQuick ? (
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => bulkApply((sid) => rejectSubmission(sid))}
+                  className="h-10 rounded-xl bg-bg border border-danger/30 text-danger text-xs font-semibold inline-flex items-center justify-center gap-1.5">
+                  <XCircle className="w-3.5 h-3.5" /> Pass לכולם
+                </button>
+                <button onClick={() => bulkApply((sid) => confirmBooked(sid))}
+                  className="h-10 rounded-xl bg-success text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
+                  <Check className="w-3.5 h-3.5" /> Select לכולם
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                <button onClick={() => bulkApply((sid) => moveToCallback(sid, { type: "tape" }))}
+                  className="h-10 rounded-xl bg-success/90 text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> Callback
+                </button>
+                <button onClick={() => bulkApply((sid) => moveToHold(sid, undefined, 48))}
+                  className="h-10 rounded-xl bg-sage/80 text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
+                  <PauseCircle className="w-3.5 h-3.5" /> Hold
+                </button>
+                <button onClick={() => bulkApply((sid) => rejectSubmission(sid))}
+                  className="h-10 rounded-xl bg-bg border border-danger/30 text-danger text-xs font-semibold inline-flex items-center justify-center gap-1.5">
+                  <XCircle className="w-3.5 h-3.5" /> Pass
+                </button>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
 
       {editingBrief && (
         <EditBriefSheet
@@ -251,47 +327,71 @@ function PipeStat({ label, value, tone }: { label: string; value: number; tone: 
 }
 
 function SubmissionRow({
-  s, projectId, i, isQuick, onAction,
+  s, projectId, i, isQuick, onAction, selectMode, selected, onToggleSelect,
 }: {
   s: Submission;
   projectId: string;
   i: number;
   isQuick: boolean;
   onAction: () => void;
+  selectMode?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }) {
   const lastTape = s.tapes[s.tapes.length - 1];
-  const canQuickDecide = isQuick && s.stage === "submitted";
+  const canQuickDecide = isQuick && s.stage === "submitted" && !selectMode;
+
+  // Inner row content (shared between select-mode button and navigation link)
+  const inner = (
+    <>
+      {selectMode && (
+        selected
+          ? <CheckSquare className="w-5 h-5 text-gold shrink-0" />
+          : <Square className="w-5 h-5 text-text-muted shrink-0" />
+      )}
+      <img src={s.talentPhoto} alt={s.talentName} className="w-12 h-12 rounded-xl object-cover shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-sm truncate">{s.talentName}</span>
+          <StageBadge stage={s.stage} />
+          {s.tapes.length > 1 && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-bg border border-border text-text-muted">
+              R{s.tapes.length}
+            </span>
+          )}
+        </div>
+        <div className="text-[11px] text-text-muted truncate mt-0.5">
+          {lastTape
+            ? <><FileVideo className="w-3 h-3 inline mr-1" />Last tape {timeAgo(lastTape.submittedAt)}</>
+            : <>Invited {timeAgo(s.createdAt)}</>}
+        </div>
+      </div>
+      {!selectMode && <ChevronRight className="w-4 h-4 text-text-muted shrink-0" />}
+    </>
+  );
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: i * 0.04 }}
-      className="rounded-2xl bg-bg-elevated border border-border overflow-hidden"
+      className={cn(
+        "rounded-2xl bg-bg-elevated border overflow-hidden transition-colors",
+        selectMode && selected ? "border-gold/50 bg-gold/5" : "border-border"
+      )}
     >
-      <Link
-        href={`/pro/projects/${projectId}/role/${s.roleId}/submission/${s.id}`}
-        className="flex items-center gap-3 p-3 hover:border-gold/40"
-      >
-        <img src={s.talentPhoto} alt={s.talentName} className="w-12 h-12 rounded-xl object-cover shrink-0" />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-sm truncate">{s.talentName}</span>
-            <StageBadge stage={s.stage} />
-            {s.tapes.length > 1 && (
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-bg border border-border text-text-muted">
-                R{s.tapes.length}
-              </span>
-            )}
-          </div>
-          <div className="text-[11px] text-text-muted truncate mt-0.5">
-            {lastTape
-              ? <><FileVideo className="w-3 h-3 inline mr-1" />Last tape {timeAgo(lastTape.submittedAt)}</>
-              : <>Invited {timeAgo(s.createdAt)}</>}
-          </div>
-        </div>
-        <ChevronRight className="w-4 h-4 text-text-muted shrink-0" />
-      </Link>
+      {selectMode ? (
+        <button onClick={onToggleSelect} className="w-full flex items-center gap-3 p-3 text-right">
+          {inner}
+        </button>
+      ) : (
+        <Link
+          href={`/pro/projects/${projectId}/role/${s.roleId}/submission/${s.id}`}
+          className="flex items-center gap-3 p-3 hover:border-gold/40"
+        >
+          {inner}
+        </Link>
+      )}
 
       {canQuickDecide && (
         <div className="grid grid-cols-2 gap-1.5 p-2 border-t border-border bg-bg/40">

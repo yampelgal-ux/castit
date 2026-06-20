@@ -291,6 +291,26 @@ const DICT: Record<string, Entry> = {
   "rec.sendTape":      { en: "Send tape", he: "שלח טייפ" },
   "rec.anotherTake":   { en: "Another take", he: "טייק נוסף" },
 
+  // Profile completeness / discoverability meter
+  "pp.title":          { en: "Profile", he: "פרופיל" },
+  "pp.discoverability":{ en: "Discoverability", he: "סיכויי גילוי" },
+  "pp.high":           { en: "High — casting pros will find you", he: "גבוהים — מלהקים ימצאו אותך" },
+  "pp.mid":            { en: "Medium — add more to stand out", he: "בינוניים — הוסף עוד כדי לבלוט" },
+  "pp.low":            { en: "Low — complete your profile to get found", he: "נמוכים — השלם פרופיל כדי להתגלות" },
+  "pp.add":            { en: "Add", he: "הוסף" },
+  "pp.more":           { en: "+ {n} more", he: "+ עוד {n}" },
+  "pp.toGetFound":     { en: "to get found by more castings.", he: "כדי להופיע ביותר חיפושי ליהוק." },
+  "pp.f.name":         { en: "display name", he: "שם תצוגה" },
+  "pp.f.bio":          { en: "bio", he: "ביוגרפיה" },
+  "pp.f.photo":        { en: "profile photo", he: "תמונת פרופיל" },
+  "pp.f.cover":        { en: "cover photo", he: "תמונת רקע" },
+  "pp.f.height":       { en: "height", he: "גובה" },
+  "pp.f.skin":         { en: "skin tone", he: "גוון עור" },
+  "pp.f.eyes":         { en: "eye color", he: "צבע עיניים" },
+  "pp.f.hair":         { en: "hair color", he: "צבע שיער" },
+  "pp.f.langs":        { en: "languages", he: "שפות" },
+  "pp.f.skills":       { en: "skills", he: "כישורים" },
+
   // Common empty / robustness
   "empty.notFound":    { en: "Not found", he: "לא נמצא" },
   "empty.removed":     { en: "This may have been removed.", he: "ייתכן שזה הוסר." },

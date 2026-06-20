@@ -26,6 +26,7 @@ type Action =
   | { kind: "callback_done";  label: string; tone: "success" }   // confirm in-person callback happened
   | { kind: "cancel_callback"; label: string; tone: "muted" }     // scheduled callback won't happen
   | { kind: "hold";           label: string; tone: "sage" }
+  | { kind: "extend_hold";    label: string; tone: "sage" }
   | { kind: "avail";          label: string; tone: "plum" }
   | { kind: "offer";          label: string; tone: "violet" }
   | { kind: "book";           label: string; tone: "success" }
@@ -117,6 +118,7 @@ export default function SubmissionPage() {
       case "callback_done":   markCallbackDone(subId, callbackOutcome.trim() || msg); break;
       case "cancel_callback": cancelCallback(subId, msg); break;
       case "hold":         moveToHold(subId, msg, holdHours); break;
+      case "extend_hold":  moveToHold(subId, msg, holdHours); break;
       case "avail":        moveToAvailCheck(subId, shootDates.trim() || undefined, msg); break;
       case "offer":        sendOffer(subId, payOffered.trim() || undefined, msg); break;
       case "book":         confirmBooked(subId, msg); break;
@@ -131,6 +133,7 @@ export default function SubmissionPage() {
       callback_done:    undefined,  // no talent notification — internal pro step
       cancel_callback:  undefined,
       hold:             "hold",
+      extend_hold:      "hold",
       avail:            "avail_check",
       offer:            "offered",
       book:             "booked",
@@ -353,7 +356,7 @@ export default function SubmissionPage() {
                 </Field>
               )}
 
-              {action.kind === "hold" && (
+              {(action.kind === "hold" || action.kind === "extend_hold") && (
                 <Field label="Hold duration (1st refusal)">
                   <div className="flex gap-1.5 flex-wrap">
                     {[24, 48, 72, 168].map((h) => (
@@ -488,10 +491,12 @@ function HoldCountdown({ until }: { until: string }) {
         <PauseCircle className="w-4 h-4" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold">{expired ? "Hold expired" : "Held — 1st refusal"}</div>
+        <div className={cn("text-sm font-semibold", expired && "text-gold")}>
+          {expired ? "Hold expired — decide now" : "Held — 1st refusal"}
+        </div>
         <div className="text-[11px] text-text-muted">
           {expired
-            ? `Expired on ${fmtDate(until)}`
+            ? "Extend the timer, move forward, or release the talent."
             : <>Releases in <span className="font-semibold tnum">{hours > 0 ? `${hours}h ` : ""}{mins}m</span></>}
         </div>
       </div>
@@ -600,12 +605,15 @@ function getActions(sub: Submission, isQuick = false): Action[] {
         { kind: "reject",       label: "Pass",                  tone: "danger" },
       ];
     }
-    case "hold":
+    case "hold": {
+      const expired = !!sub.holdUntil && +new Date(sub.holdUntil) <= Date.now();
       return [
-        { kind: "avail",    label: "Avail check",  tone: "plum" },
-        { kind: "callback", label: "Bring back",   tone: "success" },
-        { kind: "reject",   label: "Pass",         tone: "danger" },
+        { kind: "avail",       label: "Avail check",  tone: "plum" },
+        { kind: "extend_hold", label: expired ? "Extend hold" : "Extend timer", tone: "sage" },
+        { kind: "callback",    label: "Bring back",   tone: "success" },
+        { kind: "reject",      label: expired ? "Release" : "Pass", tone: "danger" },
       ];
+    }
     case "avail_check":
       return [
         { kind: "offer",  label: "Send offer", tone: "violet" },
@@ -643,6 +651,7 @@ function actionTitle(kind: Action["kind"], name: string) {
     case "callback_done":    return `Callback with ${first} happened?`;
     case "cancel_callback":  return `Cancel callback with ${first}?`;
     case "hold":             return `Hold ${first}?`;
+    case "extend_hold":      return `Extend hold on ${first}?`;
     case "avail":            return `Check availability with ${first}?`;
     case "offer":            return `Send offer to ${first}?`;
     case "book":             return `Confirm ${first} as booked?`;
@@ -657,6 +666,7 @@ function actionSubtitle(kind: Action["kind"]) {
     case "callback_done":    return "סמן שהפגישה התקיימה. רק אז יפתחו פעולות Hold / Avail / Offer.";
     case "cancel_callback":  return "ה-callback לא יתקיים. הסטטוס יחזור ל-Submitted.";
     case "hold":             return "Keep them warm. They stay in your pool without a decision yet.";
+    case "extend_hold":      return "Reset the first-refusal timer to keep holding this talent.";
     case "avail":            return "Confirm shoot dates before sending a formal offer.";
     case "offer":            return "Make a formal offer with rate and dates. Talent confirms to book.";
     case "book":             return "Lock the booking. Production will be notified.";
@@ -671,6 +681,7 @@ function confirmLabel(kind: Action["kind"]) {
     case "callback_done":    return "Mark done";
     case "cancel_callback":  return "Cancel callback";
     case "hold":             return "Move to hold";
+    case "extend_hold":      return "Extend hold";
     case "avail":            return "Send check";
     case "offer":            return "Send offer";
     case "book":             return "Confirm";
@@ -685,6 +696,7 @@ function confirmToast(kind: Action["kind"]) {
     case "callback_done":    return "Callback marked done";
     case "cancel_callback":  return "Callback cancelled";
     case "hold":             return "Moved to hold";
+    case "extend_hold":      return "Hold extended";
     case "avail":            return "Avail check sent";
     case "offer":            return "Offer sent";
     case "book":             return "Booked";
@@ -699,6 +711,7 @@ function iconFor(kind: Action["kind"]) {
     case "callback_done":    return <CheckCircle2 className="w-4 h-4" />;
     case "cancel_callback":  return <Undo2 className="w-4 h-4" />;
     case "hold":             return <PauseCircle className="w-4 h-4" />;
+    case "extend_hold":      return <PauseCircle className="w-4 h-4" />;
     case "avail":            return <CalendarCheck className="w-4 h-4" />;
     case "offer":            return <FileSignature className="w-4 h-4" />;
     case "book":             return <PartyPopper className="w-4 h-4" />;

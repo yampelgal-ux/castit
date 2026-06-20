@@ -1,6 +1,7 @@
 "use client";
 import { TrendingUp } from "lucide-react";
 import type { ReactNode } from "react";
+import { useT } from "@/lib/i18n";
 
 type ProfileLike = {
   name?: string;
@@ -38,18 +39,46 @@ export function computeProfileScore(p: ProfileLike): { score: number; missing: s
   };
 }
 
+// Localized field labels for the "what's missing" nudge
+const FIELD_KEY: Record<string, string> = {
+  "Display name": "pp.f.name",
+  "Bio": "pp.f.bio",
+  "Profile photo": "pp.f.photo",
+  "Cover photo": "pp.f.cover",
+  "Height": "pp.f.height",
+  "Skin tone": "pp.f.skin",
+  "Eye color": "pp.f.eyes",
+  "Hair color": "pp.f.hair",
+  "Languages": "pp.f.langs",
+  "Skills": "pp.f.skills",
+};
+
 export function ProfileProgress({ profile, action }: { profile: ProfileLike; action?: ReactNode }) {
+  const { t } = useT();
   const { score, missing } = computeProfileScore(profile);
   if (score === 100) return null;
 
+  const missingLabels = missing.map((m) => t(FIELD_KEY[m] ?? m));
+  const discoverability =
+    score >= 80 ? t("pp.high") : score >= 50 ? t("pp.mid") : t("pp.low");
+
   return (
     <div className="rounded-2xl bg-bg-elevated border border-gold/20 p-4 ring-1 ring-gold/10">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-gold" />
-          <span className="text-xs uppercase tracking-widest text-gold font-semibold">Profile {score}%</span>
+          <span className="text-xs uppercase tracking-widest text-gold font-semibold">
+            {t("pp.title")} · {score}%
+          </span>
         </div>
         {action}
+      </div>
+      {/* Discoverability framing — why completing matters */}
+      <div className="text-[11px] mb-2.5">
+        <span className="text-text-muted">{t("pp.discoverability")}: </span>
+        <span className={score >= 80 ? "text-success font-semibold" : score >= 50 ? "text-gold font-semibold" : "text-terra font-semibold"}>
+          {discoverability}
+        </span>
       </div>
       <div className="h-1.5 rounded-full bg-bg overflow-hidden">
         <div
@@ -57,10 +86,10 @@ export function ProfileProgress({ profile, action }: { profile: ProfileLike; act
           style={{ width: `${score}%` }}
         />
       </div>
-      {missing.length > 0 && (
+      {missingLabels.length > 0 && (
         <p className="text-[11px] text-text-muted mt-2.5 leading-relaxed">
-          Add <span className="text-text">{missing.slice(0, 2).join(", ")}</span>
-          {missing.length > 2 && ` + ${missing.length - 2} more`} to get found by more castings.
+          {t("pp.add")} <span className="text-text">{missingLabels.slice(0, 2).join(", ")}</span>
+          {missingLabels.length > 2 && ` ${t("pp.more", { n: missingLabels.length - 2 })}`} {t("pp.toGetFound")}
         </p>
       )}
     </div>
