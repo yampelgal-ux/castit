@@ -97,7 +97,7 @@ export function OnboardingTour() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     // Don't show on share/approve public pages
-    if (pathname?.startsWith("/share") || pathname?.startsWith("/approve") || pathname?.startsWith("/tour")) return;
+    if (pathname?.startsWith("/share") || pathname?.startsWith("/approve") || pathname?.startsWith("/tour") || pathname?.startsWith("/guide")) return;
     // Don't show on signup/welcome (have their own intro)
     if (pathname === "/welcome" || pathname === "/signup" || pathname === "/pro/signup" || pathname === "/pro/login") return;
     const done = localStorage.getItem(KEY);

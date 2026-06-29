@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, RefreshCw, X, Info } from "lucide-react";
 import { seedDemo, resetDemo, isDemoSeeded } from "@/lib/demo-seed";
@@ -7,6 +8,7 @@ import { seedDemo, resetDemo, isDemoSeeded } from "@/lib/demo-seed";
 const BADGE_DISMISSED = "castit_demo_badge_dismissed_v1";
 
 export function DemoSeeder() {
+  const pathname = usePathname() || "";
   const [showBadge, setShowBadge] = useState(false);
   const [showSheet, setShowSheet] = useState(false);
 
@@ -14,12 +16,14 @@ export function DemoSeeder() {
     if (typeof window === "undefined") return;
     // Run seed on first mount (idempotent — won't override real data)
     seedDemo();
+    // Don't show the demo badge on the public guide (clean shareable page)
+    if (pathname.startsWith("/guide")) return;
     // Show badge once unless dismissed
     if (!localStorage.getItem(BADGE_DISMISSED)) {
       const t = setTimeout(() => setShowBadge(true), 2500);
       return () => clearTimeout(t);
     }
-  }, []);
+  }, [pathname]);
 
   function dismissBadge() {
     if (typeof window !== "undefined") localStorage.setItem(BADGE_DISMISSED, "1");
