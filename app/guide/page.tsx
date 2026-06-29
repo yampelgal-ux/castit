@@ -1,10 +1,12 @@
 "use client";
+import { useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Search, FolderOpen, Wand2, Zap, Users, Send, ClipboardCheck,
   ArrowLeft, Sparkles, FileText, PlayCircle, CheckCircle2, Clock,
 } from "lucide-react";
+import { useStore } from "@/lib/store";
 
 // Public how-to guide for casting directors — shareable link, mobile-first.
 // Walks through managing a project end-to-end. Static, no auth.
@@ -91,6 +93,17 @@ const STEPS: Step[] = [
 ];
 
 export default function GuidePage() {
+  const setProfile = useStore((s) => s.setProfile);
+  const signIn = useStore((s) => s.signIn);
+
+  // This guide is the casting-director entry point — put the whole session
+  // into Pro mode so the bottom nav and every linked screen stay on the
+  // pro side (no talent tabs mixed in).
+  useEffect(() => {
+    setProfile({ role: "Casting Pro" });
+    signIn();
+  }, [setProfile, signIn]);
+
   return (
     <div className="min-h-dvh bg-bg" dir="rtl">
       {/* Hero */}
