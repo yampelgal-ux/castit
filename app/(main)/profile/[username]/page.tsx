@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, Share2, MessageCircle, Languages, Ruler, Globe, X, Camera, Check, Flame, Eye, Lock, Send } from "lucide-react";
+import { AccountButton } from "@/components/AccountButton";
+import { Share2, MessageCircle, Languages, Ruler, Globe, X, Camera, Check, Flame, Eye, Lock, Send } from "lucide-react";
 import { SendAuditionSheet } from "@/components/SendAuditionSheet";
 import { TalentNotes } from "@/components/TalentNotes";
 import { TalentHistory } from "@/components/TalentHistory";
@@ -88,7 +89,7 @@ export default function ProfilePage() {
       <Header
         back={!isMe}
         title={`@${talent.username}`}
-        right={isMe ? <Settings className="w-5 h-5 text-text-muted" /> : <Share2 className="w-5 h-5 text-text-muted" />}
+        right={isMe ? <AccountButton /> : <Share2 className="w-5 h-5 text-text-muted" />}
         transparent
       />
 

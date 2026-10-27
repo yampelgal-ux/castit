@@ -1,5 +1,8 @@
 "use client";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useStore } from "@/lib/store";
 import { motion } from "framer-motion";
 import { Brand } from "@/components/Brand";
 import { ArrowRight, Sparkles } from "lucide-react";
@@ -8,6 +11,17 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 
 export default function WelcomePage() {
   const { t, dir } = useT();
+  const router = useRouter();
+  const isAuthed = useStore((s) => s.isAuthed);
+  const onboarded = useStore((s) => s.onboarded);
+  const role = useStore((s) => s.profile.role);
+
+  // Already signed in (app reopened / installed app launch) → straight in.
+  useEffect(() => {
+    if (!isAuthed) return;
+    if (role === "Casting Pro") router.replace("/pro/dashboard");
+    else router.replace(onboarded ? "/feed" : "/onboarding");
+  }, [isAuthed, onboarded, role, router]);
   return (
     <div className="relative min-h-dvh overflow-hidden noise">
       {/* Background video */}
@@ -83,7 +97,7 @@ export default function WelcomePage() {
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <Link
-              href="/feed"
+              href="/login"
               className="flex items-center justify-center w-full h-14 rounded-2xl bg-bg-elevated/60 backdrop-blur border border-border text-text font-medium"
             >
               {t("welcome.haveAccount")}

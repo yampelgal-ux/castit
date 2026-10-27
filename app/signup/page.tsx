@@ -1,11 +1,14 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mail, Lock, User as UserIcon, Drama, Briefcase, ArrowRight, AlertCircle } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
+import { isCloudConfigured } from "@/lib/cloud/config";
+import { claimDeviceForNewAccount } from "@/lib/cloud/auth";
 import { cn } from "@/lib/utils";
 
 export default function SignupPage() {
@@ -17,6 +20,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [needsConfirm, setNeedsConfirm] = useState(false);
 
   const valid = name.length >= 2 && email.includes("@") && password.length >= 6;
 
@@ -28,40 +32,68 @@ export default function SignupPage() {
 
     const username = name.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
 
-    const supabaseConfigured =
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      !process.env.NEXT_PUBLIC_SUPABASE_URL.startsWith("YOUR_");
-
-    // Supabase auth is best-effort — if it fails (rate limit, existing email,
-    // unreachable backend, etc.) we still let the user into the local demo flow.
-    if (supabaseConfigured) {
-      try {
-        const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
-        if (signUpError) {
-          // Don't block — show a soft warning, proceed locally.
-          console.warn("Supabase signup:", signUpError.message);
-        } else if (data.user) {
-          try {
-            await supabase.from("profiles").insert({
-              id: data.user.id,
-              username,
-              name,
-              role: role === "Talent" ? "talent" : "casting_pro",
-            });
-          } catch (e) {
-            console.warn("Profile insert failed:", e);
-          }
-          signIn(data.user.id);
-        }
-      } catch (e) {
-        console.warn("Supabase unreachable:", e);
+    // Real account when Supabase is configured; otherwise local demo mode.
+    if (isCloudConfigured()) {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name, role: role === "Talent" ? "talent" : "casting_pro" },
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
+      });
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
       }
+      if (data.user) {
+        claimDeviceForNewAccount(data.user.id);
+        setProfile({ name, email, role, username, avatarSeed: name });
+        signIn(data.user.id);
+        if (data.session) {
+          await supabase.from("profiles").upsert({
+            id: data.user.id,
+            username,
+            name,
+            role: role === "Talent" ? "talent" : "casting_pro",
+          }, { onConflict: "id" });
+        } else {
+          // Email confirmation is on: let them finish onboarding now; everything
+          // is pushed to the account automatically after they confirm + sign in.
+          setNeedsConfirm(true);
+          setLoading(false);
+          return;
+        }
+      }
+    } else {
+      setProfile({ name, email, role, username, avatarSeed: name });
+      signIn();
     }
 
-    // Always proceed with local profile + onboarding.
-    setProfile({ name, email, role, username, avatarSeed: name });
-    signIn();
     router.push("/onboarding");
+  }
+
+  if (needsConfirm) {
+    return (
+      <div className="min-h-dvh">
+        <Header back title="Confirm your email" />
+        <div className="px-6 pt-10 space-y-5 text-center">
+          <Mail className="w-10 h-10 text-gold mx-auto" />
+          <h2 className="font-display text-3xl leading-tight">Check your inbox.</h2>
+          <p className="text-text-muted text-sm" dir="rtl">
+            שלחנו קישור אימות ל-<b className="text-text">{email}</b>. אפשר להמשיך להגדיר את הפרופיל כבר עכשיו —
+            הכל יישמר בחשבון ברגע שתאשר/י את המייל ותתחבר/י.
+          </p>
+          <button
+            onClick={() => router.push("/onboarding")}
+            className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl font-semibold bg-gold text-bg"
+          >
+            Continue setting up <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -122,6 +154,10 @@ export default function SignupPage() {
           {loading ? "Creating account…" : "Continue"}
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
+
+        <p className="text-center text-[11px] text-text-subtle">
+          Already have an account? <Link href="/login" className="text-gold font-semibold">Sign in</Link>
+        </p>
       </form>
     </div>
   );

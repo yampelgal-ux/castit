@@ -1,4 +1,5 @@
 "use client";
+import { useAllTalents } from "@/lib/cloud/talents";
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -14,7 +15,8 @@ import { formatNumber } from "@/lib/utils";
 
 export default function ShortlistPage() {
   const { shortlist, toggleShortlist } = useStore();
-  const saved = TALENTS.filter((t) => shortlist.has(t.id));
+  const allTalents = useAllTalents();
+  const saved = allTalents.filter((t) => shortlist.has(t.id));
   const [shareOpen, setShareOpen] = useState(false);
 
   return (

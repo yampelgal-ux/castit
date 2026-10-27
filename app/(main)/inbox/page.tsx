@@ -15,6 +15,8 @@ import {
 } from "@/lib/projects-store";
 import { notifyProOfferResponse, notifyProAvailResponse } from "@/lib/notifications-store";
 import { cn } from "@/lib/utils";
+import { useStore } from "@/lib/store";
+import { isRealUserId } from "@/lib/cloud/config";
 
 // Demo-mode: in localStorage there's no real "me" talent matching pro invites.
 // So when ME_ID has no auditions, we surface ALL submissions across the device
@@ -28,7 +30,22 @@ export default function InboxPage() {
   const [items, setItems] = useState<AuditionItem[]>([]);
   const [tab, setTab] = useState<TabId>("active");
 
+  const userId = useStore((st) => st.userId);
+  const [rev, setRev] = useState(0);
+
+  // Re-read when invites / updates arrive from the casting pro's account.
   useEffect(() => {
+    const bump = () => setRev((n) => n + 1);
+    window.addEventListener("castit:remote-update", bump);
+    return () => window.removeEventListener("castit:remote-update", bump);
+  }, []);
+
+  useEffect(() => {
+    // Real account → only auditions sent to this talent's account.
+    if (isRealUserId(userId)) {
+      setItems(getAuditionsForTalent(userId) as AuditionItem[]);
+      return;
+    }
     const mine = getAuditionsForTalent(ME_ID);
     if (mine.length > 0) {
       setItems(mine as AuditionItem[]);
@@ -40,7 +57,7 @@ export default function InboxPage() {
       }).filter(Boolean) as AuditionItem[];
       setItems(collected);
     }
-  }, []);
+  }, [userId, rev]);
 
   const counts = useMemo(() => ({
     active: items.filter((i) => isActive(i.submission)).length,

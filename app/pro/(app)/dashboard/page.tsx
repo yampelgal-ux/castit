@@ -8,6 +8,7 @@ import {
   Inbox, Zap, AlertTriangle, ClipboardCheck, BarChart3,
 } from "lucide-react";
 import { Header } from "@/components/Header";
+import { AccountButton } from "@/components/AccountButton";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 import {
@@ -66,9 +67,12 @@ export default function ProDashboardPage() {
           </span>
         }
         right={
-          <Link href="/notifications" className="p-2 -mr-2 text-text-muted">
-            <Bell className="w-5 h-5" />
-          </Link>
+          <>
+            <Link href="/notifications" className="p-2 text-text-muted" aria-label="Notifications">
+              <Bell className="w-5 h-5" />
+            </Link>
+            <AccountButton />
+          </>
         }
       />
 

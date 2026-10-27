@@ -2,6 +2,8 @@
 // Keeps videos out of localStorage (quota) and gives them persistence
 // across reloads / sessions.
 
+import { uploadMedia, downloadMedia, mediaPublicUrl } from "@/lib/cloud/media";
+
 const DB_NAME = "castit_tapes";
 const STORE = "videos";
 const VERSION = 1;
@@ -19,7 +21,7 @@ function open(): Promise<IDBDatabase> {
   });
 }
 
-export async function saveTapeVideo(key: string, blob: Blob): Promise<void> {
+async function saveTapeVideoLocal(key: string, blob: Blob): Promise<void> {
   const db = await open();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, "readwrite");
@@ -29,7 +31,7 @@ export async function saveTapeVideo(key: string, blob: Blob): Promise<void> {
   });
 }
 
-export async function loadTapeVideo(key: string): Promise<Blob | null> {
+async function loadTapeVideoLocal(key: string): Promise<Blob | null> {
   const db = await open();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, "readonly");
@@ -57,14 +59,18 @@ export async function getTapePlaybackUrl(opts: {
 }): Promise<{ url: string | null; revoke?: () => void }> {
   if (opts.blobKey) {
     try {
-      const blob = await loadTapeVideo(opts.blobKey);
+      const blob = await loadTapeVideoLocal(opts.blobKey);
       if (blob) {
         const url = URL.createObjectURL(blob);
         return { url, revoke: () => URL.revokeObjectURL(url) };
       }
     } catch {
-      // fall through to videoUrl
+      // fall through
     }
+    // Not on this device (pro watching a talent's tape, director link…) —
+    // stream it straight from cloud storage.
+    const cloud = mediaPublicUrl(`tapes/${opts.blobKey}`);
+    if (cloud) return { url: cloud };
   }
   if (opts.videoUrl && !opts.videoUrl.startsWith("blob:")) {
     return { url: opts.videoUrl };
@@ -75,4 +81,22 @@ export async function getTapePlaybackUrl(opts: {
 
 export function newTapeKey(submissionId: string): string {
   return `tape_${submissionId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+// ── Cloud-aware API (IndexedDB first, Supabase Storage as the shared copy) ──
+
+/** Save on this device and upload to the cloud so other devices/accounts can open it. */
+export async function saveTapeVideo(key: string, blob: Blob): Promise<void> {
+  await saveTapeVideoLocal(key, blob);
+  void uploadMedia(`tapes/${key}`, blob);
+}
+
+/** Load from this device; if missing (other device / other account), fetch from the cloud and cache. */
+export async function loadTapeVideo(key: string): Promise<Blob | null> {
+  let local: Blob | null = null;
+  try { local = await loadTapeVideoLocal(key); } catch { local = null; }
+  if (local) return local;
+  const remote = await downloadMedia(`tapes/${key}`);
+  if (remote) { try { await saveTapeVideoLocal(key, remote); } catch {} }
+  return remote;
 }

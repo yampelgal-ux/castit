@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Film, AlertCircle, Printer, MapPin, Ruler, Globe2 } from "lucide-react";
 import { getPacketBySlug, logView, isExpired, type SharePacket } from "@/lib/share-store";
 import { TALENTS, REELS, type Talent } from "@/lib/mock-data";
+import { fetchPublicLink, logPublicView } from "@/lib/cloud/shared";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { useT } from "@/lib/i18n";
 
@@ -15,8 +16,20 @@ export default function SharePage() {
 
   useEffect(() => {
     const p = getPacketBySlug(slug);
-    setPacket(p ?? null);
-    if (p) logView(slug);
+    if (p) {
+      setPacket(p);
+      logView(slug);
+      void logPublicView(slug);
+      return;
+    }
+    // Not created on this device → open the published copy from the cloud.
+    let alive = true;
+    fetchPublicLink<SharePacket & { talentCards?: Talent[] }>(slug).then((remote) => {
+      if (!alive) return;
+      setPacket(remote ?? null);
+      if (remote) void logPublicView(slug);
+    });
+    return () => { alive = false; };
   }, [slug]);
 
   if (packet === undefined) return <div className="min-h-dvh bg-bg" />;
@@ -45,8 +58,9 @@ export default function SharePage() {
     );
   }
 
+  const cards = (packet as SharePacket & { talentCards?: Talent[] }).talentCards ?? [];
   const talents: Talent[] = packet.talentIds
-    .map((id) => TALENTS.find((tt) => tt.id === id))
+    .map((id) => cards.find((tt) => tt.id === id) ?? TALENTS.find((tt) => tt.id === id))
     .filter((tt): tt is Talent => !!tt);
 
   const createdDate = packet.createdAt

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, RefreshCw, X, Info } from "lucide-react";
 import { seedDemo, resetDemo, isDemoSeeded } from "@/lib/demo-seed";
+import { CLOUD_UID_KEY } from "@/lib/cloud/config";
 
 const BADGE_DISMISSED = "castit_demo_badge_dismissed_v1";
 
@@ -14,6 +15,8 @@ export function DemoSeeder() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Signed-in (cloud) accounts hold real data — never seed or show the demo badge.
+    if (localStorage.getItem(CLOUD_UID_KEY)) return;
     // Run seed on first mount (idempotent — won't override real data)
     seedDemo();
     // Don't show the demo badge on the public guide (clean shareable page)

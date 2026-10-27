@@ -1,6 +1,8 @@
 // IndexedDB store for sides attachments (PDF / DOC / TXT files attached
 // to a role by the casting pro, downloaded by the talent).
 
+import { uploadMedia, downloadMedia } from "@/lib/cloud/media";
+
 const DB_NAME = "castit_sides";
 const STORE = "files";
 const VERSION = 1;
@@ -18,7 +20,7 @@ function open(): Promise<IDBDatabase> {
   });
 }
 
-export async function saveSidesFile(key: string, blob: Blob): Promise<void> {
+async function saveSidesFileLocal(key: string, blob: Blob): Promise<void> {
   const db = await open();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, "readwrite");
@@ -28,7 +30,7 @@ export async function saveSidesFile(key: string, blob: Blob): Promise<void> {
   });
 }
 
-export async function loadSidesFile(key: string): Promise<Blob | null> {
+async function loadSidesFileLocal(key: string): Promise<Blob | null> {
   const db = await open();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, "readonly");
@@ -65,4 +67,22 @@ export async function downloadSidesFile(key: string, filename: string): Promise<
   a.download = filename;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+// ── Cloud-aware API (IndexedDB first, Supabase Storage as the shared copy) ──
+
+/** Save on this device and upload to the cloud so other devices/accounts can open it. */
+export async function saveSidesFile(key: string, blob: Blob): Promise<void> {
+  await saveSidesFileLocal(key, blob);
+  void uploadMedia(`sides/${key}`, blob);
+}
+
+/** Load from this device; if missing (other device / other account), fetch from the cloud and cache. */
+export async function loadSidesFile(key: string): Promise<Blob | null> {
+  let local: Blob | null = null;
+  try { local = await loadSidesFileLocal(key); } catch { local = null; }
+  if (local) return local;
+  const remote = await downloadMedia(`sides/${key}`);
+  if (remote) { try { await saveSidesFileLocal(key, remote); } catch {} }
+  return remote;
 }

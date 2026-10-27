@@ -99,7 +99,7 @@ export function OnboardingTour() {
     // Don't show on share/approve public pages
     if (pathname?.startsWith("/share") || pathname?.startsWith("/approve") || pathname?.startsWith("/tour") || pathname?.startsWith("/guide")) return;
     // Don't show on signup/welcome (have their own intro)
-    if (pathname === "/welcome" || pathname === "/signup" || pathname === "/pro/signup" || pathname === "/pro/login") return;
+    if (pathname === "/welcome" || pathname === "/signup" || pathname === "/pro/signup" || pathname === "/pro/login" || pathname === "/login" || pathname === "/reset-password" || pathname === "/offline") return;
     const done = localStorage.getItem(KEY);
     if (done) return;
     const t = setTimeout(() => setOpen(true), 1200);

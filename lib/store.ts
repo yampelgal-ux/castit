@@ -1,5 +1,6 @@
 "use client";
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 // Pro-only public profile fields (visible to talents browsing a pro)
 export type ProPublicCredit = {
@@ -76,7 +77,7 @@ type State = {
   deleteSavedSearch: (id: string) => void;
 };
 
-export const useStore = create<State>((set, get) => ({
+export const useStore = create<State>()(persist((set, get) => ({
   isAuthed: false,
   userId: null,
   profile: {
@@ -107,7 +108,18 @@ export const useStore = create<State>((set, get) => ({
       return { likedPosts: next };
     }),
   signIn: (userId) => set({ isAuthed: true, userId: userId ?? null }),
-  signOut: () => set({ isAuthed: false, userId: null }),
+  signOut: () =>
+    set({
+      isAuthed: false,
+      userId: null,
+      profile: { name: "", email: "", role: "Talent", username: "", typecast: {}, avatarSeed: "newuser" },
+      likedPosts: new Set(),
+      appliedCastings: new Set(),
+      bookmarks: new Set(),
+      shortlist: new Set(),
+      onboarded: false,
+      savedSearches: [],
+    }),
   markApplied: (castingId) =>
     set((s) => {
       const next = new Set(s.appliedCastings);
@@ -147,4 +159,30 @@ export const useStore = create<State>((set, get) => ({
     })),
   deleteSavedSearch: (id) =>
     set((s) => ({ savedSearches: s.savedSearches.filter((ss) => ss.id !== id) })),
+}), {
+  // Persisted on-device (and mirrored to the cloud for signed-in accounts by
+  // lib/cloud/sync.ts) so a refresh or app restart keeps you signed in.
+  name: "castit_app_v1",
+  version: 1,
+  skipHydration: true, // hydrated by <CloudSync/> after mount → no SSR mismatch
+  storage: createJSONStorage(() => localStorage, {
+    replacer: (_k, v) => (v instanceof Set ? { __set: [...v] } : v),
+    reviver: (_k, v) =>
+      v && typeof v === "object" && Array.isArray((v as { __set?: unknown[] }).__set)
+        ? new Set((v as { __set: unknown[] }).__set)
+        : v,
+  }),
+  partialize: (s) => ({
+    isAuthed: s.isAuthed,
+    userId: s.userId,
+    profile: s.profile,
+    likedPosts: s.likedPosts,
+    appliedCastings: s.appliedCastings,
+    bookmarks: s.bookmarks,
+    shortlist: s.shortlist,
+    onboarded: s.onboarded,
+    streak: s.streak,
+    ariaCredits: s.ariaCredits,
+    savedSearches: s.savedSearches,
+  }) as unknown as State,
 }));

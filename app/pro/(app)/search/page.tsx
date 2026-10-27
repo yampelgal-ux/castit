@@ -1,4 +1,5 @@
 "use client";
+import { useAllTalents } from "@/lib/cloud/talents";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -96,6 +97,7 @@ export default function ProSearchPage() {
     });
   }
 
+  const allTalents = useAllTalents();
   const ranked = useMemo(() => {
     const anySoft =
       !!f.ageRange || !!f.heightRange ||
@@ -105,7 +107,7 @@ export default function ProSearchPage() {
       f.languages.length || f.accents.length || f.voiceTypes.length ||
       f.skills.length || f.experienceLevels.length || f.locations.length;
     const threshold = anySoft ? 30 : 0;
-    return TALENTS.map((t) => ({
+    return allTalents.map((t) => ({
       talent: t,
       match: matchTalent(t, {
         gender: f.gender,
@@ -129,7 +131,7 @@ export default function ProSearchPage() {
     }))
       .filter((r) => r.match.passes && r.match.score >= threshold)
       .sort((a, b) => b.match.score - a.match.score);
-  }, [f]);
+  }, [f, allTalents]);
 
   const activeCount = useMemo(() => {
     let n = 0;

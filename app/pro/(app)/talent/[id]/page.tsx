@@ -1,4 +1,5 @@
 "use client";
+import { useAllTalents } from "@/lib/cloud/talents";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -30,7 +31,8 @@ export default function TalentDossierPage() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  const talent = useMemo(() => TALENTS.find((t) => t.id === id), [id]);
+  const allTalents = useAllTalents();
+  const talent = useMemo(() => allTalents.find((t) => t.id === id), [id, allTalents]);
 
   useEffect(() => {
     if (!id) return;

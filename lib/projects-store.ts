@@ -181,24 +181,30 @@ function safeSave<T>(key: string, value: T) {
 }
 
 // === Projects ===
-export function loadProjects(): Project[] { return safeLoad(KEY_P, SEED_PROJECTS); }
-export function getProject(id: string) { return loadProjects().find((p) => p.id === id); }
+// All projects on this device, including read-only snapshots of projects that
+// invited this user from another account (marked `_remote` by the cloud layer).
+function rawProjects(): Project[] { return safeLoad(KEY_P, SEED_PROJECTS); }
+// The user's OWN projects — what the Pro dashboard / project lists show.
+export function loadProjects(): Project[] {
+  return rawProjects().filter((p) => !(p as Project & { _remote?: boolean })._remote);
+}
+export function getProject(id: string) { return rawProjects().find((p) => p.id === id); }
 export function addProject(p: Omit<Project, "id" | "createdAt">): Project {
-  const list = loadProjects();
+  const list = rawProjects();
   const proj: Project = { ...p, id: uid("proj"), createdAt: new Date().toISOString() };
   list.unshift(proj);
   safeSave(KEY_P, list);
   return proj;
 }
 export function updateProject(id: string, patch: Partial<Project>) {
-  const list = loadProjects();
+  const list = rawProjects();
   const idx = list.findIndex((p) => p.id === id);
   if (idx === -1) return;
   list[idx] = { ...list[idx], ...patch };
   safeSave(KEY_P, list);
 }
 export function deleteProject(id: string) {
-  safeSave(KEY_P, loadProjects().filter((p) => p.id !== id));
+  safeSave(KEY_P, rawProjects().filter((p) => p.id !== id));
   const roles = loadRoles().filter((r) => r.projectId !== id);
   safeSave(KEY_R, roles);
 }
@@ -419,7 +425,7 @@ export function removeTapeComment(submissionId: string, commentId: string) {
 export function getAuditionsForTalent(talentId: string) {
   const subs = loadSubmissions().filter((s) => s.talentId === talentId);
   const rolesById: Record<string, Role> = Object.fromEntries(loadRoles().map((r) => [r.id, r]));
-  const projsById: Record<string, Project> = Object.fromEntries(loadProjects().map((p) => [p.id, p]));
+  const projsById: Record<string, Project> = Object.fromEntries(rawProjects().map((p) => [p.id, p]));
   return subs.map((s) => ({
     submission: s,
     role: rolesById[s.roleId],
@@ -483,7 +489,7 @@ export type InboxItem = {
 export function loadInbox(): InboxItem[] {
   const subs = loadSubmissions();
   const rolesById = Object.fromEntries(loadRoles().map((r) => [r.id, r])) as Record<string, Role>;
-  const projsById = Object.fromEntries(loadProjects().map((p) => [p.id, p])) as Record<string, Project>;
+  const projsById = Object.fromEntries(rawProjects().map((p) => [p.id, p])) as Record<string, Project>;
   const out: InboxItem[] = [];
   const now = Date.now();
   const H24 = 86_400_000;
@@ -576,7 +582,7 @@ export function loadInbox(): InboxItem[] {
 export function loadTriageQueue(): { submission: Submission; role: Role; project: Project }[] {
   const subs = loadSubmissions().filter((s) => s.stage === "submitted");
   const rolesById = Object.fromEntries(loadRoles().map((r) => [r.id, r])) as Record<string, Role>;
-  const projsById = Object.fromEntries(loadProjects().map((p) => [p.id, p])) as Record<string, Project>;
+  const projsById = Object.fromEntries(rawProjects().map((p) => [p.id, p])) as Record<string, Project>;
   const out: { submission: Submission; role: Role; project: Project }[] = [];
   for (const s of subs) {
     const role = rolesById[s.roleId];

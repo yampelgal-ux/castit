@@ -1,21 +1,28 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OnboardingTour } from "@/components/OnboardingTour";
 import { DemoSeeder } from "@/components/DemoSeeder";
 import { LanguageHydrator } from "@/components/LanguageToggle";
+import { CloudSync } from "@/components/CloudSync";
+import { ServiceWorker } from "@/components/ServiceWorker";
+import { NativeBridge } from "@/components/NativeBridge";
 
-const inter = Inter({
-  subsets: ["latin"],
+// Self-hosted fonts: no runtime dependency on Google Fonts, so the app
+// also renders correctly offline / inside the native (Capacitor) shell.
+const inter = localFont({
+  src: "./fonts/Inter.woff2",
   variable: "--font-inter",
   display: "swap",
+  weight: "100 900",
 });
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
+const playfair = localFont({
+  src: "./fonts/PlayfairDisplay.woff2",
   variable: "--font-playfair",
   display: "swap",
+  weight: "400 900",
 });
 
 export const metadata: Metadata = {
@@ -42,6 +49,14 @@ export const metadata: Metadata = {
     description: "Discover talent. Cast roles. Practice scenes with AI.",
   },
   formatDetection: { telephone: false },
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+  },
 };
 
 export const viewport: Viewport = {
@@ -63,6 +78,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <ErrorBoundary>{children}</ErrorBoundary>
             </main>
             <LanguageHydrator />
+            <CloudSync />
+            <ServiceWorker />
+            <NativeBridge />
             <DemoSeeder />
             <OnboardingTour />
           </div>

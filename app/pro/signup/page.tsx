@@ -7,6 +7,8 @@ import { Mail, Lock, User as UserIcon, Building2, ArrowRight, AlertCircle } from
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
+import { isCloudConfigured } from "@/lib/cloud/config";
+import { claimDeviceForNewAccount } from "@/lib/cloud/auth";
 import { cn } from "@/lib/utils";
 
 const ROLES = ["Casting Director", "Casting Associate", "Agent", "Manager", "Producer", "Director"] as const;
@@ -31,26 +33,34 @@ export default function ProSignupPage() {
     setError("");
 
     const username = name.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
-    const configured =
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      !process.env.NEXT_PUBLIC_SUPABASE_URL.startsWith("YOUR_");
-
-    if (configured) {
-      const { data, error: signErr } = await supabase.auth.signUp({ email, password });
+    if (isCloudConfigured()) {
+      const { data, error: signErr } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name, role: "casting_pro" },
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
+      });
       if (signErr) { setError(signErr.message); setLoading(false); return; }
       if (data.user) {
-        await supabase.from("profiles").insert({
-          id: data.user.id,
-          username,
-          name,
-          role: "casting_pro",
-          bio: `${proRole} at ${company}`,
-        });
+        claimDeviceForNewAccount(data.user.id);
+        if (data.session) {
+          await supabase.from("profiles").upsert({
+            id: data.user.id,
+            username,
+            name,
+            role: "casting_pro",
+            bio: `${proRole} at ${company}`,
+          }, { onConflict: "id" });
+        }
         signIn(data.user.id);
       }
+    } else {
+      signIn();
     }
 
-    setProfile({ name, email, role: "Casting Pro", username, avatarSeed: name });
+    setProfile({ name, email, role: "Casting Pro", username, avatarSeed: name, studio: company });
     completeOnboarding();
     router.push("/pro/dashboard");
   }

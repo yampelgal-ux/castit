@@ -1,4 +1,5 @@
 "use client";
+import { useAllTalents } from "@/lib/cloud/talents";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Share2, Copy, CheckCircle2, X, ExternalLink, Clock, FolderOpen } from "lucide-react";
@@ -21,6 +22,7 @@ const EXPIRY_OPTIONS = [
 ];
 
 export function CreateShareLinkSheet({ open, onClose, talentIds }: Props) {
+  const allTalents = useAllTalents();
   const [title, setTitle] = useState("Shortlist");
   const [note, setNote] = useState("");
   const [expiryDays, setExpiryDays] = useState(7);
@@ -46,7 +48,7 @@ export function CreateShareLinkSheet({ open, onClose, talentIds }: Props) {
   }, [open]);
 
   const previews = talentIds
-    .map((id) => TALENTS.find((t) => t.id === id))
+    .map((id) => allTalents.find((t) => t.id === id))
     .filter((t): t is NonNullable<typeof t> => !!t);
 
   const proj = projects.find((p) => p.id === projectId);

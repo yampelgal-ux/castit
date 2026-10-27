@@ -11,6 +11,7 @@ import {
   type ApprovalSession, type ApprovalTalent, type ApprovalVote,
 } from "@/lib/approval-store";
 import { getTapePlaybackUrl } from "@/lib/tape-storage";
+import { castPublicVote, fetchPublicLink, logPublicView } from "@/lib/cloud/shared";
 import { notifyProDirectorVote } from "@/lib/notifications-store";
 
 export default function ApprovePage() {
@@ -20,10 +21,20 @@ export default function ApprovePage() {
   const [askName, setAskName] = useState(false);
   const [pendingVote, setPendingVote] = useState<{ submissionId: string; vote: ApprovalVote } | null>(null);
 
+  const [isRemote, setIsRemote] = useState(false);
+
   useEffect(() => {
     const s = getApprovalBySlug(slug);
-    setSession(s ?? null);
-    if (s) logApprovalView(slug);
+    if (s) {
+      setSession(s);
+      logApprovalView(slug);
+    } else {
+      // Director opening the link on their own device → load the published session.
+      fetchPublicLink<ApprovalSession>(slug).then((remote) => {
+        setSession(remote ?? null);
+        if (remote) { setIsRemote(true); void logPublicView(slug); }
+      });
+    }
     // Restore voter name from localStorage if returning
     const stored = typeof window !== "undefined" ? localStorage.getItem("castit_director_name") : null;
     if (stored) setVoterName(stored);
@@ -36,12 +47,25 @@ export default function ApprovePage() {
       setAskName(true);
       return;
     }
-    castVote(slug, submissionId, v, voterName);
+    applyVote(submissionId, v, voterName);
+  }
+
+  function applyVote(submissionId: string, v: ApprovalVote, name: string) {
+    if (isRemote) {
+      void castPublicVote(slug, submissionId, v, name);
+      setSession((cur) => cur ? {
+        ...cur,
+        talents: cur.talents.map((t) => t.submissionId === submissionId
+          ? { ...t, vote: v, voterName: name, votedAt: new Date().toISOString() } : t),
+      } : cur);
+      return;
+    }
+    castVote(slug, submissionId, v, name);
     const fresh = getApprovalBySlug(slug);
     if (fresh) {
       setSession({ ...fresh });
       const t = fresh.talents.find((x) => x.submissionId === submissionId);
-      if (t) notifyProDirectorVote(voterName, t.talentName, v, slug);
+      if (t) notifyProDirectorVote(name, t.talentName, v, slug);
     }
   }
 
@@ -50,13 +74,7 @@ export default function ApprovePage() {
     localStorage.setItem("castit_director_name", voterName);
     setAskName(false);
     if (pendingVote) {
-      castVote(slug, pendingVote.submissionId, pendingVote.vote, voterName);
-      const fresh = getApprovalBySlug(slug);
-      if (fresh) {
-        setSession({ ...fresh });
-        const t = fresh.talents.find((x) => x.submissionId === pendingVote.submissionId);
-        if (t) notifyProDirectorVote(voterName, t.talentName, pendingVote.vote, slug);
-      }
+      applyVote(pendingVote.submissionId, pendingVote.vote, voterName);
       setPendingVote(null);
     }
   }

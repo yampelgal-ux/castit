@@ -283,3 +283,29 @@ button, a, [role="button"] {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ── Installed app (PWA standalone / native shell) ──────────────────────
+   No fake phone bezel, and respect the notch / home-indicator areas. */
+@media (display-mode: standalone) {
+  .device-frame { background: #0F0C09; padding: 0; }
+  .device-screen {
+    max-width: 640px;
+    height: auto;
+    min-height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+    padding-top: env(safe-area-inset-top);
+  }
+  .device-screen > * { height: auto; overflow: visible; }
+  .device-screen nav.fixed { position: fixed !important; }
+}
+html.native-app .device-frame { background: #0F0C09; padding: 0; }
+html.native-app .device-screen {
+  max-width: 640px; height: auto; min-height: 100dvh; border: 0; border-radius: 0;
+  box-shadow: none; overflow: visible; padding-top: env(safe-area-inset-top);
+}
+html.native-app .device-screen > * { height: auto; overflow: visible; }
+html.native-app .device-screen nav.fixed { position: fixed !important; }
+html, body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
