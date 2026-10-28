@@ -66,8 +66,7 @@ export function reelsFromTalents(talents: Talent[]): ReelPost[] {
       id: r.id, talentId: t.id, videoUrl: r.url, poster: "", caption: r.caption,
       likes: 0, comments: 0, shares: 0, createdAt: r.createdAt,
     })))
-    .sort((a, b) => b.createdAt - a.createdAt)
-    .map(({ createdAt: _c, ...r }) => r);
+    .sort((a, b) => b.createdAt - a.createdAt);
   return [...real, ...REELS.filter((r) => !real.some((x) => x.id === r.id))];
 }
 

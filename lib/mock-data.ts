@@ -64,6 +64,7 @@ export type ReelPost = {
   likes: number;
   comments: number;
   shares: number;
+  createdAt?: number;
 };
 
 export type DailyTask = {

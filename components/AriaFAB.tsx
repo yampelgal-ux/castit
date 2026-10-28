@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 
-const HIDDEN = ["/studio/agent", "/practice", "/onboarding", "/welcome", "/signup", "/login", "/install"];
+const HIDDEN = ["/studio/agent", "/practice", "/onboarding", "/welcome", "/signup", "/login", "/install", "/feed"];
 
 export function AriaFAB() {
   const pathname = usePathname() || "";

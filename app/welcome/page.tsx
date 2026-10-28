@@ -63,7 +63,7 @@ export default function WelcomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15 }}
           >
-            <Brand size="xl" className="leading-[0.95] block" />
+            <Brand size="xl" />
             <p className="mt-6 text-2xl font-display leading-snug text-text" dir={dir}>
               {t("welcome.tagline1")} <em className="text-gold-gradient not-italic">{t("welcome.tagline2")}</em>.
             </p>

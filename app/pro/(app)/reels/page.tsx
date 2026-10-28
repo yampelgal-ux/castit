@@ -3,19 +3,16 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bookmark, MessageCircle, Heart, MessagesSquare, Megaphone, Sparkles, Info, Ruler, Languages, Check, X, Filter,
+  Star, MessageCircle, Megaphone, Sparkles, Info, Ruler, Languages, Check, X, Filter,
 } from "lucide-react";
 import { Header } from "@/components/Header";
-import { LazyVideo } from "@/components/LazyVideo";
-import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { TypecastBadge } from "@/components/TypecastBadge";
 import { type Talent, type ReelPost } from "@/lib/mock-data";
 import { useAllReels } from "@/lib/cloud/talents";
 import { loadAuditions } from "@/lib/auditions-store";
 import { matchTalent } from "@/lib/matching";
 import { useStore } from "@/lib/store";
-import { useReelStats, toggleReelLike, recordReelView } from "@/lib/cloud/social";
-import { ReelCommentsSheet } from "@/components/reels/ReelCommentsSheet";
+import { ReelCard } from "@/components/reels/ReelCard";
 import { SendAuditionSheet } from "@/components/SendAuditionSheet";
 import { haptic } from "@/lib/haptics";
 import { cn, formatNumber } from "@/lib/utils";
@@ -145,149 +142,57 @@ function ProReelView({
   const { shortlist, toggleShortlist } = useStore();
   const [showInfo, setShowInfo] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
-  const [showComments, setShowComments] = useState(false);
-  const stats = useReelStats(reel.id);
   const isShortlisted = shortlist.has(talent.id);
 
+  const Extra = ({ label, onClick, children, gold }: { label: string; onClick: () => void; children: React.ReactNode; gold?: boolean }) => (
+    <button onClick={onClick} aria-label={label} className="flex flex-col items-center gap-1 text-white">
+      <span className={cn("w-12 h-12 rounded-full grid place-items-center", gold ? "bg-hi text-on-hi" : "bg-black/25 backdrop-blur-sm")}>{children}</span>
+      <span className="text-xs font-semibold drop-shadow">{label}</span>
+    </button>
+  );
+
   return (
-    <div className="relative h-dvh w-full overflow-hidden bg-black">
-      <LazyVideo
-        src={reel.videoUrl}
-        poster={reel.poster}
-        className="absolute inset-0 w-full h-full object-cover"
-        tapToUnmute
-        onView={() => void recordReelView(reel.id, talent.id)}
-      />
-
-      {/* Vignette */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/40 pointer-events-none" />
-
-      {/* Top-right match badge (pro-only) */}
-      {match && match.passes && (
-        <div className="absolute top-20 right-4 z-10">
-          <div className={cn(
-            "px-2.5 py-1 rounded-full backdrop-blur-md text-[0.6875rem] font-semibold border inline-flex items-center gap-1 tnum",
-            match.score >= 85 ? "bg-success/30 text-white border-success/60"
-              : match.score >= 65 ? "bg-gold/30 text-white border-gold/60"
-              : "bg-white/15 text-white border-white/30"
+    <>
+      <ReelCard
+        reel={reel}
+        talent={talent}
+        badge={match && match.passes ? (
+          <span className={cn(
+            "px-2.5 py-1 rounded-full backdrop-blur-md text-xs font-semibold border inline-flex items-center gap-1 tnum text-white",
+            match.score >= 85 ? "bg-success/30 border-success/60" : match.score >= 65 ? "bg-hi/30 border-hi/60" : "bg-white/15 border-white/30"
           )}>
             <Sparkles className="w-3 h-3" /> {match.score}% match
+          </span>
+        ) : undefined}
+        railExtra={
+          <>
+            <Extra label={isShortlisted ? "Saved" : "Shortlist"} gold={isShortlisted}
+              onClick={() => { toggleShortlist(talent.id); haptic(isShortlisted ? "light" : "success"); }}>
+              <Star className={cn("w-5 h-5", isShortlisted && "fill-current")} />
+            </Extra>
+            <Extra label="Typecast" onClick={() => setShowInfo(true)}>
+              <Info className="w-5 h-5" />
+            </Extra>
+          </>
+        }
+        cta={
+          <div className="flex gap-2">
+            <button onClick={() => { setShowInvite(true); haptic("medium"); }}
+              className="h-11 px-5 rounded-full bg-hi text-on-hi text-sm font-bold inline-flex items-center gap-2 shadow-lg">
+              <Megaphone className="w-4 h-4" /> Invite to audition
+            </button>
+            <Link href={`/messages?with=${talent.id}&name=${encodeURIComponent(talent.name)}`}
+              className="h-11 px-4 rounded-full bg-white/15 backdrop-blur border border-white/25 text-white text-sm font-semibold inline-flex items-center gap-2">
+              <MessageCircle className="w-4 h-4" /> Message
+            </Link>
           </div>
-        </div>
-      )}
-
-      {/* Right rail — pro actions */}
-      <div className="absolute right-3 bottom-32 z-10 flex flex-col items-center gap-4">
-        <Link href={`/profile/${talent.username}`} className="flex flex-col items-center gap-1">
-          <img src={talent.photo} alt={talent.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white/80" />
-          <span className="text-[0.6875rem] text-white/90 font-medium">View</span>
-        </Link>
-
-        <button
-          onClick={() => { toggleShortlist(talent.id); haptic(isShortlisted ? "light" : "success"); }}
-          className="flex flex-col items-center gap-1 text-white"
-          aria-label={isShortlisted ? "Remove from shortlist" : "Shortlist"}
-        >
-          <div className={cn(
-            "w-12 h-12 rounded-full grid place-items-center transition-colors",
-            isShortlisted ? "bg-gold text-on-accent" : "bg-white/15 backdrop-blur text-white"
-          )}>
-            <Bookmark className={cn("w-5 h-5", isShortlisted && "fill-current")} />
-          </div>
-          <span className="text-[0.6875rem] font-medium">{isShortlisted ? "Saved" : "Shortlist"}</span>
-        </button>
-
-        <button
-          onClick={() => { setShowInvite(true); haptic("medium"); }}
-          className="flex flex-col items-center gap-1 text-white"
-          aria-label="Invite to audition"
-        >
-          <div className="w-12 h-12 rounded-full bg-gold text-on-accent grid place-items-center">
-            <Megaphone className="w-5 h-5" />
-          </div>
-          <span className="text-[0.6875rem] font-medium">Invite</span>
-        </button>
-
-        <button
-          onClick={async () => { if (await toggleReelLike(reel.id, talent.id)) haptic(stats.liked ? "light" : "success"); }}
-          className="flex flex-col items-center gap-1 text-white"
-          aria-label="Like"
-          aria-pressed={stats.liked}
-        >
-          <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur grid place-items-center">
-            <Heart className={cn("w-5 h-5", stats.liked && "fill-danger stroke-danger")} />
-          </div>
-          <span className="text-[0.6875rem] font-medium tnum">{formatNumber(reel.likes + stats.likes)}</span>
-        </button>
-
-        <button
-          onClick={() => setShowComments(true)}
-          className="flex flex-col items-center gap-1 text-white"
-          aria-label="Comments"
-        >
-          <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur grid place-items-center">
-            <MessagesSquare className="w-5 h-5" />
-          </div>
-          <span className="text-[0.6875rem] font-medium tnum">{formatNumber(reel.comments + stats.comments)}</span>
-        </button>
-
-        <Link
-          href={`/messages?with=${talent.id}&name=${encodeURIComponent(talent.name)}`}
-          className="flex flex-col items-center gap-1 text-white"
-          onClick={() => haptic("light")}
-        >
-          <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur grid place-items-center">
-            <MessageCircle className="w-5 h-5" />
-          </div>
-          <span className="text-[0.6875rem] font-medium">Message</span>
-        </Link>
-
-        <button
-          onClick={() => setShowInfo(true)}
-          className="flex flex-col items-center gap-1 text-white"
-          aria-label="Typecast details"
-        >
-          <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur grid place-items-center">
-            <Info className="w-5 h-5" />
-          </div>
-          <span className="text-[0.6875rem] font-medium">Typecast</span>
-        </button>
-      </div>
-
-      {/* Bottom info */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="absolute left-4 right-20 bottom-28 z-10 text-white"
-      >
-        <div className="flex items-center gap-2 mb-2">
-          <Link href={`/profile/${talent.username}`} className="font-semibold inline-flex items-center gap-1.5">
-            {talent.name}
-            {talent.verified && <VerifiedBadge />}
-          </Link>
-          <span className="text-white/60 text-[0.6875rem]">·</span>
-          <span className="text-[0.6875rem] text-white/70 tnum">{formatNumber(talent.followers)} followers</span>
-        </div>
-
-        <p className="text-sm leading-snug text-white/95 mb-3 line-clamp-2">{reel.caption}</p>
-
-        {/* Compact typecast strip */}
-        <div className="flex flex-wrap gap-1.5">
-          <TypecastBadge>{talent.typecast.gender}</TypecastBadge>
-          <TypecastBadge>{talent.typecast.ageRange[0]}–{talent.typecast.ageRange[1]}</TypecastBadge>
-          <TypecastBadge>{talent.typecast.heightCm}cm</TypecastBadge>
-          {talent.typecast.bodyType && <TypecastBadge>{talent.typecast.bodyType}</TypecastBadge>}
-          {talent.typecast.location && <TypecastBadge>{talent.typecast.location}</TypecastBadge>}
-        </div>
-      </motion.div>
-
-      {/* Sheets */}
+        }
+      />
       <AnimatePresence>
         {showInfo && <TypecastSheet talent={talent} onClose={() => setShowInfo(false)} />}
-        {showComments && <ReelCommentsSheet reelId={reel.id} ownerId={talent.id} onClose={() => setShowComments(false)} />}
       </AnimatePresence>
       <SendAuditionSheet open={showInvite} onClose={() => setShowInvite(false)} talent={talent} />
-    </div>
+    </>
   );
 }
 
