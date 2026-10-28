@@ -48,10 +48,12 @@ export default function SignupPage() {
         return;
       }
       if (data.user) {
-        claimDeviceForNewAccount(data.user.id);
         setProfile({ name, email, role, username, avatarSeed: name });
-        signIn(data.user.id);
+        // Only a real session counts as signed in. Without one (email
+        // confirmation pending) nothing can reach the cloud yet.
         if (data.session) {
+          claimDeviceForNewAccount(data.user.id);
+          signIn(data.user.id);
           await supabase.from("profiles").upsert({
             id: data.user.id,
             username,

@@ -43,6 +43,12 @@ export default function ProSignupPage() {
         },
       });
       if (signErr) { setError(signErr.message); setLoading(false); return; }
+      if (data.user && !data.session) {
+        // Email confirmation is on: the account isn't usable until confirmed.
+        setError("שלחנו לך מייל לאישור החשבון. אשרי אותו ואז התחברי. Check your email to confirm, then sign in.");
+        setLoading(false);
+        return;
+      }
       if (data.user) {
         claimDeviceForNewAccount(data.user.id);
         if (data.session) {
