@@ -299,7 +299,7 @@ export default function ProSearchPage() {
                       </Link>
                       <button
                         onClick={(e) => { e.preventDefault(); setInviteFor({ id: talent.id, name: talent.name, photo: talent.photo }); }}
-                        className="h-7 px-3 rounded-full bg-gold text-bg text-[11px] font-semibold inline-flex items-center gap-1"
+                        className="h-7 px-3 rounded-full bg-gold text-on-accent text-[11px] font-semibold inline-flex items-center gap-1"
                       >
                         <Send className="w-3 h-3" /> Invite
                       </button>
@@ -351,7 +351,7 @@ export default function ProSearchPage() {
               </button>
               <button
                 onClick={() => setBulkOpen(true)}
-                className="ml-auto h-9 px-4 rounded-full bg-gold text-bg text-xs font-semibold inline-flex items-center gap-1.5"
+                className="ml-auto h-9 px-4 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center gap-1.5"
               >
                 <Send className="w-3.5 h-3.5" /> Invite all
               </button>
@@ -488,7 +488,7 @@ function FilterPanel({
         <div className="p-5 pt-3 border-t border-border">
           <button
             onClick={onClose}
-            className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2"
+            className="w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold inline-flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4" /> {t("srch.showMatches", { n: results })}
           </button>

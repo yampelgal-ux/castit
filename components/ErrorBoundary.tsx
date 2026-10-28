@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
         </p>
         <button
           onClick={this.reset}
-          className="inline-flex items-center gap-2 px-4 h-11 rounded-full bg-gold text-bg font-semibold text-sm"
+          className="inline-flex items-center gap-2 px-4 h-11 rounded-full bg-gold text-on-accent font-semibold text-sm"
         >
           <RefreshCw className="w-4 h-4" /> Retake
         </button>

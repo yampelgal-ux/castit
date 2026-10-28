@@ -66,7 +66,7 @@ export default function BroadcastPage() {
           </p>
           <button
             onClick={() => router.push(`/pro/audition/${id}`)}
-            className="mt-7 w-full h-12 rounded-full bg-gold text-bg font-semibold"
+            className="mt-7 w-full h-12 rounded-full bg-gold text-on-accent font-semibold"
           >
             Back to audition
           </button>
@@ -182,7 +182,7 @@ export default function BroadcastPage() {
         <button
           onClick={() => { haptic("success"); setSent(true); }}
           disabled={selected.size === 0 || !message.trim()}
-          className="w-full h-12 rounded-full bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-40"
+          className="w-full h-12 rounded-full bg-gold text-on-accent font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-40"
         >
           <Send className="w-4 h-4" /> Send to {selected.size} talent{selected.size === 1 ? "" : "s"}
         </button>
@@ -206,7 +206,7 @@ function Row({ t, score, selected, onToggle, delay }: { t: Talent; score: number
         "w-5 h-5 rounded-md border-2 grid place-items-center shrink-0",
         selected ? "bg-gold border-gold" : "border-border-strong"
       )}>
-        {selected && <Check className="w-3 h-3 text-bg" strokeWidth={3} />}
+        {selected && <Check className="w-3 h-3 text-on-accent" strokeWidth={3} />}
       </div>
       <img src={t.photo} alt="" className="w-10 h-10 rounded-xl object-cover" />
       <div className="flex-1 min-w-0 text-left">

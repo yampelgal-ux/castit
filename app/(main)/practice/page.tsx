@@ -350,7 +350,7 @@ export default function PracticePage() {
           >
             <div className={cn(
               "max-w-[82%] rounded-2xl",
-              l.from === "me" && "bg-gold text-bg rounded-br-md px-4 py-2.5",
+              l.from === "me" && "bg-gold text-on-accent rounded-br-md px-4 py-2.5",
               l.from === "partner" && "bg-bg-elevated border border-border rounded-bl-md px-4 py-2.5",
               l.from === "coach" && "bg-violet/15 border border-violet/30 text-text px-4 py-3 w-full max-w-full"
             )}>
@@ -364,7 +364,7 @@ export default function PracticePage() {
                 <div className="text-[9px] uppercase tracking-widest text-text-subtle mb-1">{scene.partnerCharacter}</div>
               )}
               <p className={cn("text-sm leading-snug", l.from === "coach" && "whitespace-pre-line")}>{l.text}</p>
-              <div className={cn("text-[10px] mt-1", l.from === "me" ? "text-bg/60" : "text-text-subtle")}>{l.time}</div>
+              <div className={cn("text-[10px] mt-1", l.from === "me" ? "text-on-accent/60" : "text-text-subtle")}>{l.time}</div>
             </div>
           </motion.div>
         ))}
@@ -415,7 +415,7 @@ export default function PracticePage() {
             onClick={toggleListen}
             className={cn(
               "w-12 h-12 rounded-full grid place-items-center transition-all shrink-0",
-              listening ? "bg-terra text-text recording-pulse" : "bg-gold text-bg"
+              listening ? "bg-terra text-text recording-pulse" : "bg-gold text-on-accent"
             )}
             aria-label={listening ? "Stop" : "Speak"}
           >

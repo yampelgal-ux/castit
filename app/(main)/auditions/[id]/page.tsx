@@ -84,7 +84,7 @@ export default function PublicAuditionPage() {
         ) : (
           <button
             onClick={() => { setShowApply(true); haptic("medium"); }}
-            className="w-full h-14 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2 shadow-lg shadow-gold/20"
+            className="w-full h-14 rounded-2xl bg-gold text-on-accent font-semibold inline-flex items-center justify-center gap-2 shadow-lg shadow-gold/20"
           >
             <Send className="w-4 h-4" /> Apply to this audition
           </button>
@@ -132,7 +132,7 @@ export default function PublicAuditionPage() {
 
                 <button
                   onClick={apply}
-                  className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2"
+                  className="w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold inline-flex items-center justify-center gap-2"
                 >
                   Submit application <Send className="w-4 h-4" />
                 </button>

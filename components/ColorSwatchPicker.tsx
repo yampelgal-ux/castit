@@ -54,7 +54,7 @@ export function ColorSwatchPicker({
                   "relative w-11 h-11 rounded-full transition-all duration-150",
                   "ring-1 ring-inset ring-white/10",
                   active
-                    ? "ring-2 ring-gold ring-offset-1 ring-offset-bg scale-110 shadow-[0_0_12px_rgba(212,165,74,0.4)]"
+                    ? "ring-2 ring-gold ring-offset-1 ring-offset-bg scale-110 shadow-[0_0_12px_rgb(var(--gold)/0.4)]"
                     : "hover:scale-105 shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
                 )}
                 style={swatchStyle(s)}

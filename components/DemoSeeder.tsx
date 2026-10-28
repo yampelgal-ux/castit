@@ -51,7 +51,7 @@ export function DemoSeeder() {
           >
             <button
               onClick={() => { setShowSheet(true); dismissBadge(); }}
-              className="rounded-2xl bg-gold/95 backdrop-blur text-bg px-4 py-3 shadow-2xl flex items-center gap-2.5 text-right"
+              className="rounded-2xl bg-gold/95 backdrop-blur text-on-accent px-4 py-3 shadow-2xl flex items-center gap-2.5 text-right"
             >
               <Sparkles className="w-4 h-4 shrink-0" />
               <div className="flex-1 min-w-0">

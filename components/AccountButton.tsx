@@ -75,7 +75,7 @@ export function AccountButton({ className = "" }: { className?: string }) {
               </div>
 
               {install.canInstall && (
-                <button onClick={install.prompt} className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2">
+                <button onClick={install.prompt} className="w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold flex items-center justify-center gap-2">
                   <Smartphone className="w-4 h-4" /> התקן את CastIt כאפליקציה
                 </button>
               )}

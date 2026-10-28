@@ -334,7 +334,7 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
           disabled={!name.trim()}
           className={cn(
             "mt-5 w-full h-12 rounded-2xl font-semibold flex items-center justify-center gap-2",
-            name.trim() ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+            name.trim() ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
           )}
         >
           Add role <ArrowRight className="w-4 h-4" />

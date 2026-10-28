@@ -139,7 +139,7 @@ export default function ProTriagePage() {
             <Link href="/pro/inbox" className="px-4 h-10 rounded-full bg-bg-elevated border border-border text-xs font-semibold inline-flex items-center">
               {t("tri.actionInbox")}
             </Link>
-            <Link href="/pro/dashboard" className="px-4 h-10 rounded-full bg-gold text-bg text-xs font-semibold inline-flex items-center">
+            <Link href="/pro/dashboard" className="px-4 h-10 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center">
               {t("tri.dashboard")}
             </Link>
           </div>
@@ -197,7 +197,7 @@ export default function ProTriagePage() {
             {/* Decision overlays */}
             <motion.div
               style={{ opacity: callbackOpacity }}
-              className="absolute top-6 left-6 z-20 px-3 py-1.5 rounded-xl bg-success text-bg font-display text-lg font-bold border-2 border-success rotate-[-12deg]"
+              className="absolute top-6 left-6 z-20 px-3 py-1.5 rounded-xl bg-success text-on-accent font-display text-lg font-bold border-2 border-success rotate-[-12deg]"
             >
               CALLBACK
             </motion.div>
@@ -209,7 +209,7 @@ export default function ProTriagePage() {
             </motion.div>
             <motion.div
               style={{ opacity: holdOpacity }}
-              className="absolute top-1/4 left-1/2 -translate-x-1/2 z-20 px-3 py-1.5 rounded-xl bg-sage text-bg font-display text-lg font-bold border-2 border-sage"
+              className="absolute top-1/4 left-1/2 -translate-x-1/2 z-20 px-3 py-1.5 rounded-xl bg-sage text-on-accent font-display text-lg font-bold border-2 border-sage"
             >
               HOLD
             </motion.div>
@@ -304,7 +304,7 @@ export default function ProTriagePage() {
         </button>
         <button
           onClick={() => decide("callback")}
-          className="w-14 h-14 rounded-full bg-success text-bg grid place-items-center shadow-xl active:scale-95 transition"
+          className="w-14 h-14 rounded-full bg-success text-on-accent grid place-items-center shadow-xl active:scale-95 transition"
           aria-label="Callback"
         >
           <Check className="w-7 h-7" strokeWidth={2.5} />

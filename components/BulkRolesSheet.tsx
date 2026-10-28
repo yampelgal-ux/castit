@@ -202,7 +202,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
             <button
               disabled={!text.trim() || parsing}
               onClick={() => parse({ text })}
-              className="w-full mt-4 h-12 rounded-2xl bg-gold text-bg font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-40"
+              className="w-full mt-4 h-12 rounded-2xl bg-gold text-on-accent font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-40"
             >
               {parsing ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> מנתח...</>
@@ -242,7 +242,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
                       className={cn(
                         "w-6 h-6 rounded-md grid place-items-center shrink-0 mt-0.5 border",
                         keep.has(i)
-                          ? "bg-gold border-gold text-bg"
+                          ? "bg-gold border-gold text-on-accent"
                           : "bg-bg border-border text-text-muted"
                       )}
                     >
@@ -285,7 +285,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
               onClick={commit}
               className={cn(
                 "mt-4 w-full h-12 rounded-2xl font-semibold flex items-center justify-center gap-2",
-                keep.size > 0 ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+                keep.size > 0 ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
               )}
             >
               <Plus className="w-4 h-4" /> צור {keep.size} תפקיד{keep.size !== 1 ? "ים" : ""}

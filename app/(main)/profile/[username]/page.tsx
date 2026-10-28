@@ -222,7 +222,7 @@ export default function ProfilePage() {
               <>
                 <button
                   onClick={() => setShowInvite(true)}
-                  className="flex-1 h-11 rounded-full bg-gold text-bg text-sm font-semibold inline-flex items-center justify-center gap-1.5"
+                  className="flex-1 h-11 rounded-full bg-gold text-on-accent text-sm font-semibold inline-flex items-center justify-center gap-1.5"
                 >
                   <Send className="w-4 h-4" /> Send audition
                 </button>
@@ -235,7 +235,7 @@ export default function ProfilePage() {
               </>
             ) : (
               <>
-                <button className="flex-1 h-11 rounded-full bg-gold text-bg text-sm font-semibold">Follow</button>
+                <button className="flex-1 h-11 rounded-full bg-gold text-on-accent text-sm font-semibold">Follow</button>
                 <button
                   onClick={handleMessage}
                   className="h-11 px-4 rounded-full bg-bg-elevated border border-border text-sm font-semibold inline-flex items-center gap-1.5"
@@ -371,7 +371,7 @@ function EditProfileModal({
             <div className="flex flex-col items-center gap-3">
               <div className="relative">
                 <img src={talent.photo} alt="" className="w-20 h-20 rounded-full object-cover" />
-                <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-gold text-bg grid place-items-center shadow">
+                <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-gold text-on-accent grid place-items-center shadow">
                   <Camera className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -401,7 +401,7 @@ function EditProfileModal({
             <button
               onClick={save}
               disabled={loading}
-              className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold disabled:opacity-60"
+              className="w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold disabled:opacity-60"
             >
               {loading ? "Saving…" : "Save changes"}
             </button>

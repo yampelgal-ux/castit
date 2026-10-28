@@ -175,7 +175,7 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                                 onClick={() => setRoleId(r.id)}
                                 className={cn(
                                   "px-3 h-9 rounded-full text-xs font-semibold border",
-                                  roleId === r.id ? "bg-gold text-bg border-gold" : "bg-bg text-text border-border"
+                                  roleId === r.id ? "bg-gold text-on-accent border-gold" : "bg-bg text-text border-border"
                                 )}
                               >{r.name}</button>
                             ))}
@@ -226,7 +226,7 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                       disabled={!roleId || willInvite.length === 0}
                       className={cn(
                         "mt-5 w-full h-12 rounded-2xl font-semibold flex items-center justify-center gap-2",
-                        roleId && willInvite.length > 0 ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+                        roleId && willInvite.length > 0 ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
                       )}
                     >
                       Send {willInvite.length} invite{willInvite.length !== 1 ? "s" : ""} <Send className="w-4 h-4" />
@@ -287,7 +287,7 @@ function EmptyProjects({ onClose }: { onClose: () => void }) {
       <a
         href="/pro/projects"
         onClick={onClose}
-        className="inline-flex items-center gap-2 mt-5 px-5 h-11 rounded-full bg-gold text-bg text-sm font-semibold"
+        className="inline-flex items-center gap-2 mt-5 px-5 h-11 rounded-full bg-gold text-on-accent text-sm font-semibold"
       >
         Create project <ArrowRight className="w-4 h-4" />
       </a>

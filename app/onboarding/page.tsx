@@ -148,7 +148,7 @@ export default function OnboardingPage() {
                         </div>
                         {active && (
                           <div className="w-6 h-6 rounded-full bg-gold grid place-items-center shrink-0">
-                            <Check className="w-3.5 h-3.5 text-bg" strokeWidth={3} />
+                            <Check className="w-3.5 h-3.5 text-on-accent" strokeWidth={3} />
                           </div>
                         )}
                       </button>
@@ -226,14 +226,14 @@ export default function OnboardingPage() {
           {step < 2 ? (
             <button
               onClick={next}
-              className="flex-1 h-12 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-2xl bg-gold text-on-accent font-semibold flex items-center justify-center gap-2"
             >
               {t("common.continue")} <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
             <button
               onClick={finish}
-              className="flex-1 h-12 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-2xl bg-gold text-on-accent font-semibold flex items-center justify-center gap-2"
             >
               {photo ? t("ob.enter") : t("ob.skipNow")}
               <ArrowRight className="w-4 h-4" />
@@ -270,7 +270,7 @@ function RoleCard({
       </div>
       {selected && (
         <div className="w-6 h-6 rounded-full bg-gold grid place-items-center">
-          <Check className="w-3.5 h-3.5 text-bg" strokeWidth={3} />
+          <Check className="w-3.5 h-3.5 text-on-accent" strokeWidth={3} />
         </div>
       )}
     </button>

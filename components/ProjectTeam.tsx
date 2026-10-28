@@ -133,7 +133,7 @@ export function ProjectTeam({ projectId }: { projectId: string }) {
                       <button key={r} onClick={() => setRole(r)}
                         className={cn(
                           "h-7 px-2.5 rounded-full text-[10px] font-semibold border",
-                          role === r ? "bg-gold text-bg border-gold" : "bg-bg-elevated text-text border-border"
+                          role === r ? "bg-gold text-on-accent border-gold" : "bg-bg-elevated text-text border-border"
                         )}
                       >{r}</button>
                     ))}
@@ -144,7 +144,7 @@ export function ProjectTeam({ projectId }: { projectId: string }) {
                     <button onClick={addMember} disabled={!name.trim() || !email.trim()}
                       className={cn(
                         "h-9 rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-1",
-                        name.trim() && email.trim() ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+                        name.trim() && email.trim() ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
                       )}
                     >
                       <Mail className="w-3 h-3" /> Add

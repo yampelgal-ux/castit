@@ -118,7 +118,7 @@ export default function TypecastPage() {
                     {initials}
                   </div>
                 )}
-                <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gold text-bg grid place-items-center shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
+                <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gold text-on-accent grid place-items-center shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
                   <Camera className="w-3 h-3" />
                 </span>
               </PhotoPicker>
@@ -268,7 +268,7 @@ export default function TypecastPage() {
       <div className="fixed bottom-0 inset-x-0 max-w-[440px] mx-auto p-4 glass border-t border-border">
         <button
           onClick={next}
-          className="w-full h-14 rounded-2xl bg-gold text-bg font-semibold hover:bg-gold-light flex items-center justify-center gap-2"
+          className="w-full h-14 rounded-2xl bg-gold text-on-accent font-semibold hover:bg-gold-light flex items-center justify-center gap-2"
         >
           {step < STEPS.length - 1 ? "Continue" : "Enter CastIt"}
           <ArrowRight className="w-4 h-4" />
@@ -316,7 +316,7 @@ function Chips({
             onClick={() => onToggle(o)}
             className={cn(
               "px-4 h-10 rounded-full border text-sm font-medium transition-all",
-              active ? "bg-gold text-bg border-gold" : "bg-bg-elevated text-text border-border hover:border-border-strong"
+              active ? "bg-gold text-on-accent border-gold" : "bg-bg-elevated text-text border-border hover:border-border-strong"
             )}
           >
             {o}

@@ -106,7 +106,7 @@ export default function AvatarPage() {
       <div className="fixed bottom-0 inset-x-0 max-w-[440px] mx-auto p-4 glass border-t border-border">
         <button
           onClick={finish}
-          className="w-full h-14 rounded-2xl bg-gold text-bg font-semibold hover:bg-gold-light flex items-center justify-center gap-2"
+          className="w-full h-14 rounded-2xl bg-gold text-on-accent font-semibold hover:bg-gold-light flex items-center justify-center gap-2"
         >
           Enter CastIt <ArrowRight className="w-4 h-4" />
         </button>

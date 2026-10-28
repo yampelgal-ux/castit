@@ -131,7 +131,7 @@ export default function TalentDossierPage() {
         </Link>
         <Link
           href="/pro/audition/new"
-          className="h-10 rounded-full bg-gold text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+          className="h-10 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5"
         >
           <Megaphone className="w-3.5 h-3.5" /> Invite
         </Link>

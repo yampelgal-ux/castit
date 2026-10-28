@@ -315,7 +315,7 @@ export default function SelfTapeStudioPage() {
             <button
               onClick={() => cameraInputRef.current?.click()}
               disabled={uploading}
-              className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {uploading ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> {t("rec.loading")}</>
@@ -418,7 +418,7 @@ export default function SelfTapeStudioPage() {
             onClick={() => setShowSides(!showSides)}
             className={cn(
               "w-9 h-9 rounded-full grid place-items-center",
-              showSides ? "bg-gold text-bg" : "bg-black/40 text-white"
+              showSides ? "bg-gold text-on-accent" : "bg-black/40 text-white"
             )}
           >
             <ScrollText className="w-4 h-4" />
@@ -654,7 +654,7 @@ export default function SelfTapeStudioPage() {
                       onClick={() => setSelectedTake(i)}
                       className={cn(
                         "px-3 h-8 rounded-full text-[11px] font-semibold border inline-flex items-center gap-1.5",
-                        selectedTake === i ? "bg-gold text-bg border-gold" : "bg-black/50 text-white border-white/20"
+                        selectedTake === i ? "bg-gold text-on-accent border-gold" : "bg-black/50 text-white border-white/20"
                       )}
                     >
                       {tk.uploaded && <FileVideo className="w-3 h-3" />}
@@ -674,7 +674,7 @@ export default function SelfTapeStudioPage() {
                 <button
                   onClick={useTake}
                   disabled={submitting}
-                  className="h-13 py-3 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+                  className="h-13 py-3 rounded-2xl bg-gold text-on-accent font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   {submitting ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> {t("rec.saving")}</>

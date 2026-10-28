@@ -278,7 +278,7 @@ export default function TourPage() {
       <button
         onClick={next}
         disabled={isLast}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-gold text-bg grid place-items-center disabled:opacity-40"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-gold text-on-accent grid place-items-center disabled:opacity-40"
         aria-label="Next"
       >
         <ArrowRight className="w-4 h-4" />
@@ -365,8 +365,8 @@ function CoachVisual() {
           </div>
         </div>
         <div className="flex justify-end">
-          <div className="bg-gold text-bg rounded-2xl rounded-br-md px-3 py-2 max-w-[80%]">
-            <div className="text-[9px] text-bg/60 uppercase tracking-widest font-semibold">MAYA · אני</div>
+          <div className="bg-gold text-on-accent rounded-2xl rounded-br-md px-3 py-2 max-w-[80%]">
+            <div className="text-[9px] text-on-accent/60 uppercase tracking-widest font-semibold">MAYA · אני</div>
             <div className="text-[11px] mt-0.5">It was never about me.</div>
           </div>
         </div>
@@ -452,7 +452,7 @@ function FinalCTA() {
     <div className="flex flex-col items-center gap-3 max-w-md mx-auto">
       <Link
         href="/welcome"
-        className="w-full h-14 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+        className="w-full h-14 rounded-2xl bg-gold text-on-accent font-semibold inline-flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
       >
         <Globe className="w-4 h-4" /> כניסה לאפליקציה
       </Link>

@@ -52,7 +52,7 @@ export default function VerifyPage() {
             onClick={() => setStep("verifying")}
             className={`mt-8 w-full h-14 rounded-2xl font-semibold transition-all flex items-center justify-center gap-2 ${
               selfie && id
-                ? "bg-gold text-bg hover:bg-gold-light"
+                ? "bg-gold text-on-accent hover:bg-gold-light"
                 : "bg-bg-elevated text-text-subtle"
             }`}
           >
@@ -87,7 +87,7 @@ export default function VerifyPage() {
             </p>
             <button
               onClick={() => router.push("/typecast")}
-              className="mt-10 w-full h-14 rounded-2xl bg-gold text-bg font-semibold hover:bg-gold-light flex items-center justify-center gap-2"
+              className="mt-10 w-full h-14 rounded-2xl bg-gold text-on-accent font-semibold hover:bg-gold-light flex items-center justify-center gap-2"
             >
               Build your Typecast <ArrowRight className="w-4 h-4" />
             </button>

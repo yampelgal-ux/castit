@@ -25,7 +25,7 @@ export default function StudioPage() {
               onClick={() => setTab(t)}
               className={cn(
                 "flex-1 h-9 rounded-xl text-xs font-medium transition-all",
-                tab === t ? "bg-gold text-bg" : "text-text-muted"
+                tab === t ? "bg-gold text-on-accent" : "text-text-muted"
               )}
             >
               {t}
@@ -94,7 +94,7 @@ function Scenes() {
               <div className="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden">
                 <img src={s.thumbnail} alt={s.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/30 grid place-items-center">
-                  <div className="w-9 h-9 rounded-full bg-white/95 text-bg grid place-items-center">
+                  <div className="w-9 h-9 rounded-full bg-white/95 text-black grid place-items-center">
                     ▶
                   </div>
                 </div>

@@ -199,7 +199,7 @@ export function OnboardingTour() {
             )}
             <button
               onClick={next}
-              className="flex-1 h-11 rounded-full bg-gold text-bg font-semibold text-sm inline-flex items-center justify-center gap-1.5"
+              className="flex-1 h-11 rounded-full bg-gold text-on-accent font-semibold text-sm inline-flex items-center justify-center gap-1.5"
             >
               {isLast ? (
                 <><Check className="w-4 h-4" /> בואו נתחיל</>

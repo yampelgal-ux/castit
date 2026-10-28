@@ -119,7 +119,7 @@ export default function ProInboxPage() {
             className={cn(
               "px-3 h-8 rounded-full text-xs font-semibold transition",
               filter === f.k
-                ? "bg-gold text-bg"
+                ? "bg-gold text-on-accent"
                 : "bg-bg-elevated border border-border text-text-muted"
             )}
           >

@@ -60,7 +60,7 @@ export default function CastingProPage() {
         right={
           <button
             onClick={() => { haptic("medium"); setShowNew(true); }}
-            className="inline-flex items-center gap-1 h-9 px-3 rounded-full bg-gold text-bg text-xs font-semibold"
+            className="inline-flex items-center gap-1 h-9 px-3 rounded-full bg-gold text-on-accent text-xs font-semibold"
           >
             <Plus className="w-3.5 h-3.5" /> Post role
           </button>
@@ -80,14 +80,14 @@ export default function CastingProPage() {
           <button
             onClick={() => setTab("posts")}
             className={cn("flex-1 h-9 rounded-xl text-xs font-medium transition-all",
-              tab === "posts" ? "bg-gold text-bg" : "text-text-muted")}
+              tab === "posts" ? "bg-gold text-on-accent" : "text-text-muted")}
           >
             My posts
           </button>
           <button
             onClick={() => setTab("applicants")}
             className={cn("flex-1 h-9 rounded-xl text-xs font-medium transition-all",
-              tab === "applicants" ? "bg-gold text-bg" : "text-text-muted")}
+              tab === "applicants" ? "bg-gold text-on-accent" : "text-text-muted")}
           >
             Applicants
           </button>
@@ -169,7 +169,7 @@ export default function CastingProPage() {
                 </div>
                 <Link
                   href={`/profile/${a.talent.username}`}
-                  className="h-8 px-3 rounded-full bg-gold text-bg text-xs font-semibold inline-flex items-center"
+                  className="h-8 px-3 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center"
                 >
                   View
                 </Link>
@@ -271,7 +271,7 @@ function NewRoleSheet({ onClose, onSave }: { onClose: () => void; onSave: (c: My
             onClick={submit}
             disabled={!valid}
             className={cn("w-full h-12 rounded-2xl font-semibold",
-              valid ? "bg-gold text-bg" : "bg-bg text-text-subtle")}
+              valid ? "bg-gold text-on-accent" : "bg-bg text-text-subtle")}
           >
             Publish role
           </button>

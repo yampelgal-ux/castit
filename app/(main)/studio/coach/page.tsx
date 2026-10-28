@@ -796,7 +796,7 @@ export default function CoachPage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-success/95 text-bg text-xs font-semibold inline-flex items-center gap-1.5 shadow-lg"
+            className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-success/95 text-on-accent text-xs font-semibold inline-flex items-center gap-1.5 shadow-lg"
           >
             <Save className="w-3.5 h-3.5" /> טייק נשמר בספרייה
           </motion.div>
@@ -924,7 +924,7 @@ export default function CoachPage() {
           <button
             disabled={!textInput.trim() || parsing}
             onClick={() => parseScene({ text: textInput })}
-            className="w-full mt-5 h-12 rounded-full bg-gold text-bg font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-40"
+            className="w-full mt-5 h-12 rounded-full bg-gold text-on-accent font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-40"
           >
             {parsing ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> מנתח את הסצנה...</>
@@ -966,7 +966,7 @@ export default function CoachPage() {
                   className={cn(
                     "px-3 h-8 rounded-full text-xs font-semibold transition",
                     yourCharacter === c
-                      ? "bg-gold text-bg"
+                      ? "bg-gold text-on-accent"
                       : "bg-bg-elevated border border-border text-text"
                   )}
                 >{c}</button>
@@ -1009,7 +1009,7 @@ export default function CoachPage() {
                   className={cn(
                     "px-3 h-8 rounded-full text-xs font-semibold transition",
                     tone === t.key
-                      ? "bg-gold text-bg"
+                      ? "bg-gold text-on-accent"
                       : "bg-bg-elevated border border-border text-text"
                   )}
                 >{t.label}</button>
@@ -1028,7 +1028,7 @@ export default function CoachPage() {
                   className={cn(
                     "h-9 rounded-full text-xs font-semibold transition",
                     intensity === i.key
-                      ? "bg-gold text-bg"
+                      ? "bg-gold text-on-accent"
                       : "bg-bg-elevated border border-border text-text"
                   )}
                 >{i.label}</button>
@@ -1051,7 +1051,7 @@ export default function CoachPage() {
           <button
             onClick={startPractice}
             disabled={!yourCharacter}
-            className="w-full h-12 rounded-full bg-gold text-bg font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-40"
+            className="w-full h-12 rounded-full bg-gold text-on-accent font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-40"
           >
             <Play className="w-4 h-4" /> התחל אימון
           </button>
@@ -1105,7 +1105,7 @@ export default function CoachPage() {
                   className={cn(
                     "h-8 px-2.5 rounded-full grid place-items-center text-[9px] font-bold uppercase tracking-wider transition",
                     usePremiumVoice
-                      ? "bg-gold text-bg"
+                      ? "bg-gold text-on-accent"
                       : "bg-bg-elevated border border-border text-text-muted"
                   )}
                   title={usePremiumVoice ? "קול AI פרימיום" : "קול מכשיר"}
@@ -1209,13 +1209,13 @@ export default function CoachPage() {
                     className={cn(
                       "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
                       t.role === "user"
-                        ? "bg-gold text-bg"
+                        ? "bg-gold text-on-accent"
                         : "bg-bg-elevated border border-border text-text"
                     )}
                   >
                     <div className={cn(
                       "text-[9px] uppercase tracking-widest mb-1 font-semibold",
-                      t.role === "user" ? "text-bg/60" : "text-gold"
+                      t.role === "user" ? "text-on-accent/60" : "text-gold"
                     )}>
                       {t.role === "user" ? yourCharacter : (partnerCharacter || "Partner")}
                     </div>
@@ -1327,7 +1327,7 @@ export default function CoachPage() {
               <button
                 type="submit"
                 disabled={!userInput.trim() || loading}
-                className="w-11 h-11 rounded-full bg-gold text-bg grid place-items-center disabled:opacity-40"
+                className="w-11 h-11 rounded-full bg-gold text-on-accent grid place-items-center disabled:opacity-40"
                 aria-label="שלח"
               >
                 <Send className="w-4 h-4" />

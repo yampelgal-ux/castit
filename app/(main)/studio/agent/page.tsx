@@ -238,12 +238,12 @@ export default function AgentChatPage() {
               className={cn(
                 "max-w-[78%] px-4 py-2.5 rounded-2xl text-sm leading-snug",
                 m.from === "user"
-                  ? "bg-gold text-bg rounded-br-md"
+                  ? "bg-gold text-on-accent rounded-br-md"
                   : "bg-bg-elevated border border-border rounded-bl-md"
               )}
             >
               {m.text}
-              <div className={cn("text-[10px] mt-1", m.from === "user" ? "text-bg/60" : "text-text-subtle")}>
+              <div className={cn("text-[10px] mt-1", m.from === "user" ? "text-on-accent/60" : "text-text-subtle")}>
                 {m.time}
               </div>
             </div>
@@ -344,7 +344,7 @@ export default function AgentChatPage() {
                   }]);
                   setPendingTool(null);
                 }}
-                className="flex-1 h-9 rounded-full bg-gold text-bg font-semibold text-xs inline-flex items-center justify-center gap-1.5"
+                className="flex-1 h-9 rounded-full bg-gold text-on-accent font-semibold text-xs inline-flex items-center justify-center gap-1.5"
               >
                 <Check className="w-3.5 h-3.5" /> Approve
               </button>
@@ -387,7 +387,7 @@ export default function AgentChatPage() {
           />
           <button
             type="submit"
-            className="w-11 h-11 rounded-full bg-gold text-bg grid place-items-center disabled:opacity-50 hover:bg-gold-light transition-colors shrink-0"
+            className="w-11 h-11 rounded-full bg-gold text-on-accent grid place-items-center disabled:opacity-50 hover:bg-gold-light transition-colors shrink-0"
             disabled={!text.trim() || loading}
           >
             <Send className="w-4 h-4" />

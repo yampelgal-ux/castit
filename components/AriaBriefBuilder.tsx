@@ -100,7 +100,7 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
               "flex-1 h-10 rounded-2xl text-sm font-semibold inline-flex items-center justify-center gap-2",
               loading || brief.trim().length < 3
                 ? "bg-bg text-text-subtle"
-                : "bg-gold text-bg",
+                : "bg-gold text-on-accent",
             )}
           >
             {loading ? (
@@ -157,7 +157,7 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
                   disabled={chips.length === 0}
                   className={cn(
                     "flex-1 h-9 rounded-full text-xs font-semibold",
-                    chips.length === 0 ? "bg-bg-muted text-text-subtle" : "bg-gold text-bg",
+                    chips.length === 0 ? "bg-bg-muted text-text-subtle" : "bg-gold text-on-accent",
                   )}
                 >
                   Apply filters

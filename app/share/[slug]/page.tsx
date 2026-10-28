@@ -92,7 +92,7 @@ export default function SharePage() {
             {/* Print / Save PDF — hidden when printing */}
             <button
               onClick={() => window.print()}
-              className="print:hidden shrink-0 h-10 px-4 rounded-full bg-gold text-bg text-xs font-semibold inline-flex items-center gap-1.5 active:scale-95 transition-transform"
+              className="print:hidden shrink-0 h-10 px-4 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center gap-1.5 active:scale-95 transition-transform"
             >
               <Printer className="w-3.5 h-3.5" /> {t("report.print")}
             </button>
@@ -156,7 +156,7 @@ function ReportEntry({
       {/* Identity row */}
       <div className="flex items-start gap-4 p-5">
         <div className="relative shrink-0">
-          <span className="absolute -top-1.5 -left-1.5 z-10 w-6 h-6 rounded-full bg-gold text-bg text-[11px] font-bold grid place-items-center font-display">
+          <span className="absolute -top-1.5 -left-1.5 z-10 w-6 h-6 rounded-full bg-gold text-on-accent text-[11px] font-bold grid place-items-center font-display">
             {index + 1}
           </span>
           <img src={talent.photo} alt={talent.name} className="w-20 h-20 rounded-2xl object-cover" />

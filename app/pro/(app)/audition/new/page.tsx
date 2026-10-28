@@ -325,7 +325,7 @@ export default function NewAuditionPage() {
               disabled={step === 0 && !briefValid}
               className={cn(
                 "flex-1 h-12 rounded-2xl font-semibold inline-flex items-center justify-center gap-2",
-                step === 0 && !briefValid ? "bg-bg-elevated text-text-subtle" : "bg-gold text-bg"
+                step === 0 && !briefValid ? "bg-bg-elevated text-text-subtle" : "bg-gold text-on-accent"
               )}
             >
               Continue <ArrowRight className="w-4 h-4" />
@@ -333,7 +333,7 @@ export default function NewAuditionPage() {
           ) : (
             <button
               onClick={publish}
-              className="flex-1 h-12 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-2xl bg-gold text-on-accent font-semibold inline-flex items-center justify-center gap-2"
             >
               <Megaphone className="w-4 h-4" /> Publish audition
             </button>

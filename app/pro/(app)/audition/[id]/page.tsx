@@ -141,7 +141,7 @@ export default function AuditionDetailPage() {
                   </div>
                   <Link
                     href={`/messages?with=${t.id}&name=${encodeURIComponent(t.name)}`}
-                    className="h-8 px-3 rounded-full bg-gold text-bg text-[11px] font-semibold inline-flex items-center gap-1"
+                    className="h-8 px-3 rounded-full bg-gold text-on-accent text-[11px] font-semibold inline-flex items-center gap-1"
                   >
                     <MessageCircle className="w-3 h-3" /> Invite
                   </Link>

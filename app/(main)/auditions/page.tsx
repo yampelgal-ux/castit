@@ -79,7 +79,7 @@ export default function AuditionsPage() {
               onClick={() => setFilter(f)}
               className={cn(
                 "flex-1 h-9 rounded-xl text-xs font-medium transition-all",
-                filter === f ? "bg-gold text-bg" : "text-text-muted"
+                filter === f ? "bg-gold text-on-accent" : "text-text-muted"
               )}
             >
               {f}
@@ -144,7 +144,7 @@ export default function AuditionsPage() {
                 <span className="text-[11px] text-text-muted tnum">{a.applicants} applied</span>
                 <Link
                   href={`/auditions/${a.id}`}
-                  className="h-8 px-4 rounded-full bg-gold text-bg text-xs font-semibold inline-flex items-center"
+                  className="h-8 px-4 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center"
                 >
                   View
                 </Link>

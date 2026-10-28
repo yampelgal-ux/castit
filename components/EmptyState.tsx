@@ -15,9 +15,9 @@ type Props = {
 };
 
 const TONE = {
-  gold: { bg: "bg-gold/10", text: "text-gold", btn: "bg-gold text-bg" },
+  gold: { bg: "bg-gold/10", text: "text-gold", btn: "bg-gold text-on-accent" },
   plum: { bg: "bg-plum/15", text: "text-plum-light", btn: "bg-plum text-text" },
-  sage: { bg: "bg-sage/15", text: "text-sage", btn: "bg-sage text-bg" },
+  sage: { bg: "bg-sage/15", text: "text-sage", btn: "bg-sage text-on-accent" },
   terra: { bg: "bg-terra/15", text: "text-terra", btn: "bg-terra text-text" },
 };
 

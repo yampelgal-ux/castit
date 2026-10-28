@@ -30,7 +30,7 @@ export function LanguageToggle({ className }: { className?: string }) {
         onClick={() => pick("he")}
         className={cn(
           "px-2.5 h-7 rounded-full text-[11px] font-semibold transition-colors",
-          lang === "he" ? "bg-gold text-bg" : "text-text-muted"
+          lang === "he" ? "bg-gold text-on-accent" : "text-text-muted"
         )}
       >
         עב
@@ -39,7 +39,7 @@ export function LanguageToggle({ className }: { className?: string }) {
         onClick={() => pick("en")}
         className={cn(
           "px-2.5 h-7 rounded-full text-[11px] font-semibold transition-colors",
-          lang === "en" ? "bg-gold text-bg" : "text-text-muted"
+          lang === "en" ? "bg-gold text-on-accent" : "text-text-muted"
         )}
       >
         EN

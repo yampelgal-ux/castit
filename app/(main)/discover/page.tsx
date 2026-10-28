@@ -186,7 +186,7 @@ export default function DiscoverPage() {
           >
             <SlidersHorizontal className="w-4 h-4" />
             {filtersActive && (
-              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-gold text-bg text-[9px] font-bold grid place-items-center px-1">
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-gold text-on-accent text-[9px] font-bold grid place-items-center px-1">
                 {countActiveFilters(filters)}
               </span>
             )}
@@ -201,7 +201,7 @@ export default function DiscoverPage() {
               onClick={() => setQuick(q)}
               className={cn(
                 "shrink-0 px-3.5 h-8 rounded-full text-xs font-medium border transition-all",
-                quick === q ? "bg-gold text-bg border-gold" : "bg-transparent text-text-muted border-border"
+                quick === q ? "bg-gold text-on-accent border-gold" : "bg-transparent text-text-muted border-border"
               )}
             >
               {q}
@@ -284,7 +284,7 @@ export default function DiscoverPage() {
                         alt={FEATURED_TALENT.name}
                         className="w-16 h-16 rounded-full object-cover border-2 border-gold/40"
                       />
-                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-gold text-bg text-[8px] font-bold uppercase tracking-wide">
+                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-gold text-on-accent text-[8px] font-bold uppercase tracking-wide">
                         Featured
                       </span>
                     </div>
@@ -301,7 +301,7 @@ export default function DiscoverPage() {
                     </div>
                     <Link
                       href={`/profile/${FEATURED_TALENT.username}`}
-                      className="shrink-0 h-9 px-3 rounded-full bg-gold text-bg text-xs font-semibold grid place-items-center"
+                      className="shrink-0 h-9 px-3 rounded-full bg-gold text-on-accent text-xs font-semibold grid place-items-center"
                     >
                       View
                     </Link>
@@ -327,7 +327,7 @@ export default function DiscoverPage() {
                       <div className={cn(
                         "absolute top-2 left-2 px-2 py-1 rounded-full text-[10px] font-bold tnum backdrop-blur",
                         score >= 80 ? "bg-success/90 text-white"
-                          : score >= 60 ? "bg-gold/90 text-bg"
+                          : score >= 60 ? "bg-gold/90 text-on-accent"
                           : "bg-bg/80 text-text border border-border"
                       )}>
                         {score}%
@@ -411,7 +411,7 @@ export default function DiscoverPage() {
                     }
                   }}
                   disabled={!searchName.trim()}
-                  className="flex-1 h-11 rounded-2xl bg-gold text-bg font-semibold disabled:opacity-50"
+                  className="flex-1 h-11 rounded-2xl bg-gold text-on-accent font-semibold disabled:opacity-50"
                 >
                   Save
                 </button>
@@ -560,7 +560,7 @@ function FilterSheet({
             </button>
             <button
               onClick={onClose}
-              className="flex-1 h-12 rounded-2xl bg-gold text-bg font-semibold"
+              className="flex-1 h-12 rounded-2xl bg-gold text-on-accent font-semibold"
             >
               Show {resultCount} talent{resultCount === 1 ? "" : "s"}
             </button>
@@ -592,7 +592,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       onClick={onClick}
       className={cn(
         "px-3.5 h-9 rounded-full text-xs font-medium border transition-all",
-        active ? "bg-gold text-bg border-gold" : "bg-bg border-border text-text hover:border-border-strong"
+        active ? "bg-gold text-on-accent border-gold" : "bg-bg border-border text-text hover:border-border-strong"
       )}
     >
       {children}

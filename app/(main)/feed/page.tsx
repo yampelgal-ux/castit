@@ -121,7 +121,7 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
       </motion.div>
 
       {/* Send to casting CTA */}
-      <button className="absolute left-4 bottom-6 z-10 px-4 py-2.5 rounded-full bg-gold text-bg font-semibold text-xs shadow-lg shadow-gold/20">
+      <button className="absolute left-4 bottom-6 z-10 px-4 py-2.5 rounded-full bg-gold text-on-accent font-semibold text-xs shadow-lg shadow-gold/20">
         ✦ {t("feed.sendToPro")}
       </button>
     </div>

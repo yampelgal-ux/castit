@@ -107,12 +107,12 @@ export default function ConversationPage() {
                 className={cn(
                   "max-w-[78%] px-4 py-2.5 rounded-2xl text-sm leading-snug",
                   isMe
-                    ? "bg-gold text-bg rounded-br-md"
+                    ? "bg-gold text-on-accent rounded-br-md"
                     : "bg-bg-elevated border border-border rounded-bl-md"
                 )}
               >
                 {m.text}
-                <div className={cn("text-[10px] mt-1", isMe ? "text-bg/60" : "text-text-subtle")}>
+                <div className={cn("text-[10px] mt-1", isMe ? "text-on-accent/60" : "text-text-subtle")}>
                   {fmt(m.sent_at)}
                 </div>
               </div>
@@ -136,7 +136,7 @@ export default function ConversationPage() {
           <button
             type="submit"
             disabled={!text.trim() || loading}
-            className="w-11 h-11 rounded-full bg-gold text-bg grid place-items-center disabled:opacity-50"
+            className="w-11 h-11 rounded-full bg-gold text-on-accent grid place-items-center disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
           </button>

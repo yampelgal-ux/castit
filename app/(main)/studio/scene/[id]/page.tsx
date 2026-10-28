@@ -198,7 +198,7 @@ export default function ScenePage() {
                     className={cn(
                       "p-1.5 rounded-full transition-colors",
                       activeLine === i
-                        ? "bg-gold text-bg"
+                        ? "bg-gold text-on-accent"
                         : "text-text-muted hover:text-gold hover:bg-bg-muted"
                     )}
                   >
@@ -236,7 +236,7 @@ export default function ScenePage() {
               "flex-1 h-14 rounded-2xl font-semibold flex items-center justify-center gap-3 transition-all",
               recording
                 ? "bg-terra text-text recording-pulse"
-                : "bg-gold text-bg hover:bg-gold-light"
+                : "bg-gold text-on-accent hover:bg-gold-light"
             )}
           >
             <Mic className="w-5 h-5" />
@@ -374,7 +374,7 @@ function VoicePickerSheet({
         <div className="sticky bottom-0 bg-bg-elevated p-5 pt-3 border-t border-border">
           <button
             onClick={onClose}
-            className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold"
+            className="w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold"
           >
             Done
           </button>

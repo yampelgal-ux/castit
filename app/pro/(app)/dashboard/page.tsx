@@ -220,7 +220,7 @@ export default function ProDashboardPage() {
             </p>
             <Link
               href="/pro/projects"
-              className="inline-flex items-center gap-2 mt-4 px-5 h-11 rounded-full bg-gold text-bg text-sm font-semibold"
+              className="inline-flex items-center gap-2 mt-4 px-5 h-11 rounded-full bg-gold text-on-accent text-sm font-semibold"
             >
               <Plus className="w-4 h-4" /> {t("pd.empty.cta")}
             </Link>

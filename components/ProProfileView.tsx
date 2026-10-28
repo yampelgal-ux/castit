@@ -112,7 +112,7 @@ export function ProProfileView({ isMe, displayName, photoUrl, bio }: {
               </button>
               <Link
                 href="/pro/dashboard"
-                className="h-11 px-4 rounded-full bg-gold text-bg text-sm font-semibold inline-flex items-center gap-1.5"
+                className="h-11 px-4 rounded-full bg-gold text-on-accent text-sm font-semibold inline-flex items-center gap-1.5"
               >
                 Studio <ChevronRight className="w-4 h-4" />
               </Link>
@@ -121,7 +121,7 @@ export function ProProfileView({ isMe, displayName, photoUrl, bio }: {
             // Talent viewing a Pro: no Follow/DM — only "View open castings"
             <Link
               href="/opportunities"
-              className="flex-1 h-11 rounded-full bg-gold text-bg text-sm font-semibold inline-flex items-center justify-center gap-1.5"
+              className="flex-1 h-11 rounded-full bg-gold text-on-accent text-sm font-semibold inline-flex items-center justify-center gap-1.5"
             >
               View open castings ({openCastings.length})
             </Link>
@@ -265,7 +265,7 @@ function EditProSheet({ onClose }: { onClose: () => void }) {
                 <button key={s} onClick={() => toggleSpec(s)}
                   className={cn(
                     "h-9 px-3 rounded-full text-xs font-semibold border",
-                    specialization.includes(s) ? "bg-gold text-bg border-gold" : "bg-bg text-text border-border"
+                    specialization.includes(s) ? "bg-gold text-on-accent border-gold" : "bg-bg text-text border-border"
                   )}
                 >{s}</button>
               ))}
@@ -294,7 +294,7 @@ function EditProSheet({ onClose }: { onClose: () => void }) {
                 <button onClick={addCredit} disabled={!newTitle.trim()}
                   className={cn(
                     "h-9 px-3 rounded-xl text-xs font-semibold inline-flex items-center gap-1",
-                    newTitle.trim() ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+                    newTitle.trim() ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
                   )}
                 ><Plus className="w-3 h-3" /></button>
               </div>
@@ -307,7 +307,7 @@ function EditProSheet({ onClose }: { onClose: () => void }) {
           </label>
         </div>
 
-        <button onClick={save} className="mt-5 w-full h-12 rounded-2xl bg-gold text-bg font-semibold">
+        <button onClick={save} className="mt-5 w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold">
           Save
         </button>
       </motion.div>

@@ -147,7 +147,7 @@ export default function UploadReelPage() {
                     transition={{ type: "spring", stiffness: 300 }}
                     className="w-20 h-20 rounded-full bg-success grid place-items-center"
                   >
-                    <Check className="w-10 h-10 text-bg" strokeWidth={3} />
+                    <Check className="w-10 h-10 text-on-accent" strokeWidth={3} />
                   </motion.div>
                 </div>
               )}
@@ -182,9 +182,9 @@ export default function UploadReelPage() {
             className={cn(
               "w-full h-13 py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all",
               file && state === "idle"
-                ? "bg-gold text-bg"
+                ? "bg-gold text-on-accent"
                 : state === "done"
-                ? "bg-success text-bg"
+                ? "bg-success text-on-accent"
                 : "bg-bg-elevated text-text-subtle"
             )}
           >

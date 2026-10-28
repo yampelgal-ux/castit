@@ -118,7 +118,7 @@ export function CloudSync() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -16 }}
           onClick={() => window.location.reload()}
-          className="fixed top-[calc(env(safe-area-inset-top)+64px)] inset-x-0 mx-auto w-max max-w-[90vw] z-[60] flex items-center gap-2 rounded-full bg-gold text-bg px-4 py-2 text-xs font-semibold shadow-2xl"
+          className="fixed top-[calc(env(safe-area-inset-top)+64px)] inset-x-0 mx-auto w-max max-w-[90vw] z-[60] flex items-center gap-2 rounded-full bg-gold text-on-accent px-4 py-2 text-xs font-semibold shadow-2xl"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           עדכונים חדשים · לחץ לרענון

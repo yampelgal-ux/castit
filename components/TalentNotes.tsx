@@ -122,7 +122,7 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
                     disabled={!newTag.trim()}
                     className={cn(
                       "h-9 px-3 rounded-full text-xs font-semibold inline-flex items-center gap-1",
-                      newTag.trim() ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+                      newTag.trim() ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
                     )}
                   >
                     <Plus className="w-3 h-3" /> Add
@@ -212,7 +212,7 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
                 onClick={save}
                 className={cn(
                   "w-full h-10 rounded-2xl text-sm font-semibold inline-flex items-center justify-center gap-2",
-                  saved ? "bg-success text-bg" : "bg-gold text-bg"
+                  saved ? "bg-success text-on-accent" : "bg-gold text-on-accent"
                 )}
               >
                 {saved ? <><Check className="w-4 h-4" /> Saved</> : "Save notes"}

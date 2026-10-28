@@ -114,7 +114,7 @@ export function LoginForm({ variant = "any" }: { variant?: "any" | "pro" }) {
           disabled={!valid || loading}
           className={cn(
             "flex items-center justify-center gap-2 w-full h-14 rounded-2xl font-semibold",
-            valid && !loading ? "bg-gold text-bg" : "bg-bg-elevated text-text-subtle"
+            valid && !loading ? "bg-gold text-on-accent" : "bg-bg-elevated text-text-subtle"
           )}
         >
           {loading ? "Signing in…" : "Sign in"}

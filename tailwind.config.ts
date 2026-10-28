@@ -1,5 +1,7 @@
 import type { Config } from "tailwindcss";
 
+const v = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
+
 export default {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -7,60 +9,24 @@ export default {
   ],
   theme: {
     extend: {
+      // Every color is a CSS variable (RGB triplet) defined in app/globals.css,
+      // so the whole app re-themes from one place and opacity modifiers
+      // (bg-gold/20) keep working. Class names are kept stable; "gold" is the
+      // primary accent, "wine" the secondary accent, whatever their hue.
       colors: {
-        // Warm theatrical darks — like a darkened stage, not cold black
-        bg: {
-          DEFAULT: "#0F0C09",      // warm near-black (theater)
-          elevated: "#1A1612",     // warm dark (raised surface)
-          muted: "#241F1A",        // warmer card / input
-        },
-        border: {
-          DEFAULT: "#2D2823",      // warm subtle divider
-          strong: "#46403A",       // hairline emphasis
-        },
-        // Cream text instead of cold white — easier on eyes, editorial feel
-        text: {
-          DEFAULT: "#F5EFE6",      // warm parchment
-          muted: "#A8A095",        // muted warm gray
-          subtle: "#6E665C",       // softer
-        },
-        // Refined gold — brass, less yellow, more sophisticated
-        gold: {
-          DEFAULT: "#C9A961",      // antique brass
-          dark: "#9B824A",
-          light: "#E4C57E",
-        },
-        // Deep burgundy — drama, theater curtain, passion
-        wine: {
-          DEFAULT: "#8B3A3A",
-          dark: "#5C2424",
-          light: "#B25555",
-        },
-        // Terracotta — warmth, emotion, sunset
-        terra: {
-          DEFAULT: "#C75D3F",
-          dark: "#9B4530",
-          light: "#E07B5B",
-        },
-        // Sage — unexpected editorial accent (fashion, indie film)
-        sage: {
-          DEFAULT: "#7A8C66",
-          dark: "#5C6B4D",
-          light: "#A0AE8E",
-        },
-        // Plum — creative, artistic, mysterious
-        plum: {
-          DEFAULT: "#5C4861",
-          dark: "#3F303F",
-          light: "#7E6685",
-        },
-        // Keep violet as alias for backward compat
-        violet: {
-          DEFAULT: "#7C5CFF",
-          dark: "#5B3FE0",
-        },
-        success: "#7A8C66",   // sage-based success (warmer than green)
-        danger: "#C75D3F",    // terracotta-based (warmer than red)
+        bg: { DEFAULT: v("bg"), elevated: v("bg-elevated"), muted: v("bg-muted") },
+        border: { DEFAULT: v("border"), strong: v("border-strong") },
+        text: { DEFAULT: v("text"), muted: v("text-muted"), subtle: v("text-subtle") },
+        gold: { DEFAULT: v("gold"), dark: v("gold-dark"), light: v("gold-light") },
+        wine: { DEFAULT: v("wine"), dark: v("wine-dark"), light: v("wine-light") },
+        terra: { DEFAULT: v("terra"), dark: v("terra-dark"), light: v("terra-light") },
+        sage: { DEFAULT: v("sage"), dark: v("sage-dark"), light: v("sage-light") },
+        plum: { DEFAULT: v("plum"), dark: v("plum-dark"), light: v("plum-light") },
+        violet: { DEFAULT: v("violet"), dark: v("violet-dark") },
+        // Text/icon color that sits on a solid accent fill (bg-gold, bg-wine…)
+        "on-accent": v("on-accent"),
+        success: v("sage"),
+        danger: v("terra"),
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],

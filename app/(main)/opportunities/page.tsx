@@ -39,7 +39,7 @@ export default function OpportunitiesPage() {
               onClick={() => setTab(t)}
               className={cn(
                 "flex-1 h-9 rounded-xl text-xs font-medium transition-all",
-                tab === t ? "bg-gold text-bg" : "text-text-muted"
+                tab === t ? "bg-gold text-on-accent" : "text-text-muted"
               )}
             >
               {t}
@@ -139,7 +139,7 @@ function DailyView() {
               <Flame className="w-3.5 h-3.5" /> {formatNumber(DAILY_TASKS[0].participants)} joined
             </span>
           </div>
-          <button className="mt-4 h-11 px-5 rounded-full bg-gold text-bg text-sm font-semibold">
+          <button className="mt-4 h-11 px-5 rounded-full bg-gold text-on-accent text-sm font-semibold">
             Submit your take
           </button>
         </div>
@@ -312,7 +312,7 @@ function SwipeCastingCard({
             ) : (
               <button
                 onClick={onApply}
-                className="h-9 px-4 rounded-full bg-gold text-bg text-xs font-semibold"
+                className="h-9 px-4 rounded-full bg-gold text-on-accent text-xs font-semibold"
               >
                 Apply
               </button>
@@ -476,7 +476,7 @@ function ApplyModal({ casting, onClose }: { casting: Casting; onClose: () => voi
             <button
               onClick={submit}
               disabled={loading}
-              className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
             >
               {loading ? "Sending…" : <>Submit Application <Send className="w-4 h-4" /></>}
             </button>
@@ -512,7 +512,7 @@ function StarsView() {
                     alt={talent.name}
                     className={cn("rounded-full object-cover border-2", idx === 0 ? "w-20 h-20 border-gold" : "w-14 h-14 border-border-strong")}
                   />
-                  <div className={cn("absolute -top-1 -right-1 w-6 h-6 rounded-full grid place-items-center text-[10px] font-bold", idx === 0 ? "bg-gold text-bg" : "bg-bg-elevated text-text border border-border")}>
+                  <div className={cn("absolute -top-1 -right-1 w-6 h-6 rounded-full grid place-items-center text-[10px] font-bold", idx === 0 ? "bg-gold text-on-accent" : "bg-bg-elevated text-text border border-border")}>
                     {star.rank}
                   </div>
                 </div>

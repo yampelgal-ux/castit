@@ -106,7 +106,7 @@ export default function ScenePage() {
               window.sessionStorage.setItem("castit_coach_resume_scene", scene.id);
             }
           }}
-          className="block w-full h-12 rounded-full bg-gold text-bg font-semibold text-sm inline-flex items-center justify-center gap-2"
+          className="block w-full h-12 rounded-full bg-gold text-on-accent font-semibold text-sm inline-flex items-center justify-center gap-2"
         >
           <Play className="w-4 h-4" /> תרגל סצנה זו שוב
         </Link>
@@ -239,16 +239,16 @@ function TakeRow({ take, index, onDelete }: { take: Take; index: number; onDelet
     <div className="rounded-2xl bg-bg-elevated border border-border p-3 flex items-center gap-3">
       <button
         onClick={togglePlay}
-        className="w-10 h-10 rounded-full bg-gold text-bg grid place-items-center shrink-0 disabled:opacity-50"
+        className="w-10 h-10 rounded-full bg-gold text-on-accent grid place-items-center shrink-0 disabled:opacity-50"
         disabled={loading}
         aria-label={playing ? "השהה" : "נגן"}
       >
         {loading ? (
           <div className="w-3 h-3 border-2 border-bg border-r-transparent rounded-full animate-spin" />
         ) : playing ? (
-          <Pause className="w-4 h-4 fill-bg" />
+          <Pause className="w-4 h-4 fill-on-accent" />
         ) : (
-          <Play className="w-4 h-4 fill-bg" />
+          <Play className="w-4 h-4 fill-on-accent" />
         )}
       </button>
       <div className="flex-1 min-w-0">

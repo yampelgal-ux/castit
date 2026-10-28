@@ -370,7 +370,7 @@ export default function SubmissionPage() {
                         onClick={() => setHoldHours(h)}
                         className={cn(
                           "h-9 px-3 rounded-full text-xs font-semibold border",
-                          holdHours === h ? "bg-gold text-bg border-gold" : "bg-bg text-text border-border"
+                          holdHours === h ? "bg-gold text-on-accent border-gold" : "bg-bg text-text border-border"
                         )}
                       >
                         {h === 168 ? "1 week" : h === 24 ? "24h" : `${h}h`}
@@ -380,7 +380,7 @@ export default function SubmissionPage() {
                       onClick={() => setHoldHours(0)}
                       className={cn(
                         "h-9 px-3 rounded-full text-xs font-semibold border",
-                        holdHours === 0 ? "bg-gold text-bg border-gold" : "bg-bg text-text border-border"
+                        holdHours === 0 ? "bg-gold text-on-accent border-gold" : "bg-bg text-text border-border"
                       )}
                     >
                       No timer
@@ -734,12 +734,12 @@ function iconFor(kind: Action["kind"]) {
 }
 function toneClasses(tone: Action["tone"]) {
   switch (tone) {
-    case "success": return "bg-success text-bg";
+    case "success": return "bg-success text-on-accent";
     case "danger":  return "bg-danger text-white";
-    case "sage":    return "bg-sage/80 text-bg";
+    case "sage":    return "bg-sage/80 text-on-accent";
     case "plum":    return "bg-plum text-text";
     case "violet":  return "bg-violet text-white";
-    case "gold":    return "bg-gold text-bg";
+    case "gold":    return "bg-gold text-on-accent";
     case "muted":   return "bg-bg-elevated border border-border text-text";
   }
 }

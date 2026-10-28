@@ -121,7 +121,7 @@ export default function CalendarPage() {
                 className={cn(
                   "aspect-square rounded-xl text-sm font-medium transition-all relative",
                   isSelected
-                    ? "bg-gold text-bg ring-2 ring-gold/40"
+                    ? "bg-gold text-on-accent ring-2 ring-gold/40"
                     : b?.status === "busy"
                     ? "bg-terra/15 text-terra border border-terra/30"
                     : b?.status === "available"

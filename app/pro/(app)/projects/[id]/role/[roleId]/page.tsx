@@ -210,11 +210,11 @@ export default function RoleDetailPage() {
                 onClick={() => setStage(t.id)}
                 className={cn(
                   "px-3 h-8 rounded-full text-xs font-semibold whitespace-nowrap border transition-all inline-flex items-center gap-1.5",
-                  stage === t.id ? "bg-gold text-bg border-gold" : "bg-bg-elevated text-text-muted border-border"
+                  stage === t.id ? "bg-gold text-on-accent border-gold" : "bg-bg-elevated text-text-muted border-border"
                 )}
               >
                 {t.label}
-                <span className={cn("tnum", stage === t.id ? "text-bg/70" : "text-text-subtle")}>{count}</span>
+                <span className={cn("tnum", stage === t.id ? "text-on-accent/70" : "text-text-subtle")}>{count}</span>
               </button>
             );
           })}
@@ -267,18 +267,18 @@ export default function RoleDetailPage() {
                   <XCircle className="w-3.5 h-3.5" /> Pass לכולם
                 </button>
                 <button onClick={() => bulkApply((sid) => confirmBooked(sid))}
-                  className="h-10 rounded-xl bg-success text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
+                  className="h-10 rounded-xl bg-success text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5">
                   <Check className="w-3.5 h-3.5" /> Select לכולם
                 </button>
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-2">
                 <button onClick={() => bulkApply((sid) => moveToCallback(sid, { type: "tape" }))}
-                  className="h-10 rounded-xl bg-success/90 text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
+                  className="h-10 rounded-xl bg-success/90 text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5" /> Callback
                 </button>
                 <button onClick={() => bulkApply((sid) => moveToHold(sid, undefined, 48))}
-                  className="h-10 rounded-xl bg-sage/80 text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
+                  className="h-10 rounded-xl bg-sage/80 text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5">
                   <PauseCircle className="w-3.5 h-3.5" /> Hold
                 </button>
                 <button onClick={() => bulkApply((sid) => rejectSubmission(sid))}
@@ -413,7 +413,7 @@ function SubmissionRow({
               haptic("medium");
               onAction();
             }}
-            className="h-9 rounded-xl bg-success text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+            className="h-9 rounded-xl bg-success text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5"
           >
             <Check className="w-3.5 h-3.5" /> Select
           </button>
@@ -492,7 +492,7 @@ function EditBriefSheet({ role, onClose, onSaved }: { role: Role; onClose: () =>
         </div>
 
         <button onClick={submit}
-          className="mt-5 w-full h-12 rounded-2xl bg-gold text-bg font-semibold">
+          className="mt-5 w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold">
           Save
         </button>
       </motion.div>

@@ -93,7 +93,7 @@ export default function ProReelsPage() {
                 className={cn(
                   "shrink-0 h-7 px-3 rounded-full text-[11px] border whitespace-nowrap",
                   auditionId === a.id
-                    ? "bg-gold text-bg border-gold"
+                    ? "bg-gold text-on-accent border-gold"
                     : "bg-white/10 text-white/80 border-white/20"
                 )}
               >
@@ -181,7 +181,7 @@ function ProReelView({
         >
           <div className={cn(
             "w-12 h-12 rounded-full grid place-items-center transition-colors",
-            isShortlisted ? "bg-gold text-bg" : "bg-white/15 backdrop-blur text-white"
+            isShortlisted ? "bg-gold text-on-accent" : "bg-white/15 backdrop-blur text-white"
           )}>
             <Bookmark className={cn("w-5 h-5", isShortlisted && "fill-current")} />
           </div>
@@ -193,7 +193,7 @@ function ProReelView({
           className="flex flex-col items-center gap-1 text-white"
           aria-label="Invite to audition"
         >
-          <div className="w-12 h-12 rounded-full bg-gold text-bg grid place-items-center">
+          <div className="w-12 h-12 rounded-full bg-gold text-on-accent grid place-items-center">
             <Megaphone className="w-5 h-5" />
           </div>
           <span className="text-[10px] font-medium">Invite</span>
@@ -331,7 +331,7 @@ function TypecastSheet({ talent, onClose }: { talent: Talent; onClose: () => voi
             </Link>
             <Link
               href={`/messages?with=${talent.id}&name=${encodeURIComponent(talent.name)}`}
-              className="h-11 rounded-xl bg-gold text-bg text-sm font-semibold inline-flex items-center justify-center gap-1.5"
+              className="h-11 rounded-xl bg-gold text-on-accent text-sm font-semibold inline-flex items-center justify-center gap-1.5"
             >
               <MessageCircle className="w-4 h-4" /> Message
             </Link>
@@ -395,7 +395,7 @@ function InviteSheet({
                 <p className="text-sm text-text-muted">You haven't posted any auditions yet.</p>
                 <Link
                   href="/pro/audition/new"
-                  className="inline-flex mt-3 h-10 px-4 rounded-full bg-gold text-bg text-xs font-semibold items-center gap-1.5"
+                  className="inline-flex mt-3 h-10 px-4 rounded-full bg-gold text-on-accent text-xs font-semibold items-center gap-1.5"
                 >
                   <Megaphone className="w-3.5 h-3.5" /> Post one now
                 </Link>
@@ -420,7 +420,7 @@ function InviteSheet({
                         </div>
                         {picked === a.id && (
                           <div className="w-5 h-5 rounded-full bg-gold grid place-items-center shrink-0">
-                            <Check className="w-3 h-3 text-bg" strokeWidth={3} />
+                            <Check className="w-3 h-3 text-on-accent" strokeWidth={3} />
                           </div>
                         )}
                       </div>
@@ -432,7 +432,7 @@ function InviteSheet({
                   disabled={!picked}
                   className={cn(
                     "w-full h-12 rounded-2xl font-semibold inline-flex items-center justify-center gap-2",
-                    picked ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+                    picked ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
                   )}
                 >
                   <Megaphone className="w-4 h-4" /> Send invitation

@@ -237,7 +237,7 @@ function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreate
                   onClick={() => setType(t)}
                   className={cn(
                     "px-3 h-9 rounded-full border text-xs font-medium",
-                    type === t ? "bg-gold text-bg border-gold" : "bg-bg text-text border-border"
+                    type === t ? "bg-gold text-on-accent border-gold" : "bg-bg text-text border-border"
                   )}
                 >{t}</button>
               ))}
@@ -278,7 +278,7 @@ function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreate
           disabled={!title.trim()}
           className={cn(
             "mt-5 w-full h-12 rounded-2xl font-semibold flex items-center justify-center gap-2",
-            title.trim() ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+            title.trim() ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
           )}
         >
           Create project <ArrowRight className="w-4 h-4" />

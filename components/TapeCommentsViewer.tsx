@@ -180,7 +180,7 @@ export function TapeCommentsViewer({
                 disabled={!draft.trim()}
                 className={cn(
                   "mt-3 w-full h-11 rounded-2xl font-semibold inline-flex items-center justify-center gap-2",
-                  draft.trim() ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+                  draft.trim() ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
                 )}
               >
                 <Send className="w-4 h-4" /> Save note

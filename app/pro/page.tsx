@@ -57,7 +57,7 @@ export default function ProLandingPage() {
         >
           <Link
             href="/pro/signup"
-            className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl bg-gold text-bg font-semibold group"
+            className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl bg-gold text-on-accent font-semibold group"
           >
             Open a Pro account
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />

@@ -91,7 +91,7 @@ export default function WelcomePage() {
           >
             <Link
               href="/signup"
-              className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl bg-gold text-bg font-semibold hover:bg-gold-light transition-colors group"
+              className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl bg-gold text-on-accent font-semibold hover:bg-gold-light transition-colors group"
             >
               {t("welcome.getStarted")}
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />

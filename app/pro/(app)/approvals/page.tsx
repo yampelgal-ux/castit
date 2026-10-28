@@ -147,7 +147,7 @@ function SessionRow({ session, i, onChange }: { session: ApprovalSession; i: num
       <div className="grid grid-cols-2 gap-2 p-3 border-t border-border bg-bg/40">
         <button
           onClick={copyUrl}
-          className="h-9 rounded-xl bg-gold text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+          className="h-9 rounded-xl bg-gold text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5"
         >
           {copied ? <><Check className="w-3.5 h-3.5" /> {t("ap.copied")}</> : <><Copy className="w-3.5 h-3.5" /> {t("ap.copyLink")}</>}
         </button>
@@ -235,7 +235,7 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
               onClick={() => { setProject(p); setRole(null); setSelected(new Set()); }}
               className={cn(
                 "px-3 h-8 rounded-full text-xs font-semibold",
-                project?.id === p.id ? "bg-gold text-bg" : "bg-bg-elevated border border-border text-text"
+                project?.id === p.id ? "bg-gold text-on-accent" : "bg-bg-elevated border border-border text-text"
               )}
             >{p.title}</button>
           ))}
@@ -255,7 +255,7 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
                 onClick={() => { setRole(r); setSelected(new Set()); }}
                 className={cn(
                   "px-3 h-8 rounded-full text-xs font-semibold",
-                  role?.id === r.id ? "bg-gold text-bg" : "bg-bg-elevated border border-border text-text"
+                  role?.id === r.id ? "bg-gold text-on-accent" : "bg-bg-elevated border border-border text-text"
                 )}
               >{r.name}</button>
             ))}
@@ -284,7 +284,7 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
                   "w-5 h-5 rounded-md grid place-items-center shrink-0 border",
                   selected.has(s.id) ? "bg-gold border-gold" : "border-border"
                 )}>
-                  {selected.has(s.id) && <Check className="w-3 h-3 text-bg" strokeWidth={3} />}
+                  {selected.has(s.id) && <Check className="w-3 h-3 text-on-accent" strokeWidth={3} />}
                 </div>
                 <img src={s.talentPhoto} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -315,7 +315,7 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
         disabled={!project || selected.size === 0}
         className={cn(
           "w-full h-12 rounded-2xl font-semibold inline-flex items-center justify-center gap-2",
-          selected.size > 0 && project ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+          selected.size > 0 && project ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
         )}
       >
         <Send className="w-4 h-4" /> {t("ap.createLink")}

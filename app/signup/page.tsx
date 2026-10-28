@@ -87,7 +87,7 @@ export default function SignupPage() {
           </p>
           <button
             onClick={() => router.push("/onboarding")}
-            className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl font-semibold bg-gold text-bg"
+            className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl font-semibold bg-gold text-on-accent"
           >
             Continue setting up <ArrowRight className="w-4 h-4" />
           </button>
@@ -148,7 +148,7 @@ export default function SignupPage() {
           disabled={!valid || loading}
           className={cn(
             "flex items-center justify-center gap-2 w-full h-14 rounded-2xl font-semibold transition-all",
-            valid && !loading ? "bg-gold text-bg hover:bg-gold-light" : "bg-bg-elevated text-text-subtle"
+            valid && !loading ? "bg-gold text-on-accent hover:bg-gold-light" : "bg-bg-elevated text-text-subtle"
           )}
         >
           {loading ? "Creating account…" : "Continue"}

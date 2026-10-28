@@ -116,7 +116,7 @@ export default function SourcingPage() {
             <button
               onClick={analyze}
               disabled={!brief.trim() || loading}
-              className="h-9 px-4 rounded-full bg-gold text-bg text-xs font-semibold inline-flex items-center gap-1.5 disabled:opacity-40"
+              className="h-9 px-4 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center gap-1.5 disabled:opacity-40"
             >
               {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
               {loading ? "Analyzing…" : "Find talent"}

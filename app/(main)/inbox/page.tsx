@@ -226,7 +226,7 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
               </button>
               <button
                 onClick={() => respondAvail(true)}
-                className="h-10 rounded-xl bg-success text-bg text-sm font-semibold inline-flex items-center justify-center gap-1.5"
+                className="h-10 rounded-xl bg-success text-on-accent text-sm font-semibold inline-flex items-center justify-center gap-1.5"
               >
                 <CheckCircle2 className="w-4 h-4" /> פנוי/ה
               </button>
@@ -252,7 +252,7 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
               </button>
               <button
                 onClick={() => respondOffer(true)}
-                className="h-10 rounded-xl bg-success text-bg text-sm font-semibold inline-flex items-center justify-center gap-1.5"
+                className="h-10 rounded-xl bg-success text-on-accent text-sm font-semibold inline-flex items-center justify-center gap-1.5"
               >
                 <CheckCircle2 className="w-4 h-4" /> קבל הצעה
               </button>
@@ -263,7 +263,7 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
             href={`/inbox/${s.id}/record`}
             className={cn(
               "w-full h-10 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-2 active:scale-95 transition-transform",
-              callbackTape ? "bg-success text-bg" : "bg-gold text-bg"
+              callbackTape ? "bg-success text-on-accent" : "bg-gold text-on-accent"
             )}
           >
             <Video className="w-4 h-4" />

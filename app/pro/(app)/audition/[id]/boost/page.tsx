@@ -96,7 +96,7 @@ export default function BoostPage() {
           </div>
           <button
             onClick={() => router.push(`/pro/audition/${id}`)}
-            className="mt-7 w-full h-12 rounded-full bg-gold text-bg font-semibold"
+            className="mt-7 w-full h-12 rounded-full bg-gold text-on-accent font-semibold"
           >
             Back to audition
           </button>
@@ -141,7 +141,7 @@ export default function BoostPage() {
               )}
             >
               {t.badge && (
-                <span className="absolute -top-2 left-4 text-[9px] uppercase tracking-widest font-bold bg-gold text-bg px-2 py-0.5 rounded-full">
+                <span className="absolute -top-2 left-4 text-[9px] uppercase tracking-widest font-bold bg-gold text-on-accent px-2 py-0.5 rounded-full">
                   {t.badge}
                 </span>
               )}
@@ -179,7 +179,7 @@ export default function BoostPage() {
       <div className="fixed bottom-0 inset-x-0 max-w-[440px] mx-auto p-4 border-t border-border bg-bg/95 backdrop-blur">
         <button
           onClick={() => { haptic("success"); setConfirmed(true); }}
-          className="w-full h-12 rounded-full bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2"
+          className="w-full h-12 rounded-full bg-gold text-on-accent font-semibold inline-flex items-center justify-center gap-2"
         >
           <Rocket className="w-4 h-4" /> Launch {tier.name} — ${tier.price}
         </button>

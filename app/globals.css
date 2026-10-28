@@ -2,9 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Theme tokens ──────────────────────────────────────
+   RGB triplets so Tailwind opacity modifiers work: rgb(var(--gold) / 0.2).
+   Every color in the app comes from here (see tailwind.config.ts).
+   "gold" = primary accent, "wine" = secondary accent. */
+:root {
+  --bg:            15 12 9;
+  --bg-elevated:   26 22 18;
+  --bg-muted:      36 31 26;
+  --bg-frame:      5 4 3;
+  --border:        45 40 35;
+  --border-strong: 70 64 58;
+  --text:          245 239 230;
+  --text-muted:    168 160 149;
+  --text-subtle:   110 102 92;
+  --gold:          201 169 97;
+  --gold-dark:     155 130 74;
+  --gold-light:    228 197 126;
+  --wine:          139 58 58;
+  --wine-dark:     92 36 36;
+  --wine-light:    178 85 85;
+  --terra:         199 93 63;
+  --terra-dark:    155 69 48;
+  --terra-light:   224 123 91;
+  --sage:          122 140 102;
+  --sage-dark:     92 107 77;
+  --sage-light:    160 174 142;
+  --plum:          92 72 97;
+  --plum-dark:     63 48 63;
+  --plum-light:    126 102 133;
+  --violet:        124 92 255;
+  --violet-dark:   91 63 224;
+  --on-accent:     15 12 9;
+  --shadow:        0 0 0;
+  color-scheme: dark;
+}
+
 html, body {
-  background: #0F0C09;
-  color: #F5EFE6;
+  background: rgb(var(--bg));
+  color: rgb(var(--text));
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   letter-spacing: -0.011em;
@@ -18,22 +54,22 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0F0C09;
+  background: rgb(var(--bg));
 }
 .device-screen {
   width: 100%;
   max-width: 440px;
   min-height: 100dvh;
   position: relative;
-  background: #0F0C09;
+  background: rgb(var(--bg));
 }
 @media (min-width: 600px) {
   .device-frame {
     background:
-      radial-gradient(ellipse 80% 60% at 30% 20%, rgba(201, 169, 97, 0.07), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(139, 58, 58, 0.08), transparent 60%),
-      radial-gradient(ellipse 50% 40% at 50% 100%, rgba(92, 72, 97, 0.06), transparent 60%),
-      #050403;
+      radial-gradient(ellipse 80% 60% at 30% 20%, rgb(var(--gold) / 0.07), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgb(var(--wine) / 0.08), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 50% 100%, rgb(var(--plum) / 0.06), transparent 60%),
+      rgb(var(--bg-frame));
     padding: 24px;
   }
   .device-screen {
@@ -42,11 +78,11 @@ html, body {
     min-height: 720px;
     border-radius: 44px;
     overflow: hidden;
-    border: 8px solid #1A1612;
+    border: 8px solid rgb(var(--bg-elevated));
     box-shadow:
-      0 30px 80px -20px rgba(0, 0, 0, 0.7),
-      0 0 0 1px rgba(201, 169, 97, 0.08),
-      inset 0 0 0 1px rgba(245, 239, 230, 0.03);
+      0 30px 80px -20px rgb(var(--shadow) / 0.7),
+      0 0 0 1px rgb(var(--gold) / 0.08),
+      inset 0 0 0 1px rgb(var(--text) / 0.03);
   }
   .device-screen > * {
     height: 100%;
@@ -78,7 +114,7 @@ html, body {
 
 /* Glass effect — warmer tint */
 .glass {
-  background: rgba(26, 22, 18, 0.7);
+  background: rgb(var(--bg-elevated) / 0.7);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
 }
@@ -91,7 +127,7 @@ html, body {
 
 /* Gradient text — refined brass + warm light */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #E4C57E 0%, #C9A961 50%, #9B824A 100%);
+  background: linear-gradient(135deg, rgb(var(--gold-light)) 0%, rgb(var(--gold)) 50%, rgb(var(--gold-dark)) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -99,7 +135,7 @@ html, body {
 
 /* Wine drama gradient for emphasis */
 .text-wine-gradient {
-  background: linear-gradient(135deg, #B25555 0%, #8B3A3A 100%);
+  background: linear-gradient(135deg, rgb(var(--wine-light)) 0%, rgb(var(--wine)) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -120,7 +156,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: #6E665C;
+  color: rgb(var(--text-subtle));
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -130,7 +166,7 @@ html, body {
   content: "";
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #2D2823, transparent);
+  background: linear-gradient(90deg, transparent, rgb(var(--border)), transparent);
 }
 
 /* Custom range slider — brass thumb */
@@ -142,30 +178,30 @@ input[type="range"] {
 }
 input[type="range"]::-webkit-slider-runnable-track {
   height: 4px;
-  background: #2D2823;
+  background: rgb(var(--border));
   border-radius: 999px;
 }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   height: 20px;
   width: 20px;
-  background: #C9A961;
+  background: rgb(var(--gold));
   border-radius: 999px;
   margin-top: -8px;
-  box-shadow: 0 0 0 4px rgba(201, 169, 97, 0.15), 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 4px rgb(var(--gold) / 0.15), 0 2px 6px rgb(var(--shadow) / 0.3);
 }
 input[type="range"]::-moz-range-track {
   height: 4px;
-  background: #2D2823;
+  background: rgb(var(--border));
   border-radius: 999px;
 }
 input[type="range"]::-moz-range-thumb {
   height: 20px;
   width: 20px;
-  background: #C9A961;
+  background: rgb(var(--gold));
   border-radius: 999px;
   border: none;
-  box-shadow: 0 0 0 4px rgba(201, 169, 97, 0.15);
+  box-shadow: 0 0 0 4px rgb(var(--gold) / 0.15);
 }
 
 /* Spotlight effect for hero areas */
@@ -177,7 +213,7 @@ input[type="range"]::-moz-range-thumb {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(201, 169, 97, 0.10), transparent 60%);
+  background: radial-gradient(ellipse 60% 80% at 50% 0%, rgb(var(--gold) / 0.10), transparent 60%);
   pointer-events: none;
   z-index: -1;
 }
@@ -197,13 +233,13 @@ input[type="range"]::-moz-range-thumb {
   animation: rec-pulse 1.4s ease-in-out infinite;
 }
 @keyframes rec-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(199, 93, 63, 0.5); }
-  50% { box-shadow: 0 0 0 14px rgba(199, 93, 63, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgb(var(--terra) / 0.5); }
+  50% { box-shadow: 0 0 0 14px rgb(var(--terra) / 0); }
 }
 
 /* Speech waveform bars */
 .wave-bar {
-  background: #C9A961;
+  background: rgb(var(--gold));
   width: 3px;
   border-radius: 999px;
   animation: wave 1.2s ease-in-out infinite;
@@ -220,8 +256,8 @@ input[type="range"]::-moz-range-thumb {
   position: absolute;
   top: -40px;
   left: 12px;
-  background: #C9A961;
-  color: #0F0C09;
+  background: rgb(var(--gold));
+  color: rgb(var(--on-accent));
   padding: 8px 14px;
   border-radius: 999px;
   font-size: 12px;
@@ -237,7 +273,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* Visible keyboard focus ring across the app — never on mouse clicks */
 *:focus-visible {
-  outline: 2px solid #C9A961;
+  outline: 2px solid rgb(var(--gold));
   outline-offset: 2px;
   border-radius: 6px;
 }
@@ -287,7 +323,7 @@ button, a, [role="button"] {
 /* ── Installed app (PWA standalone / native shell) ──────────────────────
    No fake phone bezel, and respect the notch / home-indicator areas. */
 @media (display-mode: standalone) {
-  .device-frame { background: #0F0C09; padding: 0; }
+  .device-frame { background: rgb(var(--bg)); padding: 0; }
   .device-screen {
     max-width: 640px;
     height: auto;
@@ -301,7 +337,7 @@ button, a, [role="button"] {
   .device-screen > * { height: auto; overflow: visible; }
   .device-screen nav.fixed { position: fixed !important; }
 }
-html.native-app .device-frame { background: #0F0C09; padding: 0; }
+html.native-app .device-frame { background: rgb(var(--bg)); padding: 0; }
 html.native-app .device-screen {
   max-width: 640px; height: auto; min-height: 100dvh; border: 0; border-radius: 0;
   box-shadow: none; overflow: visible; padding-top: env(safe-area-inset-top);

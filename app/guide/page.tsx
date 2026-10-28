@@ -126,7 +126,7 @@ export default function GuidePage() {
           </p>
           <Link
             href="/pro/dashboard"
-            className="inline-flex items-center gap-2 mt-5 h-12 px-6 rounded-full bg-gold text-bg font-semibold text-sm active:scale-95 transition-transform"
+            className="inline-flex items-center gap-2 mt-5 h-12 px-6 rounded-full bg-gold text-on-accent font-semibold text-sm active:scale-95 transition-transform"
           >
             <PlayCircle className="w-4 h-4" /> התחילי עכשיו
           </Link>
@@ -198,7 +198,7 @@ export default function GuidePage() {
           <p className="text-sm text-text-muted mt-1 mb-4">צרי את הפרויקט הראשון שלך — זה לוקח דקה.</p>
           <Link
             href="/pro/dashboard"
-            className="inline-flex items-center gap-2 h-13 py-4 px-7 rounded-full bg-gold text-bg font-semibold active:scale-95 transition-transform"
+            className="inline-flex items-center gap-2 h-13 py-4 px-7 rounded-full bg-gold text-on-accent font-semibold active:scale-95 transition-transform"
           >
             <FolderOpen className="w-4 h-4" /> כניסה לסביבת העבודה
           </Link>

@@ -95,8 +95,8 @@ export function AriaFAB() {
         animate={open ? { rotate: 90 } : { rotate: 0 }}
         className={cn(
           "fixed z-50 w-14 h-14 rounded-full grid place-items-center",
-          "bg-gradient-to-br from-gold via-gold to-wine text-bg",
-          "shadow-[0_8px_24px_rgba(212,165,116,0.45)]",
+          "bg-gradient-to-br from-gold via-gold to-wine text-on-accent",
+          "shadow-[0_8px_24px_rgb(var(--gold)/0.45)]",
           "border border-gold-light/40"
         )}
         style={{

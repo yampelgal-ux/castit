@@ -174,7 +174,7 @@ export default function ApprovePage() {
               <button
                 onClick={submitName}
                 disabled={!voterName.trim()}
-                className="w-full mt-3 h-12 rounded-2xl bg-gold text-bg font-semibold disabled:opacity-40"
+                className="w-full mt-3 h-12 rounded-2xl bg-gold text-on-accent font-semibold disabled:opacity-40"
               >
                 Save & Vote
               </button>
@@ -187,8 +187,8 @@ export default function ApprovePage() {
 }
 
 const VOTE_META: Record<ApprovalVote, { label: string; cls: string; icon: typeof ThumbsUp }> = {
-  yes:   { label: "Yes",   cls: "bg-success text-bg",      icon: ThumbsUp },
-  maybe: { label: "Maybe", cls: "bg-gold text-bg",         icon: HelpCircle },
+  yes:   { label: "Yes",   cls: "bg-success text-on-accent",      icon: ThumbsUp },
+  maybe: { label: "Maybe", cls: "bg-gold text-on-accent",         icon: HelpCircle },
   no:    { label: "No",    cls: "bg-danger text-white",    icon: ThumbsDown },
 };
 
