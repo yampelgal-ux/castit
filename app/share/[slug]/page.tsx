@@ -75,7 +75,7 @@ export default function SharePage() {
         <div className="max-w-[680px] mx-auto px-6 py-8 relative">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.25em] text-gold font-semibold">
+              <div className="text-[0.6875rem] uppercase tracking-[0.25em] text-gold font-semibold">
                 {t("report.label")}
               </div>
               <h1 className="font-display text-3xl sm:text-4xl tracking-editorial mt-1.5 leading-[1.05]">
@@ -100,14 +100,14 @@ export default function SharePage() {
 
           {packet.note && (
             <div className="mt-4 p-4 rounded-2xl bg-gold/8 border border-gold/25">
-              <div className="text-[9px] uppercase tracking-[0.2em] text-gold font-semibold mb-1.5">
+              <div className="text-[0.6875rem] uppercase tracking-[0.2em] text-gold font-semibold mb-1.5">
                 {t("report.note")}
               </div>
               <p className="text-sm leading-relaxed text-text">{packet.note}</p>
             </div>
           )}
 
-          <div className="flex items-center gap-2 mt-4 text-[11px] text-text-subtle">
+          <div className="flex items-center gap-2 mt-4 text-[0.6875rem] text-text-subtle">
             <span className="font-display text-gold text-sm">Cast<span className="text-text">It</span></span>
             <span>·</span>
             <span>{talents.length === 1 ? t("report.talent1") : t("report.talents", { n: talents.length })}</span>
@@ -130,7 +130,7 @@ export default function SharePage() {
       {/* ── Footer ── */}
       <div className="max-w-[680px] mx-auto px-6 mt-12 pt-6 border-t border-border text-center">
         <div className="font-display text-lg">Cast<span className="text-gold">It</span></div>
-        <div className="text-[10px] text-text-subtle mt-1 uppercase tracking-[0.2em]">
+        <div className="text-[0.6875rem] text-text-subtle mt-1 uppercase tracking-[0.2em]">
           {t("report.curated")}
         </div>
       </div>
@@ -156,7 +156,7 @@ function ReportEntry({
       {/* Identity row */}
       <div className="flex items-start gap-4 p-5">
         <div className="relative shrink-0">
-          <span className="absolute -top-1.5 -left-1.5 z-10 w-6 h-6 rounded-full bg-gold text-on-accent text-[11px] font-bold grid place-items-center font-display">
+          <span className="absolute -top-1.5 -left-1.5 z-10 w-6 h-6 rounded-full bg-gold text-on-accent text-[0.6875rem] font-bold grid place-items-center font-display">
             {index + 1}
           </span>
           <img src={talent.photo} alt={talent.name} className="w-20 h-20 rounded-2xl object-cover" />
@@ -167,7 +167,7 @@ function ReportEntry({
             {talent.verified && <VerifiedBadge />}
           </div>
           {/* Key typecast line */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-text-muted">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[0.6875rem] text-text-muted">
             <span>{talent.typecast.gender} · {talent.typecast.ageRange[0]}–{talent.typecast.ageRange[1]}</span>
             <span className="inline-flex items-center gap-1"><Ruler className="w-3 h-3" />{talent.typecast.heightCm}cm</span>
             <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" />{talent.typecast.location}</span>
@@ -175,12 +175,12 @@ function ReportEntry({
           {/* Languages + skills chips */}
           <div className="flex flex-wrap gap-1 mt-2">
             {talent.typecast.languages.slice(0, 3).map((l) => (
-              <span key={l} className="text-[9px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted inline-flex items-center gap-1">
+              <span key={l} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted inline-flex items-center gap-1">
                 <Globe2 className="w-2.5 h-2.5" />{l}
               </span>
             ))}
             {talent.typecast.skills.slice(0, 4).map((s) => (
-              <span key={s} className="text-[9px] px-2 py-0.5 rounded-full bg-gold/10 border border-gold/25 text-gold">{s}</span>
+              <span key={s} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-gold/10 border border-gold/25 text-gold">{s}</span>
             ))}
           </div>
         </div>
@@ -194,7 +194,7 @@ function ReportEntry({
       {/* Reels */}
       {reels.length > 0 && (
         <div className="border-t border-border p-5">
-          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gold mb-3">
+          <div className="flex items-center gap-1.5 text-[0.6875rem] uppercase tracking-[0.2em] text-gold mb-3">
             <Film className="w-3 h-3" /> {t("report.reels")}
           </div>
           <div className="grid grid-cols-2 gap-3">

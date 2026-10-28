@@ -68,7 +68,7 @@ export function PhotoPicker({
                 >
                   <Camera className="w-7 h-7 text-gold" />
                   <span className="text-sm font-semibold">{t("picker.camera")}</span>
-                  <span className="text-[10px] text-text-muted">{t("picker.cameraSub")}</span>
+                  <span className="text-[0.6875rem] text-text-muted">{t("picker.cameraSub")}</span>
                 </button>
                 <button
                   type="button"
@@ -77,7 +77,7 @@ export function PhotoPicker({
                 >
                   <ImageIcon className="w-7 h-7 text-plum-light" />
                   <span className="text-sm font-semibold">{t("picker.gallery")}</span>
-                  <span className="text-[10px] text-text-muted">{t("picker.gallerySub")}</span>
+                  <span className="text-[0.6875rem] text-text-muted">{t("picker.gallerySub")}</span>
                 </button>
               </div>
             </motion.div>

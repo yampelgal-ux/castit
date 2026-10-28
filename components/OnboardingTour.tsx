@@ -148,7 +148,7 @@ export function OnboardingTour() {
           {/* Skip */}
           <button
             onClick={dismiss}
-            className="absolute top-4 left-4 text-[11px] text-text-muted"
+            className="absolute top-4 left-4 text-[0.6875rem] text-text-muted"
           >
             דלג
           </button>

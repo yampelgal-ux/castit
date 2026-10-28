@@ -119,7 +119,7 @@ export default function ProCalendarPage() {
 
       <div className="px-5 pt-3 space-y-4">
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-gold">Optional</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Optional</div>
           <h1 className="font-display text-3xl tracking-editorial">Your schedule</h1>
           <p className="text-text-muted text-sm mt-1">
             Deadlines, shoots, callbacks and bookings — auto-pulled from your projects.
@@ -134,7 +134,7 @@ export default function ProCalendarPage() {
           />
         ) : (
           <>
-            <div className="rounded-2xl bg-gold/8 border border-gold/20 p-3 text-[11px] text-gold">
+            <div className="rounded-2xl bg-gold/8 border border-gold/20 p-3 text-[0.6875rem] text-gold">
               <strong className="tnum">{upcoming}</strong> upcoming · {events.length} total
             </div>
             <div className="space-y-4">
@@ -185,7 +185,7 @@ function EventRow({ e, i }: { e: Event; i: number }) {
         <Icon className="w-4 h-4 shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold truncate">{e.title}</div>
-          <div className="text-[10px] opacity-80 truncate">{e.subtitle}</div>
+          <div className="text-[0.6875rem] opacity-80 truncate">{e.subtitle}</div>
         </div>
         {e.urgent && <AlertTriangle className="w-3.5 h-3.5 shrink-0" />}
       </Link>

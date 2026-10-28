@@ -71,7 +71,7 @@ export function ProProfileView({ isMe, displayName, photoUrl, bio }: {
             <div className="flex items-center gap-1.5">
               <h1 className="font-display text-2xl leading-tight truncate">{displayName}</h1>
               <VerifiedBadge />
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-plum/20 text-plum-light font-semibold tracking-wider">PRO</span>
+              <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-plum/20 text-plum-light font-semibold tracking-wider">PRO</span>
             </div>
             {profile.studio && (
               <p className="text-sm text-text-muted mt-0.5 truncate">
@@ -82,7 +82,7 @@ export function ProProfileView({ isMe, displayName, photoUrl, bio }: {
             {profile.specialization && profile.specialization.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1.5">
                 {profile.specialization.map((s) => (
-                  <span key={s} className="text-[9px] px-1.5 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">
+                  <span key={s} className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">
                     {s}
                   </span>
                 ))}
@@ -134,7 +134,7 @@ export function ProProfileView({ isMe, displayName, photoUrl, bio }: {
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs uppercase tracking-widest text-text-muted">Filmography</h2>
           {isMe && (
-            <button onClick={() => setShowEdit(true)} className="text-[11px] text-gold font-semibold inline-flex items-center gap-1">
+            <button onClick={() => setShowEdit(true)} className="text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1">
               <Plus className="w-3 h-3" /> Add
             </button>
           )}
@@ -165,8 +165,8 @@ function Stat({ icon: Icon, label, value, hint }: { icon: any; label: string; va
     <div className="rounded-2xl bg-bg-elevated border border-border p-3">
       <Icon className="w-3.5 h-3.5 text-gold mb-1" />
       <div className="font-display text-xl tnum leading-none">{value}</div>
-      <div className="text-[10px] uppercase tracking-wider text-text-muted mt-0.5">{label}</div>
-      <div className="text-[9px] text-text-subtle">{hint}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mt-0.5">{label}</div>
+      <div className="text-[0.6875rem] text-text-subtle">{hint}</div>
     </div>
   );
 }
@@ -179,7 +179,7 @@ function CreditRow({ c }: { c: ProPublicCredit }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold truncate">{c.title}</div>
-        <div className="text-[11px] text-text-muted">{c.year || "—"} · {c.role || "Casting"}</div>
+        <div className="text-[0.6875rem] text-text-muted">{c.year || "—"} · {c.role || "Casting"}</div>
       </div>
     </div>
   );
@@ -279,7 +279,7 @@ function EditProSheet({ onClose }: { onClose: () => void }) {
                   <Film className="w-3.5 h-3.5 text-text-muted shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold truncate">{c.title}</div>
-                    {c.year && <div className="text-[10px] text-text-muted">{c.year}</div>}
+                    {c.year && <div className="text-[0.6875rem] text-text-muted">{c.year}</div>}
                   </div>
                   <button onClick={() => removeCredit(c.id)} className="p-1 text-text-muted hover:text-danger">
                     <X className="w-3 h-3" />
@@ -318,7 +318,7 @@ function EditProSheet({ onClose }: { onClose: () => void }) {
 function F({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-widest text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">{label}</div>
       <div className="mt-1">{children}</div>
     </div>
   );

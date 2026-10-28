@@ -17,7 +17,7 @@ export default function ProLandingPage() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 self-start px-3 py-1 rounded-full bg-bg-elevated/60 backdrop-blur border border-plum-light/30 text-[11px] text-plum-light"
+          className="inline-flex items-center gap-2 self-start px-3 py-1 rounded-full bg-bg-elevated/60 backdrop-blur border border-plum-light/30 text-[0.6875rem] text-plum-light"
         >
           <Sparkles className="w-3 h-3" /> Industry Access
         </motion.div>
@@ -32,7 +32,7 @@ export default function ProLandingPage() {
               Cast the right <em className="text-gold-gradient not-italic">face</em><br />
               for the role.
             </h1>
-            <p className="mt-4 text-text-muted text-[15px] leading-relaxed max-w-sm">
+            <p className="mt-4 text-text-muted text-[0.9375rem] leading-relaxed max-w-sm">
               CastIt Pro gives directors, agents and casting professionals a precision search across thousands of verified talent profiles — and a direct line to post auditions.
             </p>
           </motion.div>
@@ -70,7 +70,7 @@ export default function ProLandingPage() {
           </Link>
           <Link
             href="/welcome"
-            className="block text-center text-[11px] text-text-subtle pt-3 hover:text-text-muted"
+            className="block text-center text-[0.6875rem] text-text-subtle pt-3 hover:text-text-muted"
           >
             Not a casting pro? Switch to talent →
           </Link>
@@ -88,7 +88,7 @@ function Feature({ icon: Icon, title, desc }: { icon: any; title: string; desc: 
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold">{title}</div>
-        <div className="text-[11px] text-text-muted mt-0.5 leading-relaxed">{desc}</div>
+        <div className="text-[0.6875rem] text-text-muted mt-0.5 leading-relaxed">{desc}</div>
       </div>
     </div>
   );

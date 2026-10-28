@@ -69,7 +69,7 @@ export function ProjectTeam({ projectId }: { projectId: string }) {
         </div>
         <div className="flex-1 text-left">
           <div className="text-sm font-semibold">Team</div>
-          <div className="text-[10px] text-text-muted">
+          <div className="text-[0.6875rem] text-text-muted">
             {members.length === 0
               ? "Optional — invite directors, producers, agents to collaborate"
               : `${members.length} member${members.length === 1 ? "" : "s"}`}
@@ -78,7 +78,7 @@ export function ProjectTeam({ projectId }: { projectId: string }) {
         {members.length > 0 && !open && (
           <div className="flex -space-x-1.5">
             {members.slice(0, 3).map((m) => (
-              <div key={m.id} className="w-6 h-6 rounded-full bg-plum/30 border-2 border-bg-elevated text-[9px] grid place-items-center font-bold">
+              <div key={m.id} className="w-6 h-6 rounded-full bg-plum/30 border-2 border-bg-elevated text-[0.6875rem] grid place-items-center font-bold">
                 {m.name[0]?.toUpperCase()}
               </div>
             ))}
@@ -104,7 +104,7 @@ export function ProjectTeam({ projectId }: { projectId: string }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold truncate">{m.name}</div>
-                      <div className="text-[10px] text-text-muted truncate">
+                      <div className="text-[0.6875rem] text-text-muted truncate">
                         {m.role} · {m.email}
                       </div>
                     </div>
@@ -132,7 +132,7 @@ export function ProjectTeam({ projectId }: { projectId: string }) {
                     {ROLES.map((r) => (
                       <button key={r} onClick={() => setRole(r)}
                         className={cn(
-                          "h-7 px-2.5 rounded-full text-[10px] font-semibold border",
+                          "h-7 px-2.5 rounded-full text-[0.6875rem] font-semibold border",
                           role === r ? "bg-gold text-on-accent border-gold" : "bg-bg-elevated text-text border-border"
                         )}
                       >{r}</button>

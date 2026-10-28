@@ -68,7 +68,7 @@ export default function ChemistryPage() {
 
       <div className="px-5 pt-3 space-y-4">
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-gold flex items-center gap-1.5">
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold flex items-center gap-1.5">
             <Sparkles className="w-3 h-3" /> Side-by-side casting check
           </div>
           <h1 className="font-display text-2xl tracking-editorial leading-tight">{project.title}</h1>
@@ -129,7 +129,7 @@ export default function ChemistryPage() {
                 <img src={subA.talentPhoto} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate">{subA.talentName}</div>
-                  <div className="text-[10px] text-text-muted truncate">as {roles.find((r) => r.id === subA.roleId)?.name}</div>
+                  <div className="text-[0.6875rem] text-text-muted truncate">as {roles.find((r) => r.id === subA.roleId)?.name}</div>
                 </div>
               </div>
               <div className="text-text-subtle">×</div>
@@ -137,7 +137,7 @@ export default function ChemistryPage() {
                 <img src={subB.talentPhoto} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate">{subB.talentName}</div>
-                  <div className="text-[10px] text-text-muted truncate">as {roles.find((r) => r.id === subB.roleId)?.name}</div>
+                  <div className="text-[0.6875rem] text-text-muted truncate">as {roles.find((r) => r.id === subB.roleId)?.name}</div>
                 </div>
               </div>
             </div>
@@ -157,7 +157,7 @@ function RolePicker({ label, roles, value, onChange, disabledIds }: {
 }) {
   return (
     <div className="rounded-2xl bg-bg-elevated border border-border p-2">
-      <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1 px-1">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1 px-1">{label}</div>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -187,7 +187,7 @@ function ChemistryColumn({
   return (
     <div className="rounded-2xl border border-border bg-bg-elevated overflow-hidden">
       <div className={cn("p-2 text-center border-b border-border", colorCls)}>
-        <div className="text-[10px] uppercase tracking-widest font-semibold truncate">{label}</div>
+        <div className="text-[0.6875rem] uppercase tracking-widest font-semibold truncate">{label}</div>
       </div>
 
       {picked ? (
@@ -218,7 +218,7 @@ function ChemistryColumn({
       ) : (
         <div className="p-2">
           {subs.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border p-4 text-center text-[11px] text-text-muted min-h-[200px] grid place-items-center">
+            <div className="rounded-xl border border-dashed border-border p-4 text-center text-[0.6875rem] text-text-muted min-h-[200px] grid place-items-center">
               No tapes yet for this role
             </div>
           ) : (
@@ -230,7 +230,7 @@ function ChemistryColumn({
                   className="w-full flex items-center gap-2 p-1.5 rounded-lg bg-bg border border-border hover:border-gold/40 text-left"
                 >
                   <img src={s.talentPhoto} alt="" className="w-7 h-7 rounded-md object-cover shrink-0" />
-                  <span className="text-[11px] font-semibold truncate flex-1">{s.talentName}</span>
+                  <span className="text-[0.6875rem] font-semibold truncate flex-1">{s.talentName}</span>
                 </button>
               ))}
             </div>

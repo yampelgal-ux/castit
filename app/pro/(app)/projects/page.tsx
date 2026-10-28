@@ -91,11 +91,11 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
           style={{ background: `linear-gradient(135deg, ${p.posterColor}cc, ${p.posterColor}55)` }}
         >
           <Icon className="absolute top-3 right-3 w-5 h-5 text-white/60" />
-          <span className="text-[10px] uppercase tracking-widest text-white/80 font-semibold">
+          <span className="text-[0.6875rem] uppercase tracking-widest text-white/80 font-semibold">
             {p.type}
           </span>
           {p.mode === "quick" && (
-            <span className="absolute top-3 left-3 inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full bg-plum/30 text-white font-bold uppercase tracking-wider">
+            <span className="absolute top-3 left-3 inline-flex items-center gap-1 text-[0.6875rem] px-2 py-0.5 rounded-full bg-plum/30 text-white font-bold uppercase tracking-wider">
               <Zap className="w-2.5 h-2.5" /> Quick
             </span>
           )}
@@ -104,7 +104,7 @@ function ProjectCard({ p, i }: { p: Project; i: number }) {
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h3 className="font-display text-lg leading-tight truncate">{p.title}</h3>
-              <p className="text-[11px] text-text-muted truncate">{p.studio}</p>
+              <p className="text-[0.6875rem] text-text-muted truncate">{p.studio}</p>
             </div>
             <StatusBadge status={p.status} />
           </div>
@@ -128,7 +128,7 @@ function Stat({ label, value, tone }: { label: string; value: number; tone?: "go
         "font-display text-base tnum",
         tone === "gold" ? "text-gold" : tone === "success" ? "text-success" : "text-text"
       )}>{value}</div>
-      <div className="text-[9px] uppercase tracking-wider text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{label}</div>
     </div>
   );
 }
@@ -141,7 +141,7 @@ function StatusBadge({ status }: { status: Project["status"] }) {
   };
   const s = map[status];
   return (
-    <span className={cn("text-[9px] px-2 py-0.5 rounded-full border font-semibold uppercase tracking-wider whitespace-nowrap", s.cls)}>
+    <span className={cn("text-[0.6875rem] px-2 py-0.5 rounded-full border font-semibold uppercase tracking-wider whitespace-nowrap", s.cls)}>
       {s.label}
     </span>
   );
@@ -203,7 +203,7 @@ function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreate
                   <Sparkles className="w-3.5 h-3.5 text-gold" />
                   <span className="text-xs font-semibold">Full Casting</span>
                 </div>
-                <p className="text-[10px] text-text-muted leading-snug">
+                <p className="text-[0.6875rem] text-text-muted leading-snug">
                   {t("proj.fullDesc")}
                 </p>
               </button>
@@ -221,7 +221,7 @@ function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreate
                   <Zap className="w-3.5 h-3.5 text-plum-light" />
                   <span className="text-xs font-semibold">Quick Cast</span>
                 </div>
-                <p className="text-[10px] text-text-muted leading-snug">
+                <p className="text-[0.6875rem] text-text-muted leading-snug">
                   {t("proj.quickDesc")}
                 </p>
               </button>
@@ -289,7 +289,7 @@ function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreate
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <div className="text-[10px] uppercase tracking-widest text-text-muted">{children}</div>;
+  return <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">{children}</div>;
 }
 
 function Field({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {

@@ -108,7 +108,7 @@ export default function RoleDetailPage() {
         right={subs.length > 0 && (
           <button
             onClick={() => selectMode ? exitSelect() : setSelectMode(true)}
-            className="text-[11px] text-gold font-semibold"
+            className="text-[0.6875rem] text-gold font-semibold"
           >
             {selectMode ? "ביטול" : "בחירה"}
           </button>
@@ -119,7 +119,7 @@ export default function RoleDetailPage() {
         {/* Brief */}
         <div className="rounded-2xl bg-bg-elevated border border-border p-4">
           <div className="flex items-center justify-between">
-            <div className="text-[10px] uppercase tracking-widest text-gold">Role brief</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Role brief</div>
             <button onClick={() => setEditingBrief(true)} className="text-text-muted">
               <Edit3 className="w-3.5 h-3.5" />
             </button>
@@ -149,7 +149,7 @@ export default function RoleDetailPage() {
 
           {role.sides && (
             <details className="mt-3 pt-3 border-t border-border">
-              <summary className="cursor-pointer text-[11px] uppercase tracking-widest text-gold flex items-center gap-1.5">
+              <summary className="cursor-pointer text-[0.6875rem] uppercase tracking-widest text-gold flex items-center gap-1.5">
                 <ScrollText className="w-3 h-3" /> Sides
               </summary>
               <pre className="text-xs leading-relaxed mt-2 whitespace-pre-wrap font-mono text-text-muted">{role.sides}</pre>
@@ -158,7 +158,7 @@ export default function RoleDetailPage() {
 
           {role.selfTapeInstructions && (
             <details className="mt-2">
-              <summary className="cursor-pointer text-[11px] uppercase tracking-widest text-gold">
+              <summary className="cursor-pointer text-[0.6875rem] uppercase tracking-widest text-gold">
                 Self-tape instructions
               </summary>
               <p className="text-xs leading-relaxed mt-2 text-text-muted">{role.selfTapeInstructions}</p>
@@ -177,7 +177,7 @@ export default function RoleDetailPage() {
             </div>
             <div className="flex-1">
               <div className="font-semibold">Compare tapes</div>
-              <div className="text-[10px] text-text-muted">Optional — view 2–4 talents side-by-side</div>
+              <div className="text-[0.6875rem] text-text-muted">Optional — view 2–4 talents side-by-side</div>
             </div>
             <ChevronRight className="w-4 h-4 text-text-muted" />
           </Link>
@@ -257,7 +257,7 @@ export default function RoleDetailPage() {
           className="fixed bottom-0 inset-x-0 z-40 max-w-[440px] mx-auto p-3"
         >
           <div className="rounded-2xl bg-bg-elevated border border-gold/30 shadow-2xl p-3">
-            <div className="text-[11px] text-text-muted mb-2 text-center">
+            <div className="text-[0.6875rem] text-text-muted mb-2 text-center">
               <span className="text-gold font-bold tnum">{selected.size}</span> נבחרו
             </div>
             {isQuick ? (
@@ -306,8 +306,8 @@ function Mini({ icon: Icon, label, value }: { icon: any; label: string; value: s
   return (
     <div className="rounded-xl bg-bg/50 border border-border p-2">
       <Icon className="w-3 h-3 text-gold mb-0.5" />
-      <div className="text-[10px] uppercase tracking-wider text-text-muted">{label}</div>
-      <div className="text-[11px] font-semibold truncate">{value}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] font-semibold truncate">{value}</div>
     </div>
   );
 }
@@ -321,7 +321,7 @@ function PipeStat({ label, value, tone }: { label: string; value: number; tone: 
   return (
     <div className={cn("rounded-2xl border border-border p-2.5", value > 0 ? colors.bg : "bg-bg-elevated")}>
       <div className={cn("font-display text-xl tnum", value > 0 ? colors.fg : "text-text")}>{value}</div>
-      <div className="text-[9px] uppercase tracking-wider text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{label}</div>
     </div>
   );
 }
@@ -355,12 +355,12 @@ function SubmissionRow({
           <span className="font-semibold text-sm truncate">{s.talentName}</span>
           <StageBadge stage={s.stage} />
           {s.tapes.length > 1 && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-bg border border-border text-text-muted">
+            <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-bg border border-border text-text-muted">
               R{s.tapes.length}
             </span>
           )}
         </div>
-        <div className="text-[11px] text-text-muted truncate mt-0.5">
+        <div className="text-[0.6875rem] text-text-muted truncate mt-0.5">
           {lastTape
             ? <><FileVideo className="w-3 h-3 inline mr-1" />Last tape {timeAgo(lastTape.submittedAt)}</>
             : <>Invited {timeAgo(s.createdAt)}</>}
@@ -503,7 +503,7 @@ function EditBriefSheet({ role, onClose, onSaved }: { role: Role; onClose: () =>
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-widest text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">{label}</div>
       <div className="mt-1">{children}</div>
     </div>
   );

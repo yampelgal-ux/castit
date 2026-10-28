@@ -112,7 +112,7 @@ export default function ConversationPage() {
                 )}
               >
                 {m.text}
-                <div className={cn("text-[10px] mt-1", isMe ? "text-on-accent/60" : "text-text-subtle")}>
+                <div className={cn("text-[0.6875rem] mt-1", isMe ? "text-on-accent/60" : "text-text-subtle")}>
                   {fmt(m.sent_at)}
                 </div>
               </div>

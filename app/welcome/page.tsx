@@ -67,7 +67,7 @@ export default function WelcomePage() {
             <p className="mt-6 text-2xl font-display leading-snug text-text" dir={dir}>
               {t("welcome.tagline1")} <em className="text-gold-gradient not-italic">{t("welcome.tagline2")}</em>.
             </p>
-            <p className="mt-3 text-text-muted text-[15px] leading-relaxed max-w-sm" dir={dir}>
+            <p className="mt-3 text-text-muted text-[0.9375rem] leading-relaxed max-w-sm" dir={dir}>
               {t("welcome.sub")}
             </p>
 
@@ -77,7 +77,7 @@ export default function WelcomePage() {
                 <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&q=80&auto=format&fit=crop" alt="" className="w-7 h-7 rounded-full object-cover border-2 border-bg" />
                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&q=80&auto=format&fit=crop" alt="" className="w-7 h-7 rounded-full object-cover border-2 border-bg" />
               </div>
-              <p className="text-[11px] text-text-muted max-w-[230px]">
+              <p className="text-[0.6875rem] text-text-muted max-w-[230px]">
                 {t("welcome.proof")}
               </p>
             </div>
@@ -112,13 +112,13 @@ export default function WelcomePage() {
           >
             <Link
               href="/pro"
-              className="block text-center text-[11px] text-text-subtle leading-relaxed hover:text-text-muted"
+              className="block text-center text-[0.6875rem] text-text-subtle leading-relaxed hover:text-text-muted"
             >
               {t("welcome.proLine1")} · <span className="text-gold font-semibold">CastIt Pro →</span>
             </Link>
           </motion.div>
 
-          <p className="mt-3 text-center text-[11px] text-text-subtle leading-relaxed">
+          <p className="mt-3 text-center text-[0.6875rem] text-text-subtle leading-relaxed">
             By continuing you agree to our Terms of Service & Privacy Policy.
           </p>
         </div>

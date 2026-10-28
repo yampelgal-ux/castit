@@ -209,11 +209,11 @@ export default function PracticePage() {
                 <Sparkles className="w-6 h-6 text-gold" />
               </div>
               <div className="flex-1">
-                <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">How it works</div>
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">How it works</div>
                 <div className="font-display text-lg leading-tight mt-0.5">Pick a scene → press mic → act</div>
               </div>
             </div>
-            <ul className="mt-3 space-y-1.5 text-[12px] text-text-muted">
+            <ul className="mt-3 space-y-1.5 text-[0.75rem] text-text-muted">
               <li>· Aria reads the OTHER role — you stay in your character</li>
               <li>· She responds emotionally to your delivery</li>
               <li>· Tap "Coach me" anytime for a craft note</li>
@@ -221,7 +221,7 @@ export default function PracticePage() {
           </div>
 
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-text-muted mb-3 px-1">Quick scenarios</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-3 px-1">Quick scenarios</div>
             <div className="space-y-2.5">
               {PRESETS.map((p) => (
                 <button
@@ -232,15 +232,15 @@ export default function PracticePage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="font-display text-base leading-tight">{p.title}</div>
-                      <div className="text-[11px] text-text-muted mt-1">
+                      <div className="text-[0.6875rem] text-text-muted mt-1">
                         You: <span className="text-text">{p.yourCharacter}</span>
                         <span className="mx-1.5 text-text-subtle">·</span>
                         Aria: <span className="text-text">{p.partnerCharacter}</span>
                       </div>
-                      <p className="text-[11px] text-text-subtle mt-1.5 line-clamp-2">{p.context}</p>
+                      <p className="text-[0.6875rem] text-text-subtle mt-1.5 line-clamp-2">{p.context}</p>
                     </div>
                     <span className={cn(
-                      "text-[9px] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider shrink-0",
+                      "text-[0.6875rem] px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider shrink-0",
                       p.difficulty === "Advanced" ? "bg-danger/15 text-danger" : "bg-gold/15 text-gold"
                     )}>
                       {p.difficulty}
@@ -252,7 +252,7 @@ export default function PracticePage() {
           </div>
 
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-text-muted mb-3 px-1">From the library</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-3 px-1">From the library</div>
             <div className="space-y-2">
               {SCENES.map((s) => (
                 <button
@@ -270,7 +270,7 @@ export default function PracticePage() {
                   <img src={s.thumbnail} alt="" className="w-12 h-12 rounded-xl object-cover" />
                   <div className="flex-1 text-left">
                     <div className="text-sm font-semibold">{s.title}</div>
-                    <div className="text-[11px] text-text-muted">{s.source} · {s.difficulty}</div>
+                    <div className="text-[0.6875rem] text-text-muted">{s.source} · {s.difficulty}</div>
                   </div>
                 </button>
               ))}
@@ -289,7 +289,7 @@ export default function PracticePage() {
         title={
           <div className="flex flex-col items-start leading-tight">
             <span className="font-display text-sm tracking-editorial truncate max-w-[180px]">{scene.title}</span>
-            <span className="text-[9px] text-text-muted">
+            <span className="text-[0.6875rem] text-text-muted">
               Aria plays {scene.partnerCharacter}
               {partnerSpeaking && <span className="text-gold ml-1.5">● speaking</span>}
               {listening && <span className="text-terra ml-1.5">● you</span>}
@@ -314,7 +314,7 @@ export default function PracticePage() {
             </button>
             <button
               onClick={() => { setScene(null); reset(); }}
-              className="text-[10px] text-text-muted px-2"
+              className="text-[0.6875rem] text-text-muted px-2"
             >
               Switch
             </button>
@@ -324,7 +324,7 @@ export default function PracticePage() {
 
       {/* Context strip */}
       <div className="mx-4 mt-2 px-3 py-2 rounded-xl bg-gold/8 border border-gold/20">
-        <p className="text-[11px] text-gold leading-snug italic">"{scene.context}"</p>
+        <p className="text-[0.6875rem] text-gold leading-snug italic">"{scene.context}"</p>
       </div>
 
       {/* Dialogue */}
@@ -335,7 +335,7 @@ export default function PracticePage() {
               <Mic className="w-7 h-7 text-gold" />
             </div>
             <p className="font-display text-lg mt-4">Start the scene</p>
-            <p className="text-[12px] text-text-muted mt-1.5 max-w-xs mx-auto">
+            <p className="text-[0.75rem] text-text-muted mt-1.5 max-w-xs mx-auto">
               You're {scene.yourCharacter}. Say your opening line — Aria will respond as {scene.partnerCharacter}.
             </p>
           </div>
@@ -357,14 +357,14 @@ export default function PracticePage() {
               {l.from === "coach" && (
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Award className="w-3.5 h-3.5 text-violet" />
-                  <span className="text-[10px] uppercase tracking-widest text-violet font-semibold">Coach note</span>
+                  <span className="text-[0.6875rem] uppercase tracking-widest text-violet font-semibold">Coach note</span>
                 </div>
               )}
               {l.from === "partner" && (
-                <div className="text-[9px] uppercase tracking-widest text-text-subtle mb-1">{scene.partnerCharacter}</div>
+                <div className="text-[0.6875rem] uppercase tracking-widest text-text-subtle mb-1">{scene.partnerCharacter}</div>
               )}
               <p className={cn("text-sm leading-snug", l.from === "coach" && "whitespace-pre-line")}>{l.text}</p>
-              <div className={cn("text-[10px] mt-1", l.from === "me" ? "text-on-accent/60" : "text-text-subtle")}>{l.time}</div>
+              <div className={cn("text-[0.6875rem] mt-1", l.from === "me" ? "text-on-accent/60" : "text-text-subtle")}>{l.time}</div>
             </div>
           </motion.div>
         ))}

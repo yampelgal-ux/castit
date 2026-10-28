@@ -148,7 +148,7 @@ function MessagesContent() {
       {isPro && (
         <div className="mx-4 mt-3 p-2.5 rounded-xl bg-bg-elevated border border-border flex items-start gap-2">
           <ShieldCheck className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-          <p className="text-[11px] text-text-muted leading-relaxed">
+          <p className="text-[0.6875rem] text-text-muted leading-relaxed">
             Only talents tied to your active projects can message you. Cold DMs are blocked.
           </p>
         </div>
@@ -207,10 +207,10 @@ function MessagesContent() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold text-sm truncate">{c.name}</span>
-                  <span className="text-[10px] text-text-subtle shrink-0">{c.lastAt}</span>
+                  <span className="text-[0.6875rem] text-text-subtle shrink-0">{c.lastAt}</span>
                 </div>
                 {c.projectTitle && c.roleName && (
-                  <div className="flex items-center gap-1 text-[10px] text-gold mt-0.5">
+                  <div className="flex items-center gap-1 text-[0.6875rem] text-gold mt-0.5">
                     <FolderOpen className="w-2.5 h-2.5" />
                     <span className="truncate">{c.projectTitle} · {c.roleName}</span>
                   </div>

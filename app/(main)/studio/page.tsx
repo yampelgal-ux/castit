@@ -16,7 +16,7 @@ export default function StudioPage() {
 
   return (
     <div>
-      <Header title="Studio" right={<span className="text-[11px] text-text-muted">Beta</span>} />
+      <Header title="Studio" right={<span className="text-[0.6875rem] text-text-muted">Beta</span>} />
       <div className="px-4">
         <div className="flex gap-1 p-1 rounded-2xl bg-bg-elevated border border-border">
           {TABS.map((t) => (
@@ -62,7 +62,7 @@ function Scenes() {
         </div>
         <div className="flex-1">
           <div className="text-sm font-semibold">Practice with AI Coach</div>
-          <div className="text-[11px] text-text-muted">Upload your sides — Aria plays the scene with you.</div>
+          <div className="text-[0.6875rem] text-text-muted">Upload your sides — Aria plays the scene with you.</div>
         </div>
         <ChevronRight className="w-4 h-4 text-text-muted" />
       </Link>
@@ -76,7 +76,7 @@ function Scenes() {
         </div>
         <div className="flex-1">
           <div className="text-sm font-semibold">Upload a reel</div>
-          <div className="text-[11px] text-text-muted">Share your latest take with the world.</div>
+          <div className="text-[0.6875rem] text-text-muted">Share your latest take with the world.</div>
         </div>
         <ChevronRight className="w-4 h-4 text-text-muted" />
       </Link>
@@ -101,11 +101,11 @@ function Scenes() {
               </div>
               <div className="flex-1 min-w-0 py-1">
                 <div className="font-display text-base leading-tight">{s.title}</div>
-                <div className="text-[11px] text-text-muted mt-0.5">{s.source}</div>
+                <div className="text-[0.6875rem] text-text-muted mt-0.5">{s.source}</div>
                 <div className="flex items-center gap-2 mt-2">
                   <span
                     className={cn(
-                      "text-[10px] px-2 py-0.5 rounded-full font-medium",
+                      "text-[0.6875rem] px-2 py-0.5 rounded-full font-medium",
                       s.difficulty === "Advanced" && "bg-danger/15 text-danger",
                       s.difficulty === "Intermediate" && "bg-gold/15 text-gold",
                       s.difficulty === "Beginner" && "bg-success/15 text-success"
@@ -113,8 +113,8 @@ function Scenes() {
                   >
                     {s.difficulty}
                   </span>
-                  <span className="text-[10px] text-text-muted tnum">{s.duration}</span>
-                  <span className="text-[10px] text-text-muted">· {s.characters.length} chars</span>
+                  <span className="text-[0.6875rem] text-text-muted tnum">{s.duration}</span>
+                  <span className="text-[0.6875rem] text-text-muted">· {s.characters.length} chars</span>
                 </div>
               </div>
             </div>
@@ -140,11 +140,11 @@ function Agent() {
             <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-success border-2 border-bg-elevated" />
           </div>
           <div className="flex-1">
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-violet/15 text-violet text-[10px] font-semibold">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-violet/15 text-violet text-[0.6875rem] font-semibold">
               <Bot className="w-3 h-3" /> AI Agent · Active
             </div>
             <div className="font-display text-2xl leading-tight mt-1">Aria</div>
-            <div className="text-[11px] text-text-muted">Your personal casting agent</div>
+            <div className="text-[0.6875rem] text-text-muted">Your personal casting agent</div>
           </div>
         </div>
         <p className="text-sm text-text mt-4 leading-relaxed">
@@ -173,12 +173,12 @@ function Agent() {
             />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium truncate">{n.project}</div>
-              <div className="text-[11px] text-text-muted truncate">
+              <div className="text-[0.6875rem] text-text-muted truncate">
                 {n.studio} · {n.status}
                 {n.proposedDate && ` · ${n.proposedDate}`}
               </div>
             </div>
-            {n.fee && <div className="text-[10px] text-gold font-semibold whitespace-nowrap">{n.fee}</div>}
+            {n.fee && <div className="text-[0.6875rem] text-gold font-semibold whitespace-nowrap">{n.fee}</div>}
           </div>
         ))}
       </div>

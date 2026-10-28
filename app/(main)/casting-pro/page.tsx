@@ -116,15 +116,15 @@ export default function CastingProPage() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] uppercase tracking-widest text-gold">{c.type}</div>
+                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{c.type}</div>
                     <div className="font-display text-lg leading-tight mt-0.5">{c.title}</div>
-                    <div className="flex items-center gap-3 text-[11px] text-text-muted mt-1.5">
+                    <div className="flex items-center gap-3 text-[0.6875rem] text-text-muted mt-1.5">
                       <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {c.location}</span>
                       <span className="inline-flex items-center gap-1"><Calendar className="w-3 h-3" /> {c.deadline}</span>
                       {c.paid && <span className="text-success font-semibold">PAID</span>}
                     </div>
                   </div>
-                  <span className="text-[11px] tnum text-gold font-semibold whitespace-nowrap">
+                  <span className="text-[0.6875rem] tnum text-gold font-semibold whitespace-nowrap">
                     {c.applicants} applied
                   </span>
                 </div>
@@ -155,7 +155,7 @@ export default function CastingProPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm truncate">{a.talent.name}</span>
-                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-semibold",
+                    <span className={cn("text-[0.6875rem] px-1.5 py-0.5 rounded-full font-semibold",
                       a.matchScore >= 85 ? "bg-success/15 text-success"
                         : a.matchScore >= 70 ? "bg-gold/15 text-gold"
                         : "bg-bg text-text-muted"
@@ -163,7 +163,7 @@ export default function CastingProPage() {
                       {a.matchScore}% match
                     </span>
                   </div>
-                  <div className="text-[11px] text-text-muted truncate mt-0.5">
+                  <div className="text-[0.6875rem] text-text-muted truncate mt-0.5">
                     Applied to <span className="text-text">{a.castingTitle}</span> · {a.submittedAt}
                   </div>
                 </div>
@@ -198,7 +198,7 @@ function Stat({ label, value, icon: Icon, tone }: { label: string; value: number
         <Icon className="w-4 h-4" />
       </div>
       <div className="text-xl font-display tnum">{value}</div>
-      <div className="text-[10px] text-text-muted uppercase tracking-wider">{label}</div>
+      <div className="text-[0.6875rem] text-text-muted uppercase tracking-wider">{label}</div>
     </div>
   );
 }
@@ -255,7 +255,7 @@ function NewRoleSheet({ onClose, onSave }: { onClose: () => void; onSave: (c: My
             <span className="text-sm">Paid role</span>
           </label>
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 px-1">Description</div>
+            <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5 px-1">Description</div>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -284,7 +284,7 @@ function NewRoleSheet({ onClose, onSave }: { onClose: () => void; onSave: (c: My
 function Input({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 px-1">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5 px-1">{label}</div>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}

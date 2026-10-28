@@ -88,7 +88,7 @@ function DailyView() {
                     <Newspaper className="w-4 h-4 text-violet" />
                   </div>
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-violet font-semibold">Weekly digest</div>
+                    <div className="text-[0.6875rem] uppercase tracking-widest text-violet font-semibold">Weekly digest</div>
                     <div className="font-display text-base leading-tight">This week in casting</div>
                   </div>
                 </div>
@@ -128,7 +128,7 @@ function DailyView() {
       <div className="rounded-3xl p-5 bg-gradient-to-br from-gold/15 via-bg-elevated to-bg-elevated border border-gold/20 relative overflow-hidden">
         <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-gold/10 blur-2xl" />
         <div className="relative">
-          <div className="text-[11px] uppercase tracking-widest text-gold mb-1">Today's challenge</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-1">Today's challenge</div>
           <h3 className="font-display text-2xl leading-tight">{DAILY_TASKS[0].title}</h3>
           <p className="text-text-muted text-sm mt-1.5">{DAILY_TASKS[0].description}</p>
           <div className="flex items-center gap-3 mt-4 text-xs">
@@ -150,14 +150,14 @@ function DailyView() {
         <div key={t.id} className="rounded-2xl p-4 bg-bg-elevated border border-border">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
-              <div className="text-[10px] uppercase tracking-widest text-violet">{t.category}</div>
+              <div className="text-[0.6875rem] uppercase tracking-widest text-violet">{t.category}</div>
               <h4 className="font-display text-lg mt-0.5">{t.title}</h4>
               <p className="text-text-muted text-xs mt-1">{t.description}</p>
             </div>
-            <span className="text-[10px] text-text-subtle whitespace-nowrap">{t.daysLeft}d left</span>
+            <span className="text-[0.6875rem] text-text-subtle whitespace-nowrap">{t.daysLeft}d left</span>
           </div>
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-            <span className="text-[11px] text-text-muted inline-flex items-center gap-1">
+            <span className="text-[0.6875rem] text-text-muted inline-flex items-center gap-1">
               <Award className="w-3 h-3 text-gold" /> {t.reward}
             </span>
             <button className="text-xs font-semibold text-gold">Join →</button>
@@ -176,7 +176,7 @@ function CastingsView() {
 
   return (
     <>
-      <p className="text-[11px] text-text-muted px-1">
+      <p className="text-[0.6875rem] text-text-muted px-1">
         Swipe right to apply · swipe left to skip
       </p>
       {visible.map((c) => (
@@ -271,11 +271,11 @@ function SwipeCastingCard({
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-text-muted truncate">{c.studio}</span>
                   {c.paid && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/15 text-success font-semibold">PAID</span>
+                    <span className="text-[0.6875rem] px-1.5 py-0.5 rounded bg-success/15 text-success font-semibold">PAID</span>
                   )}
                 </div>
                 <h4 className="font-display text-base leading-tight mt-0.5">{c.title}</h4>
-                <div className="flex items-center gap-3 text-[11px] text-text-muted mt-1.5">
+                <div className="flex items-center gap-3 text-[0.6875rem] text-text-muted mt-1.5">
                   <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {c.location}</span>
                   <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> by {c.deadline}</span>
                 </div>
@@ -286,25 +286,25 @@ function SwipeCastingCard({
             {(c.requirements.gender || c.requirements.languages || c.requirements.skills) && (
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {c.requirements.gender?.map((g) => (
-                  <span key={g} className="text-[10px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">{g}</span>
+                  <span key={g} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">{g}</span>
                 ))}
                 {c.requirements.ageRange && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">
+                  <span className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">
                     {c.requirements.ageRange[0]}–{c.requirements.ageRange[1]} yrs
                   </span>
                 )}
                 {c.requirements.languages?.map((l) => (
-                  <span key={l} className="text-[10px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">{l}</span>
+                  <span key={l} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">{l}</span>
                 ))}
                 {c.requirements.skills?.map((s) => (
-                  <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-violet/10 border border-violet/30 text-violet">{s}</span>
+                  <span key={s} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-violet/10 border border-violet/30 text-violet">{s}</span>
                 ))}
               </div>
             )}
           </div>
 
           <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-bg/40">
-            <span className="text-[11px] text-text-muted tnum">{c.applicants} applied</span>
+            <span className="text-[0.6875rem] text-text-muted tnum">{c.applicants} applied</span>
             {applied ? (
               <span className="h-9 px-4 rounded-full bg-success/15 text-success text-xs font-semibold inline-flex items-center gap-1">
                 <Check className="w-3 h-3" /> Applied
@@ -372,7 +372,7 @@ function AuditionsView() {
 
   return (
     <>
-      <div className="text-[11px] text-text-muted px-1 mb-1">Sorted by match to your typecast</div>
+      <div className="text-[0.6875rem] text-text-muted px-1 mb-1">Sorted by match to your typecast</div>
       {ranked.map(({ a, m }, i) => (
         <motion.div
           key={a.id}
@@ -383,13 +383,13 @@ function AuditionsView() {
           <Link href={`/auditions/${a.id}`} className="block rounded-2xl bg-bg-elevated border border-border p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-widest text-gold">{a.type}</div>
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{a.type}</div>
                 <h4 className="font-display text-lg leading-tight mt-0.5">{a.title}</h4>
-                <p className="text-[11px] text-text-muted mt-0.5">{a.studio}</p>
+                <p className="text-[0.6875rem] text-text-muted mt-0.5">{a.studio}</p>
               </div>
               {m.passes && (
                 <span className={cn(
-                  "text-[10px] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap",
+                  "text-[0.6875rem] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap",
                   m.score >= 85 ? "bg-success/15 text-success border-success/30"
                     : m.score >= 65 ? "bg-gold/15 text-gold border-gold/30"
                     : "bg-bg text-text-muted border-border"
@@ -398,7 +398,7 @@ function AuditionsView() {
                 </span>
               )}
             </div>
-            <div className="flex flex-wrap gap-3 text-[11px] text-text-muted mt-3">
+            <div className="flex flex-wrap gap-3 text-[0.6875rem] text-text-muted mt-3">
               <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {a.location}</span>
               <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> by {a.deadline}</span>
               {a.paid && (
@@ -469,7 +469,7 @@ function ApplyModal({ casting, onClose }: { casting: Casting; onClose: () => voi
               />
             </div>
 
-            <div className="text-[11px] text-text-muted">
+            <div className="text-[0.6875rem] text-text-muted">
               Applying as <span className="text-text font-semibold">@{profile.username || "you"}</span>
             </div>
 
@@ -512,7 +512,7 @@ function StarsView() {
                     alt={talent.name}
                     className={cn("rounded-full object-cover border-2", idx === 0 ? "w-20 h-20 border-gold" : "w-14 h-14 border-border-strong")}
                   />
-                  <div className={cn("absolute -top-1 -right-1 w-6 h-6 rounded-full grid place-items-center text-[10px] font-bold", idx === 0 ? "bg-gold text-on-accent" : "bg-bg-elevated text-text border border-border")}>
+                  <div className={cn("absolute -top-1 -right-1 w-6 h-6 rounded-full grid place-items-center text-[0.6875rem] font-bold", idx === 0 ? "bg-gold text-on-accent" : "bg-bg-elevated text-text border border-border")}>
                     {star.rank}
                   </div>
                 </div>
@@ -521,7 +521,7 @@ function StarsView() {
                     {talent.name.split(" ")[0]}
                     {talent.verified && <VerifiedBadge />}
                   </div>
-                  <div className="text-[10px] text-text-muted tnum mt-0.5">{formatNumber(star.weeklyLikes)}</div>
+                  <div className="text-[0.6875rem] text-text-muted tnum mt-0.5">{formatNumber(star.weeklyLikes)}</div>
                 </div>
                 <div className={cn("mt-2 w-full rounded-t-xl bg-gradient-to-t", order, idx === 0 ? "from-gold/40 to-gold/10" : "from-violet/30 to-violet/5")} />
               </Link>
@@ -542,11 +542,11 @@ function StarsView() {
                 <span className="font-semibold text-sm truncate">{talent.name}</span>
                 {talent.verified && <VerifiedBadge />}
               </div>
-              <div className="text-[11px] text-text-muted">{star.category}</div>
+              <div className="text-[0.6875rem] text-text-muted">{star.category}</div>
             </div>
             <div className="text-right">
               <div className="text-sm font-semibold tnum">{formatNumber(star.weeklyLikes)}</div>
-              <div className="text-[10px] text-success inline-flex items-center gap-0.5">
+              <div className="text-[0.6875rem] text-success inline-flex items-center gap-0.5">
                 <TrendingUp className="w-2.5 h-2.5" /> +{star.growth}%
               </div>
             </div>

@@ -12,7 +12,7 @@ export function TypecastBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-bg-elevated/80 backdrop-blur text-[11px] font-medium text-text border border-border",
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-bg-elevated/80 backdrop-blur text-[0.6875rem] font-medium text-text border border-border",
         className
       )}
     >

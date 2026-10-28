@@ -62,7 +62,7 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
             <span className="text-sm font-semibold">Private notes</span>
             <Lock className="w-3 h-3 text-text-subtle" />
           </div>
-          <div className="text-[10px] text-text-muted">
+          <div className="text-[0.6875rem] text-text-muted">
             {hasContent
               ? `${tags.length} tag${tags.length === 1 ? "" : "s"}${note ? " · note saved" : ""}`
               : "Optional — only you see these"}
@@ -71,7 +71,7 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
         {tags.length > 0 && !open && (
           <div className="flex gap-1 max-w-[120px] overflow-hidden">
             {tags.slice(0, 2).map((t) => (
-              <span key={t} className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/10 text-gold border border-gold/30 truncate">
+              <span key={t} className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-gold/10 text-gold border border-gold/30 truncate">
                 {t}
               </span>
             ))}
@@ -94,13 +94,13 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
             <div className="px-3 pb-3 space-y-3 border-t border-border pt-3">
               {/* Tags */}
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5 flex items-center gap-1">
+                <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1.5 flex items-center gap-1">
                   <Tag className="w-3 h-3" /> Tags
                 </div>
                 {tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {tags.map((t) => (
-                      <span key={t} className="inline-flex items-center gap-1 h-7 pl-2.5 pr-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-[11px]">
+                      <span key={t} className="inline-flex items-center gap-1 h-7 pl-2.5 pr-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-[0.6875rem]">
                         {t}
                         <button onClick={() => removeTag(t)} className="w-5 h-5 grid place-items-center rounded-full hover:bg-gold/20">
                           <X className="w-3 h-3" />
@@ -135,7 +135,7 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
                       <button
                         key={t}
                         onClick={() => addTag(t)}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted hover:border-gold/40 hover:text-gold"
+                        className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted hover:border-gold/40 hover:text-gold"
                       >+ {t}</button>
                     ))}
                   </div>
@@ -144,7 +144,7 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
 
               {/* Agent contact */}
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5 flex items-center gap-1">
+                <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1.5 flex items-center gap-1">
                   <UserRound className="w-3 h-3" /> Agent contact
                 </div>
                 <div className="space-y-1.5">
@@ -179,13 +179,13 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
                     <div className="flex gap-1.5 mt-1">
                       {agent.email && (
                         <a href={`mailto:${agent.email}`}
-                          className="flex-1 h-8 rounded-full bg-gold/10 text-gold border border-gold/30 text-[11px] font-semibold inline-flex items-center justify-center gap-1">
+                          className="flex-1 h-8 rounded-full bg-gold/10 text-gold border border-gold/30 text-[0.6875rem] font-semibold inline-flex items-center justify-center gap-1">
                           <Mail className="w-3 h-3" /> Email
                         </a>
                       )}
                       {agent.phone && (
                         <a href={`tel:${agent.phone}`}
-                          className="flex-1 h-8 rounded-full bg-success/10 text-success border border-success/30 text-[11px] font-semibold inline-flex items-center justify-center gap-1">
+                          className="flex-1 h-8 rounded-full bg-success/10 text-success border border-success/30 text-[0.6875rem] font-semibold inline-flex items-center justify-center gap-1">
                           <Phone className="w-3 h-3" /> Call
                         </a>
                       )}
@@ -196,7 +196,7 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
 
               {/* Note */}
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5">
+                <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1.5">
                   Note {talentName && <span className="text-text-subtle">about {talentName.split(" ")[0]}</span>}
                 </div>
                 <textarea

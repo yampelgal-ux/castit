@@ -46,7 +46,7 @@ export function TypecastPicker({
             </div>
             <span
               className={cn(
-                "text-[10px] font-medium leading-tight text-center px-0.5 truncate w-full",
+                "text-[0.6875rem] font-medium leading-tight text-center px-0.5 truncate w-full",
                 active ? "text-gold" : "text-text-muted"
               )}
             >

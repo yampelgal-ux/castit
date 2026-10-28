@@ -1,4 +1,5 @@
 "use client";
+import { photoToDataUrl } from "@/lib/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,10 +43,12 @@ export default function OnboardingPage() {
     router.replace(role === "Talent" ? "/typecast" : "/pro/dashboard");
   }
 
-  function onPhoto(file: File) {
-    const url = URL.createObjectURL(file);
-    setPhoto(url);
-    setProfile({ photoUrl: url });
+  async function onPhoto(file: File) {
+    try {
+      const url = await photoToDataUrl(file);
+      setPhoto(url);
+      setProfile({ photoUrl: url });
+    } catch {}
   }
 
   function toggleGoal(g: Goal) {
@@ -86,7 +89,7 @@ export default function OnboardingPage() {
           >
             {step === 0 && (
               <>
-                <div className="text-[11px] uppercase tracking-widest text-gold mb-2">
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-2">
                   {t("ob.step", { n: 1 })}
                 </div>
                 <h1 className="font-display text-3xl tracking-editorial leading-[1.05]">
@@ -117,7 +120,7 @@ export default function OnboardingPage() {
 
             {step === 1 && (
               <>
-                <div className="text-[11px] uppercase tracking-widest text-gold mb-2">
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-2">
                   {t("ob.step", { n: 2 })}
                 </div>
                 <h1 className="font-display text-3xl tracking-editorial leading-[1.05]">
@@ -160,7 +163,7 @@ export default function OnboardingPage() {
 
             {step === 2 && (
               <>
-                <div className="text-[11px] uppercase tracking-widest text-gold mb-2">
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-2">
                   {t("ob.step", { n: 3 })}
                 </div>
                 <h1 className="font-display text-3xl tracking-editorial leading-[1.05]">

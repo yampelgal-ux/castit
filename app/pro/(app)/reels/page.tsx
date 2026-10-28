@@ -55,7 +55,7 @@ export default function ProReelsPage() {
       <div className="fixed top-0 inset-x-0 z-30 max-w-[440px] mx-auto px-5 pt-4 pb-3 bg-gradient-to-b from-black/70 to-transparent">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-plum/30 text-plum-light font-semibold tracking-wider">PRO</span>
+            <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-plum/30 text-plum-light font-semibold tracking-wider">PRO</span>
             <span className="font-display text-base text-white">Discover</span>
           </div>
           <div className="flex items-center gap-3 text-xs">
@@ -91,7 +91,7 @@ export default function ProReelsPage() {
                 key={a.id}
                 onClick={() => setAuditionId(a.id)}
                 className={cn(
-                  "shrink-0 h-7 px-3 rounded-full text-[11px] border whitespace-nowrap",
+                  "shrink-0 h-7 px-3 rounded-full text-[0.6875rem] border whitespace-nowrap",
                   auditionId === a.id
                     ? "bg-gold text-on-accent border-gold"
                     : "bg-white/10 text-white/80 border-white/20"
@@ -157,7 +157,7 @@ function ProReelView({
       {match && match.passes && (
         <div className="absolute top-20 right-4 z-10">
           <div className={cn(
-            "px-2.5 py-1 rounded-full backdrop-blur-md text-[11px] font-semibold border inline-flex items-center gap-1 tnum",
+            "px-2.5 py-1 rounded-full backdrop-blur-md text-[0.6875rem] font-semibold border inline-flex items-center gap-1 tnum",
             match.score >= 85 ? "bg-success/30 text-white border-success/60"
               : match.score >= 65 ? "bg-gold/30 text-white border-gold/60"
               : "bg-white/15 text-white border-white/30"
@@ -171,7 +171,7 @@ function ProReelView({
       <div className="absolute right-3 bottom-32 z-10 flex flex-col items-center gap-4">
         <Link href={`/profile/${talent.username}`} className="flex flex-col items-center gap-1">
           <img src={talent.photo} alt={talent.name} className="w-12 h-12 rounded-full object-cover ring-2 ring-white/80" />
-          <span className="text-[10px] text-white/90 font-medium">View</span>
+          <span className="text-[0.6875rem] text-white/90 font-medium">View</span>
         </Link>
 
         <button
@@ -185,7 +185,7 @@ function ProReelView({
           )}>
             <Bookmark className={cn("w-5 h-5", isShortlisted && "fill-current")} />
           </div>
-          <span className="text-[10px] font-medium">{isShortlisted ? "Saved" : "Shortlist"}</span>
+          <span className="text-[0.6875rem] font-medium">{isShortlisted ? "Saved" : "Shortlist"}</span>
         </button>
 
         <button
@@ -196,7 +196,7 @@ function ProReelView({
           <div className="w-12 h-12 rounded-full bg-gold text-on-accent grid place-items-center">
             <Megaphone className="w-5 h-5" />
           </div>
-          <span className="text-[10px] font-medium">Invite</span>
+          <span className="text-[0.6875rem] font-medium">Invite</span>
         </button>
 
         <Link
@@ -207,7 +207,7 @@ function ProReelView({
           <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur grid place-items-center">
             <MessageCircle className="w-5 h-5" />
           </div>
-          <span className="text-[10px] font-medium">Message</span>
+          <span className="text-[0.6875rem] font-medium">Message</span>
         </Link>
 
         <button
@@ -218,7 +218,7 @@ function ProReelView({
           <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur grid place-items-center">
             <Info className="w-5 h-5" />
           </div>
-          <span className="text-[10px] font-medium">Typecast</span>
+          <span className="text-[0.6875rem] font-medium">Typecast</span>
         </button>
       </div>
 
@@ -233,8 +233,8 @@ function ProReelView({
             {talent.name}
             {talent.verified && <VerifiedBadge />}
           </Link>
-          <span className="text-white/60 text-[11px]">·</span>
-          <span className="text-[11px] text-white/70 tnum">{formatNumber(talent.followers)} followers</span>
+          <span className="text-white/60 text-[0.6875rem]">·</span>
+          <span className="text-[0.6875rem] text-white/70 tnum">{formatNumber(talent.followers)} followers</span>
         </div>
 
         <p className="text-sm leading-snug text-white/95 mb-3 line-clamp-2">{reel.caption}</p>
@@ -284,7 +284,7 @@ function TypecastSheet({ talent, onClose }: { talent: Talent; onClose: () => voi
               <img src={talent.photo} alt={talent.name} className="w-12 h-12 rounded-full object-cover" />
               <div>
                 <div className="font-display text-lg leading-tight">{talent.name}</div>
-                <div className="text-[10px] text-text-muted">@{talent.username}</div>
+                <div className="text-[0.6875rem] text-text-muted">@{talent.username}</div>
               </div>
             </div>
             <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-bg-muted grid place-items-center">
@@ -383,7 +383,7 @@ function InviteSheet({
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-display text-xl">Invite to audition</h3>
-                <p className="text-[11px] text-text-muted">Pick a role for {talent.name}</p>
+                <p className="text-[0.6875rem] text-text-muted">Pick a role for {talent.name}</p>
               </div>
               <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-bg-muted grid place-items-center">
                 <X className="w-4 h-4" />
@@ -414,9 +414,9 @@ function InviteSheet({
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <div className="text-[10px] uppercase tracking-widest text-gold">{a.type}</div>
+                          <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{a.type}</div>
                           <div className="text-sm font-semibold leading-tight truncate">{a.title}</div>
-                          <div className="text-[11px] text-text-muted truncate mt-0.5">{a.studio} · {a.location}</div>
+                          <div className="text-[0.6875rem] text-text-muted truncate mt-0.5">{a.studio} · {a.location}</div>
                         </div>
                         {picked === a.id && (
                           <div className="w-5 h-5 rounded-full bg-gold grid place-items-center shrink-0">
@@ -450,7 +450,7 @@ function Stat({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
   return (
     <div>
-      <div className="text-[9px] uppercase tracking-widest text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">{label}</div>
       <div className="text-sm font-medium mt-0.5">{value}</div>
     </div>
   );
@@ -459,10 +459,10 @@ function Stat({ label, value }: { label: string; value?: string }) {
 function ColorStat({ label, color }: { label: string; color: string }) {
   return (
     <div>
-      <div className="text-[9px] uppercase tracking-widest text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">{label}</div>
       <div className="flex items-center gap-2 mt-0.5">
         <span className="w-5 h-5 rounded-full border border-border" style={{ background: color }} />
-        <span className="text-[11px] font-mono text-text-muted">{color}</span>
+        <span className="text-[0.6875rem] font-mono text-text-muted">{color}</span>
       </div>
     </div>
   );
@@ -471,7 +471,7 @@ function ColorStat({ label, color }: { label: string; color: string }) {
 function Group({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mt-4">
-      <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1.5">{label}</div>
       <div className="flex flex-wrap gap-1.5">{children}</div>
     </div>
   );

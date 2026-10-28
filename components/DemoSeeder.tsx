@@ -55,7 +55,7 @@ export function DemoSeeder() {
             >
               <Sparkles className="w-4 h-4 shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-widest font-bold">דמו חי</div>
+                <div className="text-[0.6875rem] uppercase tracking-widest font-bold">דמו חי</div>
                 <div className="text-xs font-semibold">לחץ למידע</div>
               </div>
               <button
@@ -91,7 +91,7 @@ export function DemoSeeder() {
               </p>
 
               <div className="rounded-2xl bg-bg border border-border p-4 space-y-2 text-xs">
-                <div className="text-[10px] uppercase tracking-widest text-gold font-semibold mb-1">מה כלול בדמו</div>
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold mb-1">מה כלול בדמו</div>
                 <Row label="3 פרויקטים" value="Feature Film, TV Series, Commercial (Quick Cast)" />
                 <Row label="5 תפקידים" value="Lead, Support, Day-player, Background" />
                 <Row label="13 submissions" value="פרושים בכל שלבי ה-pipeline" />
@@ -102,7 +102,7 @@ export function DemoSeeder() {
 
               <div className="rounded-2xl bg-plum/8 border border-plum/30 p-3 mt-3 flex items-start gap-2">
                 <Info className="w-3.5 h-3.5 text-plum-light shrink-0 mt-0.5" />
-                <p className="text-[11px] text-text-muted leading-relaxed">
+                <p className="text-[0.6875rem] text-text-muted leading-relaxed">
                   כל ה-AI עובד במצב fallback (Aria כותבת הודעות, מנתחת טייפים, מציעה directions) — בלי תלות במפתחות API.
                   למעבר לAI אמיתי, צריך להוסיף ANTHROPIC_API_KEY ב-Vercel.
                 </p>

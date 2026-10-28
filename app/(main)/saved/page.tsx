@@ -41,7 +41,7 @@ export default function SavedPage() {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                   <div className="absolute bottom-2 left-2 right-2">
-                    <p className="text-[10px] text-white/80">@{talent?.username}</p>
+                    <p className="text-[0.6875rem] text-white/80">@{talent?.username}</p>
                     <p className="text-xs text-white line-clamp-2 leading-tight mt-0.5">{reel.caption}</p>
                   </div>
                   <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 backdrop-blur grid place-items-center">

@@ -191,7 +191,7 @@ export default function TourPage() {
         </Link>
         <button
           onClick={() => setAutoplay((a) => !a)}
-          className={`h-9 px-3 rounded-full backdrop-blur border text-[11px] font-semibold inline-flex items-center gap-1.5 ${
+          className={`h-9 px-3 rounded-full backdrop-blur border text-[0.6875rem] font-semibold inline-flex items-center gap-1.5 ${
             autoplay
               ? "bg-gold/20 border-gold/40 text-gold"
               : "bg-bg-elevated/80 border-border text-text-muted"
@@ -215,7 +215,7 @@ export default function TourPage() {
       </div>
 
       {/* Counter */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 text-[10px] uppercase tracking-widest text-text-muted tnum">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 text-[0.6875rem] uppercase tracking-widest text-text-muted tnum">
         {idx + 1} / {SLIDES.length}
       </div>
 
@@ -231,7 +231,7 @@ export default function TourPage() {
             className="max-w-2xl w-full text-center space-y-6"
           >
             {/* Eyebrow */}
-            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-bg-elevated/60 backdrop-blur border border-border text-[10px] uppercase tracking-[0.3em] ${TONE_ACCENT[slide.tone]} font-semibold`}>
+            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-bg-elevated/60 backdrop-blur border border-border text-[0.6875rem] uppercase tracking-[0.3em] ${TONE_ACCENT[slide.tone]} font-semibold`}>
               <Sparkles className="w-2.5 h-2.5" />
               {slide.eyebrow}
             </div>
@@ -292,7 +292,7 @@ function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="rounded-2xl bg-bg-elevated/60 backdrop-blur border border-border p-4">
       <div className="font-display text-3xl font-bold text-gold tnum">{value}</div>
-      <div className="text-[10px] text-text-muted uppercase tracking-wider mt-1">{label}</div>
+      <div className="text-[0.6875rem] text-text-muted uppercase tracking-wider mt-1">{label}</div>
     </div>
   );
 }
@@ -313,16 +313,16 @@ function TalentVisual() {
       <div className="p-3 space-y-2">
         <div className="flex items-center gap-2 mb-2">
           <Inbox className="w-3.5 h-3.5 text-gold" />
-          <span className="text-[10px] uppercase tracking-widest text-gold font-semibold">Auditions</span>
+          <span className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">Auditions</span>
         </div>
         {[
           { p: "After the Rain", r: "Maya — Lead", urgent: true, days: "2d" },
           { p: "The Wave Below", r: "Det. Ben", urgent: false, days: "5d" },
         ].map((a, i) => (
           <div key={i} className={`rounded-xl border p-2.5 ${a.urgent ? "bg-gold/10 border-gold/40" : "bg-bg-elevated border-border"}`}>
-            <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">{a.p}</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">{a.p}</div>
             <div className="text-xs font-semibold mt-0.5">{a.r}</div>
-            <div className="text-[9px] text-text-muted mt-0.5">Due in {a.days}</div>
+            <div className="text-[0.6875rem] text-text-muted mt-0.5">Due in {a.days}</div>
           </div>
         ))}
       </div>
@@ -336,8 +336,8 @@ function SelfTapeVisual() {
       <div className="aspect-[9/16] bg-gradient-to-b from-black via-gray-900 to-black relative">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80')] bg-cover bg-center opacity-40" />
         <div className="absolute top-3 left-3 right-3 rounded-lg bg-black/70 backdrop-blur p-2">
-          <div className="text-[9px] uppercase tracking-widest text-gold">Sides</div>
-          <div className="text-[9px] text-white mt-0.5">MAYA: I told you I'm not doing it.</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Sides</div>
+          <div className="text-[0.6875rem] text-white mt-0.5">MAYA: I told you I'm not doing it.</div>
         </div>
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-danger grid place-items-center">
           <div className="w-5 h-5 bg-white rounded-full" />
@@ -356,23 +356,23 @@ function CoachVisual() {
       <div className="p-3 space-y-2">
         <div className="flex items-center gap-2 mb-1">
           <Wand2 className="w-3.5 h-3.5 text-plum-light" />
-          <span className="text-[10px] uppercase tracking-widest text-plum-light font-semibold">Aria · Scene Partner</span>
+          <span className="text-[0.6875rem] uppercase tracking-widest text-plum-light font-semibold">Aria · Scene Partner</span>
         </div>
         <div className="flex justify-start">
           <div className="bg-bg-elevated border border-border rounded-2xl rounded-bl-md px-3 py-2 max-w-[80%]">
-            <div className="text-[9px] text-gold uppercase tracking-widest font-semibold">DAVID</div>
-            <div className="text-[11px] mt-0.5">It's not about you anymore.</div>
+            <div className="text-[0.6875rem] text-gold uppercase tracking-widest font-semibold">DAVID</div>
+            <div className="text-[0.6875rem] mt-0.5">It's not about you anymore.</div>
           </div>
         </div>
         <div className="flex justify-end">
           <div className="bg-gold text-on-accent rounded-2xl rounded-br-md px-3 py-2 max-w-[80%]">
-            <div className="text-[9px] text-on-accent/60 uppercase tracking-widest font-semibold">MAYA · אני</div>
-            <div className="text-[11px] mt-0.5">It was never about me.</div>
+            <div className="text-[0.6875rem] text-on-accent/60 uppercase tracking-widest font-semibold">MAYA · אני</div>
+            <div className="text-[0.6875rem] mt-0.5">It was never about me.</div>
           </div>
         </div>
         <div className="rounded-xl bg-gold/8 border border-gold/30 p-2 mt-2">
-          <div className="text-[9px] uppercase tracking-widest text-gold font-semibold">Aria's direction</div>
-          <div className="text-[10px] mt-1 text-text">restraint, not anger. let it land.</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">Aria's direction</div>
+          <div className="text-[0.6875rem] mt-1 text-text">restraint, not anger. let it land.</div>
         </div>
       </div>
     </PhoneFrame>
@@ -385,19 +385,19 @@ function ProVisual() {
       <div className="p-3 space-y-2">
         <div className="flex items-center gap-2 mb-1">
           <Zap className="w-3.5 h-3.5 text-gold" />
-          <span className="text-[10px] uppercase tracking-widest text-gold font-semibold">Action Inbox</span>
+          <span className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">Action Inbox</span>
         </div>
         <div className="rounded-xl bg-danger/10 border border-danger/40 p-2">
-          <div className="text-[9px] uppercase tracking-widest text-danger font-semibold">⚡ Hold expiring</div>
-          <div className="text-[11px] font-semibold mt-0.5">Maya Levi · 12h left</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-danger font-semibold">⚡ Hold expiring</div>
+          <div className="text-[0.6875rem] font-semibold mt-0.5">Maya Levi · 12h left</div>
         </div>
         <div className="rounded-xl bg-gold/10 border border-gold/40 p-2">
-          <div className="text-[9px] uppercase tracking-widest text-gold font-semibold">📼 To review</div>
-          <div className="text-[11px] font-semibold mt-0.5">3 new tapes from today</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">📼 To review</div>
+          <div className="text-[0.6875rem] font-semibold mt-0.5">3 new tapes from today</div>
         </div>
         <div className="rounded-xl bg-plum/10 border border-plum/40 p-2">
-          <div className="text-[9px] uppercase tracking-widest text-plum-light font-semibold">👥 Director vote</div>
-          <div className="text-[11px] font-semibold mt-0.5">1/2 voted — waiting on producer</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-plum-light font-semibold">👥 Director vote</div>
+          <div className="text-[0.6875rem] font-semibold mt-0.5">1/2 voted — waiting on producer</div>
         </div>
       </div>
     </PhoneFrame>
@@ -418,7 +418,7 @@ function AriaVisual() {
       {features.map((f, i) => (
         <div key={i} className="rounded-xl bg-bg-elevated/60 backdrop-blur border border-border p-3 text-center">
           <f.icon className={`w-4 h-4 ${f.tone} mx-auto`} />
-          <div className="text-[10px] text-text mt-1.5 leading-tight">{f.label}</div>
+          <div className="text-[0.6875rem] text-text mt-1.5 leading-tight">{f.label}</div>
         </div>
       ))}
     </div>
@@ -431,17 +431,17 @@ function ModelVisual() {
       <div className="rounded-2xl bg-sage/10 border border-sage/30 p-4 text-center">
         <Users className="w-5 h-5 text-sage mx-auto mb-2" />
         <div className="font-display text-2xl font-bold text-sage tnum">₪0</div>
-        <div className="text-[10px] text-text mt-1">מלהקים · Free forever</div>
+        <div className="text-[0.6875rem] text-text mt-1">מלהקים · Free forever</div>
       </div>
       <div className="rounded-2xl bg-gold/10 border border-gold/30 p-4 text-center">
         <Sparkles className="w-5 h-5 text-gold mx-auto mb-2" />
         <div className="font-display text-2xl font-bold text-gold tnum">₪29-99</div>
-        <div className="text-[10px] text-text mt-1">שחקנים · חודש</div>
+        <div className="text-[0.6875rem] text-text mt-1">שחקנים · חודש</div>
       </div>
       <div className="rounded-2xl bg-plum/10 border border-plum/30 p-4 text-center">
         <Award className="w-5 h-5 text-plum-light mx-auto mb-2" />
         <div className="font-display text-2xl font-bold text-plum-light tnum">₪499+</div>
-        <div className="text-[10px] text-text mt-1">סוכנויות · חודש</div>
+        <div className="text-[0.6875rem] text-text mt-1">סוכנויות · חודש</div>
       </div>
     </div>
   );
@@ -470,7 +470,7 @@ function FinalCTA() {
           <BarChart3 className="w-3.5 h-3.5" /> Pro
         </Link>
       </div>
-      <div className="text-[10px] text-text-subtle mt-2">
+      <div className="text-[0.6875rem] text-text-subtle mt-2">
         Vercel · Free tier · No credit card required
       </div>
     </div>

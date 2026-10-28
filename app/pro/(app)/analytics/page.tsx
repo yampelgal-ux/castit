@@ -165,24 +165,24 @@ export default function ProAnalyticsPage() {
         >
           <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-gold/10 blur-3xl" />
           <div className="relative">
-            <div className="text-[10px] uppercase tracking-widest text-gold font-semibold mb-3">
+            <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold mb-3">
               {t("an.thisSeason")}
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <div className="font-display text-4xl font-bold text-gold tnum leading-none">{stats.callbackRate}%</div>
-                <div className="text-[10px] text-text-muted mt-1.5 leading-tight">{t("an.heroBookRate")}</div>
+                <div className="text-[0.6875rem] text-text-muted mt-1.5 leading-tight">{t("an.heroBookRate")}</div>
               </div>
               <div>
                 <div className="font-display text-4xl font-bold text-text tnum leading-none">{stats.totalSubs}</div>
-                <div className="text-[10px] text-text-muted mt-1.5 leading-tight">{t("an.heroSubs")}</div>
+                <div className="text-[0.6875rem] text-text-muted mt-1.5 leading-tight">{t("an.heroSubs")}</div>
               </div>
               <div>
                 <div className="font-display text-4xl font-bold text-plum-light tnum leading-none">{stats.aiSaved}</div>
-                <div className="text-[10px] text-text-muted mt-1.5 leading-tight">{t("an.heroHours")}</div>
+                <div className="text-[0.6875rem] text-text-muted mt-1.5 leading-tight">{t("an.heroHours")}</div>
               </div>
             </div>
-            <div className="text-[11px] text-text-muted mt-4 pt-3 border-t border-gold/15 leading-relaxed flex items-start gap-2">
+            <div className="text-[0.6875rem] text-text-muted mt-4 pt-3 border-t border-gold/15 leading-relaxed flex items-start gap-2">
               <Sparkles className="w-3.5 h-3.5 text-gold shrink-0 mt-0.5" />
               <span><span className="text-gold font-semibold">{t("an.ariaImpact")}:</span> {t("an.ariaEstimate", { n: stats.tapesReviewed })}</span>
             </div>
@@ -205,7 +205,7 @@ export default function ProAnalyticsPage() {
               const pct = stats.totalSubs > 0 ? (count / stats.totalSubs) * 100 : 0;
               return (
                 <div key={stage}>
-                  <div className="flex items-center justify-between text-[11px] mb-1">
+                  <div className="flex items-center justify-between text-[0.6875rem] mb-1">
                     <span className="text-text">{STAGE_META[stage].label}</span>
                     <span className="text-text-muted tnum">{count} · {Math.round(pct)}%</span>
                   </div>
@@ -221,11 +221,11 @@ export default function ProAnalyticsPage() {
           </div>
           <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-border">
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-text-muted">{t("an.bookRate")}</div>
+              <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">{t("an.bookRate")}</div>
               <div className="font-display text-xl text-success">{stats.bookRate}%</div>
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-text-muted">{t("an.callbackRate")}</div>
+              <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">{t("an.callbackRate")}</div>
               <div className="font-display text-xl text-gold">{stats.callbackRate}%</div>
             </div>
           </div>
@@ -239,7 +239,7 @@ export default function ProAnalyticsPage() {
               <div className="font-display text-3xl text-text">
                 {stats.avgTimeToDecision} <span className="text-base text-text-muted">{t("an.days")}</span>
               </div>
-              <div className="text-[11px] text-text-muted">{t("an.ttdSub")}</div>
+              <div className="text-[0.6875rem] text-text-muted">{t("an.ttdSub")}</div>
             </div>
           </div>
         </Card>
@@ -256,7 +256,7 @@ export default function ProAnalyticsPage() {
                   />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold truncate">{p.project.title}</div>
-                    <div className="text-[10px] text-text-muted">
+                    <div className="text-[0.6875rem] text-text-muted">
                       {t("an.subsBooked", { a: p.total, b: p.booked })}
                     </div>
                   </div>
@@ -296,7 +296,7 @@ function Kpi({ icon: Icon, label, value, tone }: { icon: typeof Users; label: st
         <Icon className={cn("w-4 h-4", toneCls)} />
       </div>
       <div className={cn("font-display text-2xl font-bold mt-1 tnum", toneCls)}>{value}</div>
-      <div className="text-[9px] uppercase tracking-wider text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{label}</div>
     </div>
   );
 }
@@ -304,8 +304,8 @@ function Kpi({ icon: Icon, label, value, tone }: { icon: typeof Users; label: st
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl bg-bg-elevated border border-border p-4">
-      <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">{title}</div>
-      {subtitle && <div className="text-[11px] text-text-muted mb-3">{subtitle}</div>}
+      <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">{title}</div>
+      {subtitle && <div className="text-[0.6875rem] text-text-muted mb-3">{subtitle}</div>}
       {!subtitle && <div className="mb-3" />}
       {children}
     </div>
@@ -317,7 +317,7 @@ function VoteStat({ label, value, tone }: { label: string; value: number; tone: 
   return (
     <div className="text-center rounded-xl bg-bg p-3 border border-border">
       <div className={cn("font-display text-2xl font-bold tnum", cls)}>{value}</div>
-      <div className="text-[10px] text-text-muted mt-0.5">{label}</div>
+      <div className="text-[0.6875rem] text-text-muted mt-0.5">{label}</div>
     </div>
   );
 }

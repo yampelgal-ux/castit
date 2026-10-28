@@ -122,12 +122,12 @@ export function LoginForm({ variant = "any" }: { variant?: "any" | "pro" }) {
         </button>
 
         {isCloudConfigured() && (
-          <button type="button" onClick={forgot} className="block mx-auto text-[11px] text-text-muted underline underline-offset-2">
+          <button type="button" onClick={forgot} className="block mx-auto text-[0.6875rem] text-text-muted underline underline-offset-2">
             Forgot password?
           </button>
         )}
 
-        <p className="text-center text-[11px] text-text-subtle">
+        <p className="text-center text-[0.6875rem] text-text-subtle">
           New here?{" "}
           <Link href={variant === "pro" ? "/pro/signup" : "/signup"} className="text-gold font-semibold">
             Open an account

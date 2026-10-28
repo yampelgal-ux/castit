@@ -90,7 +90,7 @@ export default function ScenePage() {
         back
         title={scene.title}
         right={
-          <button onClick={handleDeleteScene} className="text-[11px] text-danger">
+          <button onClick={handleDeleteScene} className="text-[0.6875rem] text-danger">
             <Trash2 className="w-4 h-4" />
           </button>
         }
@@ -121,7 +121,7 @@ export default function ScenePage() {
           {scene.characters.map((c) => (
             <span
               key={c}
-              className={`text-[10px] px-2 py-0.5 rounded-full ${
+              className={`text-[0.6875rem] px-2 py-0.5 rounded-full ${
                 c === scene.yourCharacter
                   ? "bg-gold/15 text-gold border border-gold/30 font-semibold"
                   : "bg-bg-elevated border border-border text-text-muted"
@@ -131,14 +131,14 @@ export default function ScenePage() {
             </span>
           ))}
         </div>
-        <div className="text-[10px] text-text-subtle mt-2 tnum">
+        <div className="text-[0.6875rem] text-text-subtle mt-2 tnum">
           {scene.lines.length} שורות
         </div>
       </div>
 
       {/* Script preview */}
       <div className="px-4 mt-5">
-        <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2">סקריפט</div>
+        <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">סקריפט</div>
         <div className="rounded-2xl bg-bg-elevated border border-border p-3 space-y-2 max-h-64 overflow-y-auto">
           {scene.lines.map((l, i) => (
             <div key={i} className="text-xs leading-relaxed">
@@ -153,7 +153,7 @@ export default function ScenePage() {
 
       {/* Takes */}
       <div className="px-4 mt-6">
-        <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2 inline-flex items-center gap-1.5">
+        <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2 inline-flex items-center gap-1.5">
           <FileVideo className="w-3 h-3" /> טייקים ({takes.length})
         </div>
         {takes.length === 0 ? (
@@ -253,14 +253,14 @@ function TakeRow({ take, index, onDelete }: { take: Take; index: number; onDelet
       </button>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold">טייק {index}</div>
-        <div className="text-[10px] text-text-muted mt-0.5 truncate">
+        <div className="text-[0.6875rem] text-text-muted mt-0.5 truncate">
           {formatDate(take.recordedAt)} · {formatDuration(take.durationMs)}
         </div>
         <div className="flex gap-1.5 mt-1.5 flex-wrap">
-          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-semibold">
+          <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-gold/15 text-gold font-semibold">
             {VOICE_LABELS[take.partnerVoice] ?? take.partnerVoice}
           </span>
-          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-plum/15 text-plum-light font-semibold">
+          <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-plum/15 text-plum-light font-semibold">
             {TONE_LABELS[take.partnerTone] ?? take.partnerTone}
           </span>
         </div>

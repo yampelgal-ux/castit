@@ -81,7 +81,7 @@ export default function ProSignupPage() {
           <Field icon={Building2} placeholder="Company or studio" value={company} onChange={setCompany} />
 
           <div>
-            <label className="text-[10px] uppercase tracking-wider text-text-muted px-1">Role</label>
+            <label className="text-[0.6875rem] uppercase tracking-wider text-text-muted px-1">Role</label>
             <div className="mt-1.5 grid grid-cols-2 gap-2">
               {ROLES.map((r) => (
                 <button
@@ -123,7 +123,7 @@ export default function ProSignupPage() {
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
 
-        <p className="text-center text-[11px] text-text-subtle">
+        <p className="text-center text-[0.6875rem] text-text-subtle">
           Already a Pro? <Link href="/pro/login" className="text-gold font-semibold">Sign in</Link>
         </p>
       </form>

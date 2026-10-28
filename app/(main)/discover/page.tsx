@@ -186,7 +186,7 @@ export default function DiscoverPage() {
           >
             <SlidersHorizontal className="w-4 h-4" />
             {filtersActive && (
-              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-gold text-on-accent text-[9px] font-bold grid place-items-center px-1">
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-gold text-on-accent text-[0.6875rem] font-bold grid place-items-center px-1">
                 {countActiveFilters(filters)}
               </span>
             )}
@@ -216,7 +216,7 @@ export default function DiscoverPage() {
               <button
                 key={ss.id}
                 onClick={() => loadSavedSearch(ss)}
-                className="shrink-0 h-7 px-3 rounded-full text-[11px] font-medium border border-gold/30 text-gold bg-gold/8 flex items-center gap-1.5"
+                className="shrink-0 h-7 px-3 rounded-full text-[0.6875rem] font-medium border border-gold/30 text-gold bg-gold/8 flex items-center gap-1.5"
               >
                 <BookmarkCheck className="w-3 h-3" />
                 {ss.name}
@@ -252,7 +252,7 @@ export default function DiscoverPage() {
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs text-text-muted tnum">{results.length} {t("disc.talents")}</p>
           {filtersActive && (
-            <button onClick={() => setFilters(DEFAULT_FILTERS)} className="text-[11px] text-gold font-medium">
+            <button onClick={() => setFilters(DEFAULT_FILTERS)} className="text-[0.6875rem] text-gold font-medium">
               {t("disc.clearFilters")}
             </button>
           )}
@@ -284,7 +284,7 @@ export default function DiscoverPage() {
                         alt={FEATURED_TALENT.name}
                         className="w-16 h-16 rounded-full object-cover border-2 border-gold/40"
                       />
-                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-gold text-on-accent text-[8px] font-bold uppercase tracking-wide">
+                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-gold text-on-accent text-[0.6875rem] font-bold uppercase tracking-wide">
                         Featured
                       </span>
                     </div>
@@ -293,10 +293,10 @@ export default function DiscoverPage() {
                         <span className="font-semibold text-sm">{FEATURED_TALENT.name}</span>
                         {FEATURED_TALENT.verified && <VerifiedBadge />}
                       </div>
-                      <p className="text-[11px] text-text-muted mt-0.5 line-clamp-2">{FEATURED_TALENT.bio}</p>
+                      <p className="text-[0.6875rem] text-text-muted mt-0.5 line-clamp-2">{FEATURED_TALENT.bio}</p>
                       <div className="flex items-center gap-1.5 mt-2">
                         <Star className="w-3 h-3 text-gold fill-gold" />
-                        <span className="text-[10px] text-gold font-semibold">Spotlight talent this week</span>
+                        <span className="text-[0.6875rem] text-gold font-semibold">Spotlight talent this week</span>
                       </div>
                     </div>
                     <Link
@@ -325,7 +325,7 @@ export default function DiscoverPage() {
 
                     {filtersActive && (
                       <div className={cn(
-                        "absolute top-2 left-2 px-2 py-1 rounded-full text-[10px] font-bold tnum backdrop-blur",
+                        "absolute top-2 left-2 px-2 py-1 rounded-full text-[0.6875rem] font-bold tnum backdrop-blur",
                         score >= 80 ? "bg-success/90 text-white"
                           : score >= 60 ? "bg-gold/90 text-on-accent"
                           : "bg-bg/80 text-text border border-border"
@@ -342,7 +342,7 @@ export default function DiscoverPage() {
 
                     <div className="absolute bottom-2 left-2 right-2 space-y-1">
                       <div className="text-sm font-semibold text-white truncate">{t.name}</div>
-                      <div className="flex items-center gap-2 text-[10px] text-white/80">
+                      <div className="flex items-center gap-2 text-[0.6875rem] text-white/80">
                         <span className="tnum">{t.typecast.heightCm}cm</span>
                         <span>·</span>
                         <span className="truncate">{t.typecast.gender}</span>
@@ -456,7 +456,7 @@ function FilterSheet({
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="font-display text-xl">Typecast filters</h3>
-              <p className="text-[11px] text-text-muted mt-0.5">Match talent by physical & creative traits</p>
+              <p className="text-[0.6875rem] text-text-muted mt-0.5">Match talent by physical & creative traits</p>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-full hover:bg-bg-muted">
               <X className="w-5 h-5" />
@@ -469,7 +469,7 @@ function FilterSheet({
               <div className="space-y-2">
                 {["heightMin", "heightMax"].map((key) => (
                   <div key={key} className="flex items-center gap-3">
-                    <span className="text-[10px] text-text-muted w-8">{key === "heightMin" ? "Min" : "Max"}</span>
+                    <span className="text-[0.6875rem] text-text-muted w-8">{key === "heightMin" ? "Min" : "Max"}</span>
                     <input
                       type="range" min={140} max={210}
                       value={filters[key as "heightMin" | "heightMax"]}
@@ -577,7 +577,7 @@ function Section({ title, hint, value, children }: { title: string; hint?: strin
       <div className="flex items-baseline justify-between mb-2.5">
         <div>
           <div className="text-xs uppercase tracking-wider text-text font-semibold">{title}</div>
-          {hint && <div className="text-[10px] text-text-subtle mt-0.5">{hint}</div>}
+          {hint && <div className="text-[0.6875rem] text-text-subtle mt-0.5">{hint}</div>}
         </div>
         {value && <div className="text-xs tnum text-gold font-semibold">{value}</div>}
       </div>

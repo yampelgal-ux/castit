@@ -173,14 +173,14 @@ export default function ProSearchPage() {
                 if (selectMode) setSelected(new Set());
               }}
               className={cn(
-                "text-[11px] font-semibold",
+                "text-[0.6875rem] font-semibold",
                 selectMode ? "text-gold" : "text-text-muted"
               )}
             >
               {selectMode ? "Cancel" : "Select"}
             </button>
             {activeCount > 0 && (
-              <button onClick={() => setF(EMPTY)} className="text-[11px] text-text-muted underline">
+              <button onClick={() => setF(EMPTY)} className="text-[0.6875rem] text-text-muted underline">
                 {t("srch.clearAll")}
               </button>
             )}
@@ -211,7 +211,7 @@ export default function ProSearchPage() {
           </button>
           <div className="h-12 px-4 rounded-2xl bg-gold/10 border border-gold/30 flex flex-col items-center justify-center min-w-[80px]">
             <span className="font-display text-base text-gold tnum leading-none">{ranked.length}</span>
-            <span className="text-[9px] uppercase tracking-wider text-gold/80 leading-none mt-0.5">{t("srch.matches")}</span>
+            <span className="text-[0.6875rem] uppercase tracking-wider text-gold/80 leading-none mt-0.5">{t("srch.matches")}</span>
           </div>
         </div>
 
@@ -274,18 +274,18 @@ export default function ProSearchPage() {
                       </div>
                       <MatchBadge score={match.score} />
                     </div>
-                    <p className="text-[11px] text-text-muted truncate mt-0.5">
+                    <p className="text-[0.6875rem] text-text-muted truncate mt-0.5">
                       {talent.typecast.gender} · {talent.typecast.ageRange[0]}–{talent.typecast.ageRange[1]} · {talent.typecast.heightCm}cm · {talent.typecast.location}
                     </p>
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {talent.typecast.skills.slice(0, 3).map((s) => (
-                        <span key={s} className="text-[9px] px-1.5 py-0.5 rounded-full bg-bg border border-border text-text-muted">{s}</span>
+                        <span key={s} className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-bg border border-border text-text-muted">{s}</span>
                       ))}
                     </div>
                   </div>
                 </RowWrap>
                 {!selectMode && (
-                  <div className="flex items-center justify-between px-3 py-2.5 border-t border-border bg-bg/40 text-[11px] gap-2">
+                  <div className="flex items-center justify-between px-3 py-2.5 border-t border-border bg-bg/40 text-[0.6875rem] gap-2">
                     <span className="text-text-muted truncate">
                       <span className="text-text font-semibold tnum">{formatNumber(talent.followers)}</span> followers
                     </span>
@@ -299,7 +299,7 @@ export default function ProSearchPage() {
                       </Link>
                       <button
                         onClick={(e) => { e.preventDefault(); setInviteFor({ id: talent.id, name: talent.name, photo: talent.photo }); }}
-                        className="h-7 px-3 rounded-full bg-gold text-on-accent text-[11px] font-semibold inline-flex items-center gap-1"
+                        className="h-7 px-3 rounded-full bg-gold text-on-accent text-[0.6875rem] font-semibold inline-flex items-center gap-1"
                       >
                         <Send className="w-3 h-3" /> Invite
                       </button>
@@ -345,7 +345,7 @@ export default function ProSearchPage() {
               </span>
               <button
                 onClick={() => setSelected(new Set())}
-                className="text-[11px] text-text-muted underline"
+                className="text-[0.6875rem] text-text-muted underline"
               >
                 Clear
               </button>
@@ -380,7 +380,7 @@ function MatchBadge({ score }: { score: number }) {
     : score >= 65 ? "bg-gold/15 text-gold border-gold/30"
     : "bg-bg text-text-muted border-border";
   return (
-    <span className={cn("text-[10px] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap", tone)}>
+    <span className={cn("text-[0.6875rem] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap", tone)}>
       {score}% match
     </span>
   );
@@ -388,7 +388,7 @@ function MatchBadge({ score }: { score: number }) {
 
 function Chip({ children, onClear }: { children: React.ReactNode; onClear: () => void }) {
   return (
-    <span className="shrink-0 inline-flex items-center gap-1 h-7 pl-2.5 pr-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-[11px]">
+    <span className="shrink-0 inline-flex items-center gap-1 h-7 pl-2.5 pr-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-[0.6875rem]">
       {children}
       <button onClick={onClear} className="w-5 h-5 grid place-items-center rounded-full hover:bg-gold/20">
         <X className="w-3 h-3" />
@@ -415,7 +415,7 @@ function FilterPanel({
         <div className="p-5 pb-3 border-b border-border flex items-center justify-between">
           <div>
             <h3 className="font-display text-xl">{t("srch.refine")}</h3>
-            <p className="text-[11px] text-text-muted">{t("srch.matchCount", { n: results })}</p>
+            <p className="text-[0.6875rem] text-text-muted">{t("srch.matchCount", { n: results })}</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-bg-muted grid place-items-center">
             <X className="w-4 h-4" />
@@ -501,7 +501,7 @@ function FilterPanel({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <div className="text-[10px] uppercase tracking-widest text-gold font-semibold mb-3">{title}</div>
+      <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold mb-3">{title}</div>
       <div className="space-y-4">{children}</div>
     </section>
   );
@@ -510,7 +510,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function MultiTags({ label, options, value, onChange }: { label: string; options: readonly string[]; value: string[]; onChange: (v: string[]) => void }) {
   return (
     <div>
-      <div className="text-[11px] text-text-muted mb-1.5">{label}</div>
+      <div className="text-[0.6875rem] text-text-muted mb-1.5">{label}</div>
       <div className="flex flex-wrap gap-1.5">
         {options.map((o) => {
           const active = value.includes(o);
@@ -542,11 +542,11 @@ function RangeRow({
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <div className="text-[11px] text-text-muted">{label}</div>
-        <div className="text-[11px] tnum">
+        <div className="text-[0.6875rem] text-text-muted">{label}</div>
+        <div className="text-[0.6875rem] tnum">
           {active ? <span className="text-gold font-semibold">{lo}–{hi} {suffix}</span> : <span className="text-text-subtle">Any</span>}
           {active && (
-            <button onClick={onClear} className="ml-2 text-text-muted underline text-[10px]">clear</button>
+            <button onClick={onClear} className="ml-2 text-text-muted underline text-[0.6875rem]">clear</button>
           )}
         </div>
       </div>

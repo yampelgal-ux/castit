@@ -104,7 +104,7 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
               <>
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-gold">Bulk invite</div>
+                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Bulk invite</div>
                     <h2 className="font-display text-xl">
                       {talents.length} talent{talents.length !== 1 ? "s" : ""} selected
                     </h2>
@@ -126,7 +126,7 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                     />
                   ))}
                   {talents.length > 8 && (
-                    <span className="w-9 h-9 rounded-full bg-bg border-2 border-bg-elevated grid place-items-center text-[10px] font-semibold text-text-muted">
+                    <span className="w-9 h-9 rounded-full bg-bg border-2 border-bg-elevated grid place-items-center text-[0.6875rem] font-semibold text-text-muted">
                       +{talents.length - 8}
                     </span>
                   )}
@@ -153,7 +153,7 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                           />
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-semibold truncate">{p.title}</div>
-                            <div className="text-[10px] text-text-muted truncate">{p.type} · {p.studio}</div>
+                            <div className="text-[0.6875rem] text-text-muted truncate">{p.type} · {p.studio}</div>
                           </div>
                           {project?.id === p.id && <CheckCircle2 className="w-4 h-4 text-gold shrink-0" />}
                         </button>
@@ -185,7 +185,7 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                         {alreadyOnRole.size > 0 && (
                           <div className="mt-3 p-2.5 rounded-xl bg-gold/8 border border-gold/30 flex items-start gap-2">
                             <AlertCircle className="w-3.5 h-3.5 text-gold shrink-0 mt-0.5" />
-                            <div className="text-[11px] text-text leading-relaxed flex-1">
+                            <div className="text-[0.6875rem] text-text leading-relaxed flex-1">
                               <span className="font-semibold tnum">{alreadyOnRole.size}</span> of the selected talents are already on this role.
                               <label className="flex items-center gap-1.5 mt-1.5">
                                 <input
@@ -215,7 +215,7 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                           rows={4}
                           className="w-full mt-1.5 px-3 py-2.5 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
                         />
-                        <p className="text-[10px] text-text-subtle mt-1.5 px-1">
+                        <p className="text-[0.6875rem] text-text-subtle mt-1.5 px-1">
                           Each talent gets the same message. No personal data is shared between recipients.
                         </p>
                       </>
@@ -244,7 +244,7 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
 
 function Label({ children, icon: Icon, className }: { children: React.ReactNode; icon?: any; className?: string }) {
   return (
-    <div className={cn("flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-text-muted", className)}>
+    <div className={cn("flex items-center gap-1.5 text-[0.6875rem] uppercase tracking-widest text-text-muted", className)}>
       {Icon && <Icon className="w-3 h-3" />}
       {children}
     </div>

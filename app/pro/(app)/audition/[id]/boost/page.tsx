@@ -141,23 +141,23 @@ export default function BoostPage() {
               )}
             >
               {t.badge && (
-                <span className="absolute -top-2 left-4 text-[9px] uppercase tracking-widest font-bold bg-gold text-on-accent px-2 py-0.5 rounded-full">
+                <span className="absolute -top-2 left-4 text-[0.6875rem] uppercase tracking-widest font-bold bg-gold text-on-accent px-2 py-0.5 rounded-full">
                   {t.badge}
                 </span>
               )}
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div>
                   <div className="font-display text-xl">{t.name}</div>
-                  <div className="text-[11px] text-text-muted mt-0.5">{t.duration} · {t.reach}</div>
+                  <div className="text-[0.6875rem] text-text-muted mt-0.5">{t.duration} · {t.reach}</div>
                 </div>
                 <div className="text-right">
                   <div className="font-display text-2xl tnum text-gold">${t.price}</div>
-                  <div className="text-[9px] uppercase tracking-wider text-text-subtle">one-time</div>
+                  <div className="text-[0.6875rem] uppercase tracking-wider text-text-subtle">one-time</div>
                 </div>
               </div>
               <ul className="space-y-1.5 mt-3">
                 {t.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-[12px]">
+                  <li key={f} className="flex items-start gap-2 text-[0.75rem]">
                     <Check className={cn("w-3.5 h-3.5 mt-0.5 shrink-0", selected === t.id ? "text-gold" : "text-text-muted")} />
                     <span className={selected === t.id ? "text-text" : "text-text-muted"}>{f}</span>
                   </li>
@@ -169,7 +169,7 @@ export default function BoostPage() {
 
         <div className="rounded-2xl bg-violet/10 border border-violet/30 p-3.5 flex items-start gap-2.5">
           <Sparkles className="w-4 h-4 text-violet shrink-0 mt-0.5" />
-          <p className="text-[12px] text-text leading-relaxed">
+          <p className="text-[0.75rem] text-text leading-relaxed">
             <span className="font-semibold text-violet">Aria recommends Broadcast</span> — based on your target typecast,
             we estimate <span className="font-semibold">~420 high-match applications</span> in the first 48 hours.
           </p>
@@ -183,7 +183,7 @@ export default function BoostPage() {
         >
           <Rocket className="w-4 h-4" /> Launch {tier.name} — ${tier.price}
         </button>
-        <p className="text-[10px] text-center text-text-subtle mt-2">
+        <p className="text-[0.6875rem] text-center text-text-subtle mt-2">
           No commitment. Cancel anytime before launch.
         </p>
       </div>
@@ -196,7 +196,7 @@ function ProofPoint({ icon: Icon, value, label }: { icon: any; value: string; la
     <div className="rounded-2xl bg-bg-elevated border border-border p-3 text-center">
       <Icon className="w-4 h-4 text-gold mx-auto mb-1.5" />
       <div className="font-display text-xl tnum">{value}</div>
-      <div className="text-[9px] uppercase tracking-wider text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{label}</div>
     </div>
   );
 }
@@ -205,7 +205,7 @@ function Stat({ n, l, tone }: { n: string; l: string; tone: "text" | "gold" }) {
   return (
     <div className="rounded-xl bg-bg-elevated border border-border p-3">
       <div className={cn("font-display text-lg tnum", tone === "gold" ? "text-gold" : "")}>{n}</div>
-      <div className="text-[9px] uppercase tracking-wider text-text-muted">{l}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{l}</div>
     </div>
   );
 }

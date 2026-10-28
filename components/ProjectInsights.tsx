@@ -39,7 +39,7 @@ export function ProjectInsights({ projectId }: { projectId: string }) {
         </div>
         <div className="flex-1 text-left">
           <div className="text-sm font-semibold">Project insights</div>
-          <div className="text-[10px] text-text-muted">
+          <div className="text-[0.6875rem] text-text-muted">
             Optional analytics · funnel, response time, fill rate
           </div>
         </div>
@@ -55,7 +55,7 @@ export function ProjectInsights({ projectId }: { projectId: string }) {
             <div className="px-3 pb-3 border-t border-border pt-3 space-y-3">
               {/* Funnel */}
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2">
+                <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">
                   Conversion funnel
                 </div>
                 <FunnelRow label="Submissions"  value={allSubs.length} total={Math.max(allSubs.length, 1)} tone="muted" />
@@ -90,7 +90,7 @@ function FunnelRow({
   }[tone];
   return (
     <div className="mb-1.5">
-      <div className="flex items-center justify-between text-[11px]">
+      <div className="flex items-center justify-between text-[0.6875rem]">
         <span className="text-text">{label}</span>
         <span className="text-text-muted tnum">
           {value}{pct != null && ` · ${pct}%`}
@@ -108,8 +108,8 @@ function Stat({ icon: Icon, label, value, hint }: { icon: any; label: string; va
     <div className="rounded-xl bg-bg border border-border p-2.5">
       <Icon className="w-3.5 h-3.5 text-gold mb-1" />
       <div className="font-display text-lg tnum leading-none">{value}</div>
-      <div className="text-[9px] uppercase tracking-wider text-text-muted mt-0.5">{label}</div>
-      {hint && <div className="text-[9px] text-text-subtle">{hint}</div>}
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mt-0.5">{label}</div>
+      {hint && <div className="text-[0.6875rem] text-text-subtle">{hint}</div>}
     </div>
   );
 }

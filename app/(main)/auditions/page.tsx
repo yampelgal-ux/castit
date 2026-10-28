@@ -112,13 +112,13 @@ export default function AuditionsPage() {
               <Link href={`/auditions/${a.id}`} className="block p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] uppercase tracking-widest text-gold">{a.type}</div>
+                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{a.type}</div>
                     <h3 className="font-display text-lg leading-tight mt-0.5">{a.title}</h3>
-                    <p className="text-[11px] text-text-muted mt-0.5">{a.studio}</p>
+                    <p className="text-[0.6875rem] text-text-muted mt-0.5">{a.studio}</p>
                   </div>
                   {filter === "For You" && m.passes && (
                     <span className={cn(
-                      "text-[10px] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap",
+                      "text-[0.6875rem] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap",
                       m.score >= 85 ? "bg-success/15 text-success border-success/30"
                         : m.score >= 65 ? "bg-gold/15 text-gold border-gold/30"
                         : "bg-bg text-text-muted border-border"
@@ -128,7 +128,7 @@ export default function AuditionsPage() {
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-3 text-[11px] text-text-muted mt-3">
+                <div className="flex flex-wrap gap-3 text-[0.6875rem] text-text-muted mt-3">
                   <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {a.location}</span>
                   <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> by {a.deadline}</span>
                   {a.paid && (
@@ -141,7 +141,7 @@ export default function AuditionsPage() {
                 <p className="text-xs text-text mt-3 leading-relaxed line-clamp-2">{a.description}</p>
               </Link>
               <div className="flex items-center justify-between px-4 py-2.5 border-t border-border bg-bg/40">
-                <span className="text-[11px] text-text-muted tnum">{a.applicants} applied</span>
+                <span className="text-[0.6875rem] text-text-muted tnum">{a.applicants} applied</span>
                 <Link
                   href={`/auditions/${a.id}`}
                   className="h-8 px-4 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center"

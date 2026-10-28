@@ -30,9 +30,9 @@ export function ColorSwatchPicker({
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <div className="text-[11px] text-text-muted">{label}</div>
+        <div className="text-[0.6875rem] text-text-muted">{label}</div>
         {value.length > 0 && (
-          <span className="text-[10px] text-gold font-semibold tnum">{value.length} selected</span>
+          <span className="text-[0.6875rem] text-gold font-semibold tnum">{value.length} selected</span>
         )}
       </div>
       <div className="grid grid-cols-5 gap-x-2 gap-y-3">
@@ -70,7 +70,7 @@ export function ColorSwatchPicker({
               </span>
               <span
                 className={cn(
-                  "text-[9px] leading-tight text-center w-full truncate transition-colors",
+                  "text-[0.6875rem] leading-tight text-center w-full truncate transition-colors",
                   active ? "text-gold font-semibold" : "text-text-subtle group-hover:text-text-muted"
                 )}
               >

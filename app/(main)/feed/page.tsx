@@ -85,7 +85,7 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
           aria-label={bookmarked ? "Remove bookmark" : "Save"}
         >
           <Bookmark className={cn("w-7 h-7 transition-colors", bookmarked && "fill-gold text-gold")} />
-          <span className="text-[11px] font-medium tnum">{bookmarked ? t("feed.saved") : t("feed.save")}</span>
+          <span className="text-[0.6875rem] font-medium tnum">{bookmarked ? t("feed.saved") : t("feed.save")}</span>
         </button>
         <Action icon={<Send className="w-7 h-7" />} label={t("feed.send")} />
         <Action icon={<Share2 className="w-7 h-7" />} label={formatNumber(reel.shares)} />
@@ -101,7 +101,7 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
         <div className="flex items-center gap-2 mb-2">
           <span className="font-semibold">@{talent.username}</span>
           {talent.verified && <VerifiedBadge />}
-          <button className="ml-1 px-3 py-1 text-[11px] font-semibold rounded-full bg-white/10 backdrop-blur border border-white/20">
+          <button className="ml-1 px-3 py-1 text-[0.6875rem] font-semibold rounded-full bg-white/10 backdrop-blur border border-white/20">
             {t("feed.follow")}
           </button>
         </div>
@@ -132,7 +132,7 @@ function Action({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <div className="flex flex-col items-center gap-1 text-white">
       {icon}
-      <span className="text-[11px] font-medium tnum">{label}</span>
+      <span className="text-[0.6875rem] font-medium tnum">{label}</span>
     </div>
   );
 }

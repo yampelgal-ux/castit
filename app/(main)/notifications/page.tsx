@@ -92,7 +92,7 @@ export default function NotificationsPage() {
             <Bell className="w-4 h-4 text-gold" />
             <span className="font-display text-lg">{t("notif.title")}</span>
             {unread > 0 && (
-              <span className="text-[10px] tnum bg-danger text-white rounded-full px-1.5 h-4 grid place-items-center">
+              <span className="text-[0.6875rem] tnum bg-danger text-white rounded-full px-1.5 h-4 grid place-items-center">
                 {unread}
               </span>
             )}
@@ -102,7 +102,7 @@ export default function NotificationsPage() {
           unread > 0 ? (
             <button
               onClick={() => { markAllRead(audience); reload(); }}
-              className="text-[11px] text-gold font-semibold"
+              className="text-[0.6875rem] text-gold font-semibold"
             >
               {t("common.markAllRead")}
             </button>
@@ -131,8 +131,8 @@ export default function NotificationsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold leading-snug">{n.title}</div>
-                      <div className="text-[11px] text-text-muted mt-0.5 leading-relaxed line-clamp-2">{n.body}</div>
-                      <div className="text-[10px] text-text-subtle mt-1 tnum">{timeAgo(n.createdAt)}</div>
+                      <div className="text-[0.6875rem] text-text-muted mt-0.5 leading-relaxed line-clamp-2">{n.body}</div>
+                      <div className="text-[0.6875rem] text-text-subtle mt-1 tnum">{timeAgo(n.createdAt)}</div>
                     </div>
                     {!n.read && (
                       <span className="w-2 h-2 rounded-full bg-gold shrink-0 mt-2" />

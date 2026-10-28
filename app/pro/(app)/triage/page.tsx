@@ -120,19 +120,19 @@ export default function ProTriagePage() {
               <div className="font-display text-2xl text-success font-bold">
                 {history.filter((h) => h.decision === "callback").length}
               </div>
-              <div className="text-[10px] text-text-muted mt-1">{t("tri.callback")}</div>
+              <div className="text-[0.6875rem] text-text-muted mt-1">{t("tri.callback")}</div>
             </div>
             <div className="text-center p-3 rounded-2xl bg-sage/10 border border-sage/30">
               <div className="font-display text-2xl text-sage font-bold">
                 {history.filter((h) => h.decision === "hold").length}
               </div>
-              <div className="text-[10px] text-text-muted mt-1">{t("tri.hold")}</div>
+              <div className="text-[0.6875rem] text-text-muted mt-1">{t("tri.hold")}</div>
             </div>
             <div className="text-center p-3 rounded-2xl bg-bg-elevated border border-border">
               <div className="font-display text-2xl text-text-muted font-bold">
                 {history.filter((h) => h.decision === "pass").length}
               </div>
-              <div className="text-[10px] text-text-muted mt-1">{t("tri.pass")}</div>
+              <div className="text-[0.6875rem] text-text-muted mt-1">{t("tri.pass")}</div>
             </div>
           </div>
           <div className="mt-8 flex gap-2 justify-center">
@@ -160,7 +160,7 @@ export default function ProTriagePage() {
           <button
             onClick={undo}
             disabled={history.length === 0}
-            className="text-[11px] text-text-muted disabled:opacity-40"
+            className="text-[0.6875rem] text-text-muted disabled:opacity-40"
           >
             {t("tri.undo")}
           </button>
@@ -247,7 +247,7 @@ export default function ProTriagePage() {
 
               {/* Round indicator */}
               {sub.tapes.length > 1 && (
-                <div className="absolute top-3 right-3 text-[9px] px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-white font-semibold tracking-wider">
+                <div className="absolute top-3 right-3 text-[0.6875rem] px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-white font-semibold tracking-wider">
                   {t("tri.round", { n: sub.tapes.length })}
                 </div>
               )}
@@ -263,7 +263,7 @@ export default function ProTriagePage() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="text-base font-semibold">{sub.talentName}</div>
-                  <div className="text-[11px] text-text-muted truncate">
+                  <div className="text-[0.6875rem] text-text-muted truncate">
                     {current.project.title} · {current.role.name}
                   </div>
                 </div>
@@ -277,7 +277,7 @@ export default function ProTriagePage() {
               </div>
 
               {sub.tapes.at(-1)?.note && (
-                <p className="text-[11px] text-text-muted leading-relaxed mt-3 line-clamp-3">
+                <p className="text-[0.6875rem] text-text-muted leading-relaxed mt-3 line-clamp-3">
                   &quot;{sub.tapes.at(-1)!.note}&quot;
                 </p>
               )}

@@ -27,7 +27,7 @@ export default function ShortlistPage() {
         right={saved.length > 0 && (
           <button
             onClick={() => { setShareOpen(true); haptic("light"); }}
-            className="text-[11px] text-gold font-semibold inline-flex items-center gap-1"
+            className="text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1"
           >
             <Share2 className="w-3 h-3" /> Share
           </button>
@@ -62,10 +62,10 @@ export default function ShortlistPage() {
                     <span className="font-semibold text-sm truncate">{t.name}</span>
                     {t.verified && <VerifiedBadge />}
                   </div>
-                  <p className="text-[11px] text-text-muted truncate mt-0.5">
+                  <p className="text-[0.6875rem] text-text-muted truncate mt-0.5">
                     {t.typecast.gender} · {t.typecast.ageRange[0]}–{t.typecast.ageRange[1]} · {t.typecast.heightCm}cm · {t.typecast.location}
                   </p>
-                  <div className="text-[10px] text-text-subtle mt-1 tnum">
+                  <div className="text-[0.6875rem] text-text-subtle mt-1 tnum">
                     {formatNumber(t.followers)} followers
                   </div>
                 </Link>

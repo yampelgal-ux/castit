@@ -48,13 +48,13 @@ export default function ComparePage() {
         back
         title="Compare"
         right={picked.length > 0 && (
-          <button onClick={() => setPicked([])} className="text-[11px] text-text-muted underline">Clear</button>
+          <button onClick={() => setPicked([])} className="text-[0.6875rem] text-text-muted underline">Clear</button>
         )}
       />
 
       <div className="px-5 pt-3 space-y-4">
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-gold">Side-by-side</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Side-by-side</div>
           <h1 className="font-display text-2xl tracking-editorial leading-tight">{role.name}</h1>
           <p className="text-text-muted text-sm mt-1">
             Pick 2–4 tapes to compare them next to each other.
@@ -71,7 +71,7 @@ export default function ComparePage() {
           <>
             {/* Picker */}
             <div className="rounded-2xl border border-border bg-bg-elevated p-3">
-              <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2 px-1">
+              <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2 px-1">
                 Tap to add ({picked.length}/4)
               </div>
               <div className="space-y-1.5 max-h-[35dvh] overflow-y-auto">
@@ -92,7 +92,7 @@ export default function ComparePage() {
                       <img src={s.talentPhoto} alt="" className="w-9 h-9 rounded-lg object-cover shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-semibold truncate">{s.talentName}</div>
-                        <div className="text-[10px] text-text-muted truncate">
+                        <div className="text-[0.6875rem] text-text-muted truncate">
                           {s.tapes.length > 0 ? `${s.tapes.length} tape${s.tapes.length > 1 ? "s" : ""}` : "no tape"}
                         </div>
                       </div>
@@ -162,7 +162,7 @@ function CompareCard({ s, i, onRemove }: { s: Submission; i: number; onRemove: (
         </div>
         <StageBadge stage={s.stage} />
         {s.tapes.length > 1 && (
-          <div className="text-[10px] text-text-muted">{s.tapes.length} rounds</div>
+          <div className="text-[0.6875rem] text-text-muted">{s.tapes.length} rounds</div>
         )}
       </div>
     </motion.div>

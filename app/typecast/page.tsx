@@ -1,4 +1,5 @@
 "use client";
+import { photoToDataUrl } from "@/lib/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -48,9 +49,8 @@ export default function TypecastPage() {
     else setStep(step - 1);
   }
 
-  function onPhoto(file: File) {
-    const url = URL.createObjectURL(file);
-    setProfile({ photoUrl: url });
+  async function onPhoto(file: File) {
+    try { setProfile({ photoUrl: await photoToDataUrl(file) }); } catch {}
   }
 
   // Photo block visible on physical/appearance steps
@@ -85,7 +85,7 @@ export default function TypecastPage() {
 
       {/* Mandatory ID notice */}
       <div className="px-6 pt-3">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gold/8 border border-gold/20 text-[11px] text-gold">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gold/8 border border-gold/20 text-[0.6875rem] text-gold">
           <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
           <span>Your typecast is your casting ID — required for verification</span>
         </div>
@@ -123,13 +123,13 @@ export default function TypecastPage() {
                 </span>
               </PhotoPicker>
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-widest text-gold mb-1">
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-1">
                   Your profile photo
                 </div>
                 <div className="text-sm font-medium leading-snug">
                   {profile.photoUrl ? "This is what casting pros will see." : "Tap to upload — needed for verification."}
                 </div>
-                <div className="text-[11px] text-text-muted mt-1">
+                <div className="text-[0.6875rem] text-text-muted mt-1">
                   Use a clear, recent headshot.
                 </div>
               </div>
@@ -137,7 +137,7 @@ export default function TypecastPage() {
           )}
         </AnimatePresence>
 
-        <div className="text-[11px] uppercase tracking-widest text-gold mb-2">{STEPS[step]}</div>
+        <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-2">{STEPS[step]}</div>
         <h2 className="font-display text-3xl leading-tight mb-1">
           {step === 0 && "The physical basics."}
           {step === 1 && "Your look."}
@@ -330,7 +330,7 @@ function Chips({
 function NumberBox({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div className="flex-1">
-      <div className="text-[10px] text-text-muted uppercase tracking-wider mb-1">{label}</div>
+      <div className="text-[0.6875rem] text-text-muted uppercase tracking-wider mb-1">{label}</div>
       <input
         type="number" value={value}
         onChange={(e) => onChange(Number(e.target.value))}

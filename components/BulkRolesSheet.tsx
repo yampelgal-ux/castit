@@ -136,7 +136,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
               >
                 <Camera className="w-5 h-5 text-gold" />
                 <span className="text-xs font-semibold">מצלמה</span>
-                <span className="text-[9px] text-text-subtle">צלם breakdown</span>
+                <span className="text-[0.6875rem] text-text-subtle">צלם breakdown</span>
               </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -144,7 +144,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
               >
                 <ImageIcon className="w-5 h-5 text-gold" />
                 <span className="text-xs font-semibold">גלריה</span>
-                <span className="text-[9px] text-text-subtle">צילום מסך</span>
+                <span className="text-[0.6875rem] text-text-subtle">צילום מסך</span>
               </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -152,7 +152,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
               >
                 <FileText className="w-5 h-5 text-gold" />
                 <span className="text-xs font-semibold">קובץ</span>
-                <span className="text-[9px] text-text-subtle">.txt / PDF</span>
+                <span className="text-[0.6875rem] text-text-subtle">.txt / PDF</span>
               </button>
             </div>
             <input
@@ -179,7 +179,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
               }}
             />
 
-            <div className="text-[10px] uppercase tracking-widest text-text-subtle text-center my-2">
+            <div className="text-[0.6875rem] uppercase tracking-widest text-text-subtle text-center my-2">
               או הדבק
             </div>
 
@@ -216,11 +216,11 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h2 className="font-display text-xl">סקור ואשר</h2>
-                <p className="text-[11px] text-text-muted mt-0.5">
+                <p className="text-[0.6875rem] text-text-muted mt-0.5">
                   זיהיתי <span className="text-gold font-semibold tnum">{parsed.length}</span> תפקידים · {keep.size} נבחרים
                 </p>
               </div>
-              <button onClick={() => setParsed(null)} className="text-[11px] text-text-muted">
+              <button onClick={() => setParsed(null)} className="text-[0.6875rem] text-text-muted">
                 התחל מחדש
               </button>
             </div>
@@ -258,17 +258,17 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
                         value={r.description}
                         onChange={(e) => patchRole(i, { description: e.target.value })}
                         rows={2}
-                        className="w-full mt-1 text-[11px] text-text-muted leading-relaxed bg-transparent resize-none outline-none"
+                        className="w-full mt-1 text-[0.6875rem] text-text-muted leading-relaxed bg-transparent resize-none outline-none"
                       />
                       {(r.payRange || r.shootDates) && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {r.shootDates && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">
+                            <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">
                               {r.shootDates}
                             </span>
                           )}
                           {r.payRange && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-bg-elevated border border-border text-gold">
+                            <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-bg-elevated border border-border text-gold">
                               {r.payRange}
                             </span>
                           )}

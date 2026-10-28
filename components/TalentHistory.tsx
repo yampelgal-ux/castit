@@ -67,7 +67,7 @@ export function TalentHistory({ talentId, talentName }: Props) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold">Your history with {talentName.split(" ")[0]}</div>
-          <div className="text-[10px] text-text-muted mt-0.5">
+          <div className="text-[0.6875rem] text-text-muted mt-0.5">
             <span className="tnum">{stats.total}</span> audition{stats.total !== 1 ? "s" : ""}
             {stats.booked > 0 && <span className="text-success font-semibold"> · {stats.booked} booked</span>}
             {stats.callback > 0 && <span className="text-gold font-semibold"> · {stats.callback} in pipeline</span>}
@@ -134,11 +134,11 @@ function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
               <div className="text-sm font-semibold truncate">
                 {project?.title ?? "Project"}
               </div>
-              <div className="text-[10px] text-text-muted truncate">
+              <div className="text-[0.6875rem] text-text-muted truncate">
                 as {role?.name ?? "—"} · {date}
               </div>
             </div>
-            <span className={cn("text-[9px] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap", toneCls)}>
+            <span className={cn("text-[0.6875rem] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap", toneCls)}>
               {meta.label}
             </span>
           </div>
@@ -163,7 +163,7 @@ function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
             })}
           </div>
 
-          <div className="flex items-center gap-2 mt-2 text-[10px] text-text-muted">
+          <div className="flex items-center gap-2 mt-2 text-[0.6875rem] text-text-muted">
             {tapeCount > 0 && (
               <span className="inline-flex items-center gap-1">
                 <FileVideo className="w-3 h-3" /> {tapeCount} tape{tapeCount > 1 ? "s" : ""}
@@ -187,7 +187,7 @@ function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
             {project && role && (
               <Link
                 href={`/pro/projects/${project.id}/role/${role.id}/submission/${sub.id}`}
-                className="ml-auto text-[10px] text-gold font-semibold"
+                className="ml-auto text-[0.6875rem] text-gold font-semibold"
               >
                 Open →
               </Link>

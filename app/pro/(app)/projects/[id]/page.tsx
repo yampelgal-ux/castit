@@ -64,11 +64,11 @@ export default function ProjectDetailPage() {
       >
         <div className="absolute inset-0 flex flex-col justify-end p-5">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase tracking-widest text-white/80 font-semibold">
+            <span className="text-[0.6875rem] uppercase tracking-widest text-white/80 font-semibold">
               {project.type} · {project.studio}
             </span>
             {project.mode === "quick" && (
-              <span className="inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full bg-plum/40 text-white font-bold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 text-[0.6875rem] px-2 py-0.5 rounded-full bg-plum/40 text-white font-bold uppercase tracking-wider">
                 <Zap className="w-2.5 h-2.5" /> Quick Cast
               </span>
             )}
@@ -89,13 +89,13 @@ export default function ProjectDetailPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowBulk(true)}
-              className="text-[11px] text-gold font-semibold inline-flex items-center gap-1"
+              className="text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1"
             >
               <Wand2 className="w-3 h-3" /> AI Bulk
             </button>
             <button
               onClick={() => setShowNew(true)}
-              className="text-[11px] text-gold font-semibold inline-flex items-center gap-1"
+              className="text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1"
             >
               <Plus className="w-3 h-3" /> Add role
             </button>
@@ -135,7 +135,7 @@ export default function ProjectDetailPage() {
             </div>
             <div className="flex-1">
               <div className="text-sm font-semibold">Chemistry mode</div>
-              <div className="text-[10px] text-text-muted">Pair tapes from two roles side-by-side to test the match.</div>
+              <div className="text-[0.6875rem] text-text-muted">Pair tapes from two roles side-by-side to test the match.</div>
             </div>
             <ArrowRight className="w-4 h-4 text-gold" />
           </Link>
@@ -194,8 +194,8 @@ function RoleCard({ role, i, onDelete }: { role: Role; i: number; onDelete: () =
               <h3 className="font-semibold text-sm truncate">{role.name}</h3>
               <ChevronRight className="w-4 h-4 text-text-muted shrink-0" />
             </div>
-            <p className="text-[11px] text-text-muted leading-relaxed line-clamp-2 mt-0.5">{role.description}</p>
-            <div className="flex items-center gap-3 mt-2 text-[10px] flex-wrap">
+            <p className="text-[0.6875rem] text-text-muted leading-relaxed line-clamp-2 mt-0.5">{role.description}</p>
+            <div className="flex items-center gap-3 mt-2 text-[0.6875rem] flex-wrap">
               <span className="inline-flex items-center gap-1 text-text-muted">
                 <FileVideo className="w-3 h-3" /> {c.total} {c.total === 1 ? "submission" : "submissions"}
               </span>
@@ -208,7 +208,7 @@ function RoleCard({ role, i, onDelete }: { role: Role; i: number; onDelete: () =
       </Link>
       <button
         onClick={onDelete}
-        className="w-full h-8 text-[10px] text-text-muted border-t border-border hover:text-danger"
+        className="w-full h-8 text-[0.6875rem] text-text-muted border-t border-border hover:text-danger"
       >
         Remove role
       </button>
@@ -347,8 +347,8 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
 function Sect({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-widest text-text-muted">{label}</div>
-      {hint && <div className="text-[10px] text-text-subtle mt-0.5">{hint}</div>}
+      <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">{label}</div>
+      {hint && <div className="text-[0.6875rem] text-text-subtle mt-0.5">{hint}</div>}
       <div className="mt-1">{children}</div>
     </div>
   );

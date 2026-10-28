@@ -40,11 +40,11 @@ export default function AuditionDetailPage() {
       <div className="px-5 pt-3 space-y-5">
         {/* Brief */}
         <div className="rounded-2xl bg-bg-elevated border border-border p-4">
-          <div className="text-[10px] uppercase tracking-widest text-gold">{a.type}</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{a.type}</div>
           <h2 className="font-display text-2xl tracking-editorial mt-0.5">{a.title}</h2>
-          <p className="text-[11px] text-text-muted mt-1">{a.studio}</p>
+          <p className="text-[0.6875rem] text-text-muted mt-1">{a.studio}</p>
 
-          <div className="flex flex-wrap gap-3 text-[11px] text-text-muted mt-3">
+          <div className="flex flex-wrap gap-3 text-[0.6875rem] text-text-muted mt-3">
             <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {a.location}</span>
             <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> by {a.deadline}</span>
             {a.shootDates && <span className="inline-flex items-center gap-1"><Calendar className="w-3 h-3" /> {a.shootDates}</span>}
@@ -55,7 +55,7 @@ export default function AuditionDetailPage() {
 
           {a.selfTapeInstructions && (
             <div className="mt-4 pt-4 border-t border-border">
-              <div className="text-[10px] uppercase tracking-widest text-gold mb-1">Self-tape</div>
+              <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-1">Self-tape</div>
               <p className="text-xs leading-relaxed">{a.selfTapeInstructions}</p>
             </div>
           )}
@@ -71,7 +71,7 @@ export default function AuditionDetailPage() {
               <Rocket className="w-4 h-4 text-gold" />
             </div>
             <div className="text-sm font-semibold">Boost</div>
-            <div className="text-[10px] text-text-muted mt-0.5">Reach 24K+ talents fast</div>
+            <div className="text-[0.6875rem] text-text-muted mt-0.5">Reach 24K+ talents fast</div>
           </Link>
           <Link
             href={`/pro/audition/${a.id}/broadcast`}
@@ -81,14 +81,14 @@ export default function AuditionDetailPage() {
               <Send className="w-4 h-4 text-plum-light" />
             </div>
             <div className="text-sm font-semibold">Broadcast invite</div>
-            <div className="text-[10px] text-text-muted mt-0.5">DM the {passing.length} best fits</div>
+            <div className="text-[0.6875rem] text-text-muted mt-0.5">DM the {passing.length} best fits</div>
           </Link>
         </div>
 
         {/* Target criteria summary */}
         {Object.values(a.targetTypecast).some((v) => v && (Array.isArray(v) ? v.length : true)) && (
           <div className="rounded-2xl bg-plum/10 border border-plum-light/20 p-4">
-            <div className="text-[10px] uppercase tracking-widest text-plum-light font-semibold mb-2">Target typecast</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-plum-light font-semibold mb-2">Target typecast</div>
             <div className="flex flex-wrap gap-1.5">
               {a.targetTypecast.gender?.map((g) => <Tag key={g}>{g}</Tag>)}
               {a.targetTypecast.ageRange && <Tag>{a.targetTypecast.ageRange[0]}–{a.targetTypecast.ageRange[1]} yrs</Tag>}
@@ -111,7 +111,7 @@ export default function AuditionDetailPage() {
             <h3 className="text-xs uppercase tracking-widest text-text-muted">
               Matching talent <span className="text-text font-semibold tnum">({passing.length})</span>
             </h3>
-            <Link href="/pro/search" className="text-[11px] text-gold font-semibold">All talent →</Link>
+            <Link href="/pro/search" className="text-[0.6875rem] text-gold font-semibold">All talent →</Link>
           </div>
 
           <div className="space-y-2.5">
@@ -129,19 +129,19 @@ export default function AuditionDetailPage() {
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-sm truncate">{t.name}</span>
                       <span className={cn(
-                        "text-[10px] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap",
+                        "text-[0.6875rem] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap",
                         m.score >= 85 ? "bg-success/15 text-success border-success/30"
                           : m.score >= 65 ? "bg-gold/15 text-gold border-gold/30"
                           : "bg-bg text-text-muted border-border"
                       )}>{m.score}% match</span>
                     </div>
-                    <p className="text-[11px] text-text-muted truncate mt-0.5">
+                    <p className="text-[0.6875rem] text-text-muted truncate mt-0.5">
                       {t.typecast.gender} · {t.typecast.ageRange[0]}–{t.typecast.ageRange[1]} · {t.typecast.heightCm}cm · {t.typecast.location}
                     </p>
                   </div>
                   <Link
                     href={`/messages?with=${t.id}&name=${encodeURIComponent(t.name)}`}
-                    className="h-8 px-3 rounded-full bg-gold text-on-accent text-[11px] font-semibold inline-flex items-center gap-1"
+                    className="h-8 px-3 rounded-full bg-gold text-on-accent text-[0.6875rem] font-semibold inline-flex items-center gap-1"
                   >
                     <MessageCircle className="w-3 h-3" /> Invite
                   </Link>
@@ -157,7 +157,7 @@ export default function AuditionDetailPage() {
 
 function Tag({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-[10px] px-2 py-1 rounded-full bg-bg-elevated border border-border text-text-muted">
+    <span className="text-[0.6875rem] px-2 py-1 rounded-full bg-bg-elevated border border-border text-text-muted">
       {children}
     </span>
   );

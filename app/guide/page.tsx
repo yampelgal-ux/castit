@@ -114,7 +114,7 @@ export default function GuidePage() {
           <div className="font-display text-4xl font-black tracking-editorial">
             Cast<span className="text-gold">It</span>
           </div>
-          <div className="text-[11px] uppercase tracking-[0.25em] text-gold font-semibold mt-2">
+          <div className="text-[0.6875rem] uppercase tracking-[0.25em] text-gold font-semibold mt-2">
             מדריך למלהק/ת
           </div>
           <h1 className="font-display text-3xl tracking-editorial leading-tight mt-3">
@@ -150,7 +150,7 @@ export default function GuidePage() {
                   <s.icon className="w-5 h-5 text-gold" />
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">
+                  <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">
                     שלב {s.n}
                   </div>
                   <h2 className="font-display text-xl tracking-editorial leading-none">{s.title}</h2>
@@ -162,7 +162,7 @@ export default function GuidePage() {
                   {s.bullets.map((b, j) => (
                     <div key={j} className="flex items-start gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-gold/70 shrink-0 mt-0.5" />
-                      <span className="text-[13px] text-text-muted leading-relaxed">{b}</span>
+                      <span className="text-[0.8125rem] text-text-muted leading-relaxed">{b}</span>
                     </div>
                   ))}
                 </div>
@@ -183,7 +183,7 @@ export default function GuidePage() {
         <div className="rounded-3xl bg-gradient-to-br from-plum/15 to-bg-elevated border border-plum/30 p-5">
           <div className="flex items-center gap-2 mb-1.5">
             <Sparkles className="w-4 h-4 text-plum-light" />
-            <div className="text-[10px] uppercase tracking-widest text-plum-light font-semibold">טיפ</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-plum-light font-semibold">טיפ</div>
           </div>
           <h3 className="font-display text-lg">צריכה 50 ניצבים מהר?</h3>
           <p className="text-sm text-text-muted leading-relaxed mt-1">
@@ -202,7 +202,7 @@ export default function GuidePage() {
           >
             <FolderOpen className="w-4 h-4" /> כניסה לסביבת העבודה
           </Link>
-          <div className="mt-6 text-[11px] text-text-subtle">
+          <div className="mt-6 text-[0.6875rem] text-text-subtle">
             <span className="font-display text-gold">Cast</span>It · פחות לוגיסטיקה, יותר ליהוק
           </div>
         </div>

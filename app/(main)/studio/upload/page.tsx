@@ -4,14 +4,13 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Upload, Film, X, Check, AlertCircle, Camera, Image as ImageIcon } from "lucide-react";
 import { Header } from "@/components/Header";
-import { useStore } from "@/lib/store";
-import { uploadReel } from "@/lib/db";
+import { useMyReels, MAX_REEL_BYTES } from "@/lib/reels-store";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 export default function UploadReelPage() {
   const router = useRouter();
-  const { userId } = useStore();
+  const addReel = useMyReels((s) => s.add);
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -25,11 +24,11 @@ export default function UploadReelPage() {
     const f = e.target.files?.[0];
     if (!f) return;
     if (!f.type.startsWith("video/")) {
-      setError("Only video files are supported.");
+      setError("אפשר להעלות רק קובצי וידאו (MP4, MOV).");
       return;
     }
-    if (f.size > 100 * 1024 * 1024) {
-      setError("Max file size is 100MB.");
+    if (f.size > MAX_REEL_BYTES) {
+      setError("הקובץ גדול מ-200MB. כדאי לקצר או לכווץ אותו ולנסות שוב.");
       return;
     }
     setError("");
@@ -48,7 +47,12 @@ export default function UploadReelPage() {
       setProgress((p) => Math.min(p + Math.random() * 12, 92));
     }, 300);
 
-    const { error: upError } = await uploadReel(file, userId ?? "anon", caption);
+    let upError: string | null = null;
+    try {
+      await addReel(file, caption);
+    } catch (e) {
+      upError = e instanceof Error ? e.message : "ההעלאה נכשלה. נסו שוב.";
+    }
     clearInterval(interval);
     setProgress(100);
 
@@ -60,7 +64,7 @@ export default function UploadReelPage() {
     }
     setState("done");
     haptic("success");
-    setTimeout(() => router.push("/profile/me"), 1200);
+    setTimeout(() => router.push("/settings#videos"), 1200);
   }
 
   function reset() {
@@ -73,14 +77,14 @@ export default function UploadReelPage() {
 
   return (
     <div className="min-h-dvh flex flex-col bg-bg">
-      <Header back title="New reel" />
+      <Header back title="סרטון חדש" />
 
       <div className="flex-1 px-5 pt-4 pb-6 flex flex-col">
         {!file ? (
           <div className="flex-1 flex flex-col gap-3">
             <div className="text-center mb-2">
               <p className="font-display text-2xl tracking-editorial">איך תרצה ליצור את הריל?</p>
-              <p className="text-xs text-text-muted mt-1">MP4 / MOV · עד 100MB · מומלץ פורמט אנכי</p>
+              <p className="text-xs text-text-muted mt-1">MP4 / MOV · עד 200MB · מומלץ פורמט אנכי</p>
             </div>
 
             {/* Option 1: Camera — opens phone camera directly */}
@@ -93,7 +97,7 @@ export default function UploadReelPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-display text-lg">צלם עם המצלמה</div>
-                <div className="text-[11px] text-text-muted">פתיחת מצלמת הטלפון להקלטה ישירה</div>
+                <div className="text-[0.6875rem] text-text-muted">פתיחת מצלמת הטלפון להקלטה ישירה</div>
               </div>
             </button>
 
@@ -107,11 +111,11 @@ export default function UploadReelPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-display text-lg">בחר מהגלריה / קבצים</div>
-                <div className="text-[11px] text-text-muted">סרטון שכבר צילמת — במכשיר או ב-Cloud</div>
+                <div className="text-[0.6875rem] text-text-muted">סרטון שכבר צילמת — במכשיר או ב-Cloud</div>
               </div>
             </button>
 
-            <div className="text-[10px] text-text-subtle text-center mt-3 leading-relaxed">
+            <div className="text-[0.6875rem] text-text-subtle text-center mt-3 leading-relaxed">
               צילמת במצלמה מקצועית? בחר "גלריה / קבצים" והעלה את ה-MP4 הסופי.
             </div>
           </div>
@@ -136,7 +140,7 @@ export default function UploadReelPage() {
                       transition={{ duration: 0.3 }}
                     />
                   </div>
-                  <p className="text-[11px] text-white/80 mt-2 tnum">{Math.round(progress)}% uploaded</p>
+                  <p className="text-[0.6875rem] text-white/80 mt-2 tnum">{Math.round(progress)}% uploaded</p>
                 </div>
               )}
               {state === "done" && (
@@ -154,7 +158,7 @@ export default function UploadReelPage() {
             </div>
 
             <div className="mt-5">
-              <label className="text-[10px] uppercase tracking-wider text-text-muted">Caption</label>
+              <label className="text-[0.6875rem] uppercase tracking-wider text-text-muted">Caption</label>
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
@@ -163,7 +167,7 @@ export default function UploadReelPage() {
                 rows={3}
                 className="mt-1.5 w-full px-4 py-3 rounded-2xl bg-bg-elevated border border-border outline-none text-sm focus:border-gold/40 resize-none disabled:opacity-60"
               />
-              <div className="text-[10px] text-text-subtle text-right mt-1 tnum">{caption.length}/280</div>
+              <div className="text-[0.6875rem] text-text-subtle text-right mt-1 tnum">{caption.length}/280</div>
             </div>
           </>
         )}

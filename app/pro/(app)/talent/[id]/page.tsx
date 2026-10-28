@@ -77,7 +77,7 @@ export default function TalentDossierPage() {
         right={
           <Link
             href={`/profile/${talent.username}`}
-            className="text-[11px] text-gold font-semibold"
+            className="text-[0.6875rem] text-gold font-semibold"
           >
             פרופיל
           </Link>
@@ -93,10 +93,10 @@ export default function TalentDossierPage() {
               <h1 className="font-display text-xl tracking-editorial truncate">{talent.name}</h1>
               {talent.verified && <VerifiedBadge />}
             </div>
-            <p className="text-[11px] text-text-muted truncate">
+            <p className="text-[0.6875rem] text-text-muted truncate">
               {talent.typecast.gender} · {talent.typecast.ageRange[0]}–{talent.typecast.ageRange[1]} · {talent.typecast.heightCm}cm · {talent.typecast.location}
             </p>
-            <div className="text-[10px] text-text-subtle mt-1 tnum">
+            <div className="text-[0.6875rem] text-text-subtle mt-1 tnum">
               {formatNumber(talent.followers)} followers
             </div>
           </div>
@@ -106,10 +106,10 @@ export default function TalentDossierPage() {
       {/* Skills + languages chips */}
       <div className="px-5 mt-3 flex flex-wrap gap-1.5">
         {talent.typecast.languages.map((l) => (
-          <span key={l} className="text-[9px] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">{l}</span>
+          <span key={l} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">{l}</span>
         ))}
         {talent.typecast.skills.slice(0, 6).map((s) => (
-          <span key={s} className="text-[9px] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-gold">{s}</span>
+          <span key={s} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-gold">{s}</span>
         ))}
       </div>
 
@@ -144,7 +144,7 @@ export default function TalentDossierPage() {
 
       {/* History — every submission ever */}
       <div className="px-5 mt-5">
-        <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2 inline-flex items-center gap-1.5">
+        <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2 inline-flex items-center gap-1.5">
           <History className="w-3 h-3" /> ההיסטוריה שלך עם {talent.name.split(" ")[0]}
         </div>
         {!loaded ? null : entries.length === 0 ? (
@@ -168,7 +168,7 @@ function KPI({ label, value, tone }: { label: string; value: number | string; to
   return (
     <div className="rounded-xl bg-bg-elevated border border-border p-2.5 text-center">
       <div className={`font-display text-base font-bold tnum ${cls}`}>{value}</div>
-      <div className="text-[9px] uppercase tracking-wider text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{label}</div>
     </div>
   );
 }
@@ -198,13 +198,13 @@ function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="text-sm font-semibold truncate">{project.title}</div>
-                <div className="text-[10px] text-text-muted truncate">
+                <div className="text-[0.6875rem] text-text-muted truncate">
                   as {role.name} · {date}
                 </div>
               </div>
               <StageBadge stage={sub.stage} />
             </div>
-            <div className="flex items-center gap-3 mt-1.5 text-[10px] text-text-muted">
+            <div className="flex items-center gap-3 mt-1.5 text-[0.6875rem] text-text-muted">
               {tapeCount > 0 && (
                 <span className="inline-flex items-center gap-1">
                   <FileVideo className="w-3 h-3" /> {tapeCount} tape{tapeCount > 1 ? "s" : ""}

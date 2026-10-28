@@ -40,12 +40,12 @@ export default function ProApprovalsPage() {
           step === "list" ? (
             <button
               onClick={() => setStep("build")}
-              className="text-[11px] text-gold font-semibold inline-flex items-center gap-1"
+              className="text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1"
             >
               <Plus className="w-3 h-3" /> {t("ap.new")}
             </button>
           ) : (
-            <button onClick={() => setStep("list")} className="text-[11px] text-text-muted">
+            <button onClick={() => setStep("list")} className="text-[0.6875rem] text-text-muted">
               {t("ap.back")}
             </button>
           )
@@ -121,10 +121,10 @@ function SessionRow({ session, i, onChange }: { session: ApprovalSession; i: num
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">Review</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">Review</div>
             <h3 className="font-display text-base leading-tight mt-0.5 truncate">{session.projectTitle}</h3>
             {session.roleName && (
-              <p className="text-[11px] text-text-muted truncate">{session.roleName}</p>
+              <p className="text-[0.6875rem] text-text-muted truncate">{session.roleName}</p>
             )}
           </div>
           <button onClick={remove} className="text-text-muted">
@@ -139,7 +139,7 @@ function SessionRow({ session, i, onChange }: { session: ApprovalSession; i: num
           <Stat label="No"    value={counts.no}    tone="danger" />
         </div>
 
-        <div className="text-[10px] text-text-subtle mt-3">
+        <div className="text-[0.6875rem] text-text-subtle mt-3">
           {session.views.length} views · {counts.yes + counts.maybe + counts.no}/{counts.total} voted
         </div>
       </div>
@@ -168,7 +168,7 @@ function Stat({ label, value, tone }: { label: string; value: number; tone: "gol
   return (
     <div className="text-center">
       <div className={cn("font-display text-base tnum", cls)}>{value}</div>
-      <div className="text-[9px] uppercase tracking-wider text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{label}</div>
     </div>
   );
 }
@@ -289,7 +289,7 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
                 <img src={s.talentPhoto} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold truncate">{s.talentName}</div>
-                  <div className="text-[10px] text-text-muted">
+                  <div className="text-[0.6875rem] text-text-muted">
                     {s.tapes.length} round{s.tapes.length > 1 ? "s" : ""} · {s.stage}
                   </div>
                 </div>
@@ -325,5 +325,5 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <div className="text-[10px] uppercase tracking-widest text-text-muted">{children}</div>;
+  return <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">{children}</div>;
 }

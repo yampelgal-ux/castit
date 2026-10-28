@@ -136,7 +136,7 @@ export function CreateShareLinkSheet({ open, onClose, talentIds }: Props) {
 
                 <button
                   onClick={onClose}
-                  className="mt-4 w-full text-[11px] text-text-muted underline"
+                  className="mt-4 w-full text-[0.6875rem] text-text-muted underline"
                 >
                   Done
                 </button>
@@ -145,7 +145,7 @@ export function CreateShareLinkSheet({ open, onClose, talentIds }: Props) {
               <>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-gold flex items-center gap-1.5">
+                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold flex items-center gap-1.5">
                       <Share2 className="w-3 h-3" /> Share shortlist
                     </div>
                     <h2 className="font-display text-xl">
@@ -169,7 +169,7 @@ export function CreateShareLinkSheet({ open, onClose, talentIds }: Props) {
                     />
                   ))}
                   {previews.length > 8 && (
-                    <span className="w-9 h-9 rounded-full bg-bg border-2 border-bg-elevated grid place-items-center text-[10px] font-semibold text-text-muted">
+                    <span className="w-9 h-9 rounded-full bg-bg border-2 border-bg-elevated grid place-items-center text-[0.6875rem] font-semibold text-text-muted">
                       +{previews.length - 8}
                     </span>
                   )}
@@ -213,7 +213,7 @@ export function CreateShareLinkSheet({ open, onClose, talentIds }: Props) {
                             key={r.id}
                             onClick={() => setRoleId(r.id === roleId ? "" : r.id)}
                             className={cn(
-                              "h-8 px-3 rounded-full text-[11px] font-semibold border",
+                              "h-8 px-3 rounded-full text-[0.6875rem] font-semibold border",
                               roleId === r.id ? "bg-gold text-on-accent border-gold" : "bg-bg text-text border-border"
                             )}
                           >{r.name}</button>
@@ -230,7 +230,7 @@ export function CreateShareLinkSheet({ open, onClose, talentIds }: Props) {
                       key={opt.label}
                       onClick={() => setExpiryDays(opt.days)}
                       className={cn(
-                        "h-8 px-3 rounded-full text-[11px] font-semibold border",
+                        "h-8 px-3 rounded-full text-[0.6875rem] font-semibold border",
                         expiryDays === opt.days ? "bg-gold text-on-accent border-gold" : "bg-bg text-text border-border"
                       )}
                     >{opt.label}</button>
@@ -258,7 +258,7 @@ export function CreateShareLinkSheet({ open, onClose, talentIds }: Props) {
 
 function Label({ children, icon: Icon, className }: { children: React.ReactNode; icon?: any; className?: string }) {
   return (
-    <div className={cn("flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-text-muted", className)}>
+    <div className={cn("flex items-center gap-1.5 text-[0.6875rem] uppercase tracking-widest text-text-muted", className)}>
       {Icon && <Icon className="w-3 h-3" />}
       {children}
     </div>

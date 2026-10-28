@@ -46,11 +46,11 @@ export default function PublicAuditionPage() {
 
       <div className="px-5 pt-3 space-y-4">
         <div className="rounded-2xl bg-bg-elevated border border-border p-5">
-          <div className="text-[10px] uppercase tracking-widest text-gold">{a.type}</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{a.type}</div>
           <h1 className="font-display text-2xl tracking-editorial mt-0.5">{a.title}</h1>
-          <p className="text-[12px] text-text-muted mt-1">{a.studio}</p>
+          <p className="text-[0.75rem] text-text-muted mt-1">{a.studio}</p>
 
-          <div className="flex flex-wrap gap-3 text-[11px] text-text-muted mt-4">
+          <div className="flex flex-wrap gap-3 text-[0.6875rem] text-text-muted mt-4">
             <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {a.location}</span>
             <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> by {a.deadline}</span>
             {a.shootDates && <span className="inline-flex items-center gap-1"><Calendar className="w-3 h-3" /> {a.shootDates}</span>}
@@ -58,18 +58,18 @@ export default function PublicAuditionPage() {
           </div>
 
           <div className="mt-4 pt-4 border-t border-border">
-            <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5">About the role</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1.5">About the role</div>
             <p className="text-sm leading-relaxed">{a.description}</p>
           </div>
 
           {a.selfTapeInstructions && (
             <div className="mt-4 pt-4 border-t border-border">
-              <div className="text-[10px] uppercase tracking-widest text-gold mb-1.5">Self-tape instructions</div>
+              <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-1.5">Self-tape instructions</div>
               <p className="text-sm leading-relaxed text-text">{a.selfTapeInstructions}</p>
             </div>
           )}
 
-          <div className="mt-4 pt-4 border-t border-border text-[11px] text-text-muted tnum">
+          <div className="mt-4 pt-4 border-t border-border text-[0.6875rem] text-text-muted tnum">
             {a.applicants} talent{a.applicants !== 1 ? "s" : ""} applied so far
           </div>
         </div>

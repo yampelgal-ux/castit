@@ -18,7 +18,7 @@ export function StageBadge({ stage, size = "sm" }: { stage: Stage; size?: "sm" |
     <span className={cn(
       "rounded-full border font-semibold uppercase tracking-wider whitespace-nowrap",
       TONES[m.tone],
-      size === "sm" ? "text-[9px] px-1.5 py-0.5" : "text-[10px] px-2.5 py-1",
+      size === "sm" ? "text-[0.6875rem] px-1.5 py-0.5" : "text-[0.6875rem] px-2.5 py-1",
     )}>
       {m.label}
     </span>

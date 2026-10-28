@@ -116,7 +116,7 @@ export default function ProfilePage() {
             {isMe && streak > 0 && (
               <div className="ml-1 flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/30">
                 <Flame className="w-3 h-3 text-orange-400" />
-                <span className="text-[10px] font-bold text-orange-400 tnum">{streak}</span>
+                <span className="text-[0.6875rem] font-bold text-orange-400 tnum">{streak}</span>
               </div>
             )}
           </div>
@@ -140,7 +140,7 @@ export default function ProfilePage() {
                   typecast: talent.typecast as any,
                 }}
                 action={
-                  <button onClick={() => setShowEdit(true)} className="text-[11px] text-gold font-semibold">
+                  <button onClick={() => setShowEdit(true)} className="text-[0.6875rem] text-gold font-semibold">
                     Complete →
                   </button>
                 }
@@ -156,7 +156,7 @@ export default function ProfilePage() {
                   <Eye className="w-4 h-4 text-gold" />
                   <span className="text-xs font-semibold text-gold">Who viewed you</span>
                 </div>
-                <span className="text-[10px] text-text-muted tnum">12 this week</span>
+                <span className="text-[0.6875rem] text-text-muted tnum">12 this week</span>
               </div>
               <div className="flex items-center gap-2">
                 {MOCK_VIEWERS.map((v, i) => (
@@ -178,8 +178,8 @@ export default function ProfilePage() {
                     </div>
                     {i < 2 && (
                       <>
-                        <span className="text-[10px] font-medium truncate w-full text-center">{v.name}</span>
-                        <span className="text-[9px] text-text-muted truncate w-full text-center">{v.role}</span>
+                        <span className="text-[0.6875rem] font-medium truncate w-full text-center">{v.name}</span>
+                        <span className="text-[0.6875rem] text-text-muted truncate w-full text-center">{v.role}</span>
                       </>
                     )}
                   </div>
@@ -280,7 +280,7 @@ export default function ProfilePage() {
               {(myReels.length ? myReels : REELS.slice(0, 6)).map((r) => (
                 <div key={r.id} className="aspect-[3/4] rounded-md overflow-hidden bg-bg-elevated relative">
                   <img src={r.poster} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute bottom-1 left-1 text-[10px] text-white font-semibold drop-shadow tnum">▶ {formatNumber(r.likes)}</div>
+                  <div className="absolute bottom-1 left-1 text-[0.6875rem] text-white font-semibold drop-shadow tnum">▶ {formatNumber(r.likes)}</div>
                 </div>
               ))}
             </div>
@@ -416,7 +416,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div className="font-display text-xl tnum">{value}</div>
-      <div className="text-[10px] uppercase tracking-wider text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{label}</div>
     </div>
   );
 }
@@ -426,8 +426,8 @@ function TypecastCard({ talent }: { talent: any }) {
   return (
     <div className="rounded-3xl p-6 bg-gradient-to-br from-bg-elevated to-bg border border-border">
       <div className="flex items-center justify-between mb-5">
-        <div className="text-[10px] uppercase tracking-widest text-gold">Typecast Card</div>
-        <div className="text-[10px] text-text-muted tnum">@{talent.username}</div>
+        <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Typecast Card</div>
+        <div className="text-[0.6875rem] text-text-muted tnum">@{talent.username}</div>
       </div>
       <div className="grid grid-cols-2 gap-y-5">
         <Field icon={Ruler} label="Height" value={`${tc.heightCm} cm`} />
@@ -440,14 +440,14 @@ function TypecastCard({ talent }: { talent: any }) {
         <Field icon={Languages} label="Hair length" value={tc.hairLength} />
       </div>
       <div className="mt-6 pt-5 border-t border-border">
-        <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2">Languages</div>
+        <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">Languages</div>
         <div className="flex flex-wrap gap-1.5">
           {tc.languages.map((l: string) => <TypecastBadge key={l}>{l}</TypecastBadge>)}
         </div>
       </div>
       {tc.skills?.length > 0 && (
         <div className="mt-5">
-          <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2">Skills</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">Skills</div>
           <div className="flex flex-wrap gap-1.5">
             {tc.skills.map((s: string) => <TypecastBadge key={s}>{s}</TypecastBadge>)}
           </div>
@@ -455,7 +455,7 @@ function TypecastCard({ talent }: { talent: any }) {
       )}
       {tc.genres?.length > 0 && (
         <div className="mt-5">
-          <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2">Genres</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">Genres</div>
           <div className="flex flex-wrap gap-1.5">
             {tc.genres.map((g: string) => <TypecastBadge key={g}>{g}</TypecastBadge>)}
           </div>
@@ -468,7 +468,7 @@ function TypecastCard({ talent }: { talent: any }) {
 function Field({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1 flex items-center gap-1">
+      <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1 flex items-center gap-1">
         <Icon className="w-2.5 h-2.5" /> {label}
       </div>
       <div className="font-display text-lg leading-none">{value}</div>
@@ -479,7 +479,7 @@ function Field({ icon: Icon, label, value }: { icon: any; label: string; value: 
 function ColorField({ label, color, paletteName }: { label: string; color: string; paletteName: string }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1.5">{label}</div>
       <div className="flex items-center gap-2">
         <span
           className="w-6 h-6 rounded-full border border-white/10 shadow-[inset_-2px_-3px_5px_rgba(0,0,0,0.3),inset_2px_2px_4px_rgba(255,255,255,0.12)]"

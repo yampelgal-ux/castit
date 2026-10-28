@@ -73,10 +73,10 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
     <div className="rounded-2xl bg-gradient-to-br from-gold/8 via-bg-elevated to-plum/8 border border-gold/30 overflow-hidden">
       <div className="px-4 pt-3 pb-2 flex items-center gap-2">
         <Sparkles className="w-4 h-4 text-gold" />
-        <span className="text-[10px] uppercase tracking-widest text-gold font-semibold">Describe the role</span>
+        <span className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">Describe the role</span>
         <button
           onClick={onOpenManual}
-          className="ml-auto text-[10px] text-text-muted inline-flex items-center gap-1 hover:text-text"
+          className="ml-auto text-[0.6875rem] text-text-muted inline-flex items-center gap-1 hover:text-text"
         >
           <Settings2 className="w-3 h-3" /> Manual filters
         </button>
@@ -117,7 +117,7 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mt-2 px-3 py-2 rounded-xl bg-danger/10 border border-danger/30 text-[11px] text-danger flex items-start gap-1.5"
+              className="mt-2 px-3 py-2 rounded-xl bg-danger/10 border border-danger/30 text-[0.6875rem] text-danger flex items-start gap-1.5"
             >
               <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {error}
             </motion.div>
@@ -130,7 +130,7 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
               exit={{ opacity: 0 }}
               className="mt-3 rounded-2xl bg-bg border border-border p-3"
             >
-              <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5">
+              <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1.5">
                 Aria understood {demo && <span className="text-text-subtle">· demo</span>}
               </div>
               {chips.length === 0 ? (
@@ -140,14 +140,14 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {chips.map((c) => (
-                    <span key={c} className="h-7 px-2.5 rounded-full bg-gold/10 border border-gold/30 text-gold text-[11px] inline-flex items-center">
+                    <span key={c} className="h-7 px-2.5 rounded-full bg-gold/10 border border-gold/30 text-gold text-[0.6875rem] inline-flex items-center">
                       {c}
                     </span>
                   ))}
                 </div>
               )}
               {parsed.notes && (
-                <p className="text-[10px] text-text-subtle mt-2 italic">
+                <p className="text-[0.6875rem] text-text-subtle mt-2 italic">
                   Note: {parsed.notes}
                 </p>
               )}
@@ -164,13 +164,13 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
                 </button>
                 <button
                   onClick={onOpenManual}
-                  className="h-9 px-3 rounded-full bg-bg-elevated border border-border text-[11px] text-text-muted"
+                  className="h-9 px-3 rounded-full bg-bg-elevated border border-border text-[0.6875rem] text-text-muted"
                 >
                   Edit manually
                 </button>
                 <button
                   onClick={() => setParsed(null)}
-                  className="h-9 px-3 rounded-full bg-bg-elevated border border-border text-[11px] text-text-muted"
+                  className="h-9 px-3 rounded-full bg-bg-elevated border border-border text-[0.6875rem] text-text-muted"
                 >
                   Discard
                 </button>

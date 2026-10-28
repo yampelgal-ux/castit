@@ -124,7 +124,7 @@ export default function SignupPage() {
               >
                 <Icon className={cn("w-5 h-5 mb-3", active ? "text-gold" : "text-text-muted")} />
                 <div className="text-sm font-semibold">{r.title}</div>
-                <div className="text-[11px] text-text-muted mt-0.5">{r.sub}</div>
+                <div className="text-[0.6875rem] text-text-muted mt-0.5">{r.sub}</div>
               </button>
             );
           })}
@@ -155,7 +155,7 @@ export default function SignupPage() {
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
 
-        <p className="text-center text-[11px] text-text-subtle">
+        <p className="text-center text-[0.6875rem] text-text-subtle">
           Already have an account? <Link href="/login" className="text-gold font-semibold">Sign in</Link>
         </p>
       </form>

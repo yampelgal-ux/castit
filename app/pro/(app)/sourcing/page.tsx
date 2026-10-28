@@ -112,7 +112,7 @@ export default function SourcingPage() {
             className="w-full bg-transparent text-sm outline-none placeholder:text-text-subtle resize-none"
           />
           <div className="flex items-center justify-between pt-3 border-t border-border">
-            <span className="text-[10px] text-text-subtle">{brief.length} chars</span>
+            <span className="text-[0.6875rem] text-text-subtle">{brief.length} chars</span>
             <button
               onClick={analyze}
               disabled={!brief.trim() || loading}
@@ -126,13 +126,13 @@ export default function SourcingPage() {
 
         {!result && (
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2 px-1">Try one of these</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2 px-1">Try one of these</div>
             <div className="space-y-2">
               {EXAMPLES.map((e) => (
                 <button
                   key={e}
                   onClick={() => setBrief(e)}
-                  className="w-full text-left p-3 rounded-xl bg-bg-elevated border border-border text-[12px] text-text-muted hover:text-text hover:border-gold/30"
+                  className="w-full text-left p-3 rounded-xl bg-bg-elevated border border-border text-[0.75rem] text-text-muted hover:text-text hover:border-gold/30"
                 >
                   "{e}"
                 </button>
@@ -146,12 +146,12 @@ export default function SourcingPage() {
             <div className="rounded-2xl bg-gold/10 border border-gold/30 p-3.5">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="w-3.5 h-3.5 text-gold" />
-                <span className="text-[10px] uppercase tracking-widest text-gold font-semibold">Aria's read</span>
+                <span className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">Aria's read</span>
               </div>
-              <p className="text-[12px] text-text leading-relaxed">{result.summary}</p>
+              <p className="text-[0.75rem] text-text leading-relaxed">{result.summary}</p>
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {Object.entries(result.filters).map(([k, v]) => (
-                  <span key={k} className="text-[10px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">
+                  <span key={k} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted">
                     {k}: {Array.isArray(v) ? v.join(", ") : String(v)}
                   </span>
                 ))}
@@ -160,8 +160,8 @@ export default function SourcingPage() {
 
             <div>
               <div className="flex items-center justify-between mb-3 px-1">
-                <div className="text-[10px] uppercase tracking-widest text-text-muted">Top ranked</div>
-                <span className="text-[10px] text-gold tnum font-semibold">{matches.length} talents</span>
+                <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">Top ranked</div>
+                <span className="text-[0.6875rem] text-gold tnum font-semibold">{matches.length} talents</span>
               </div>
 
               <div className="space-y-2">
@@ -181,12 +181,12 @@ export default function SourcingPage() {
                           <span className="font-semibold text-sm truncate">{t.name}</span>
                           {t.verified && <VerifiedBadge />}
                         </div>
-                        <div className="text-[10px] text-text-muted truncate">
+                        <div className="text-[0.6875rem] text-text-muted truncate">
                           {t.typecast.gender} · {t.typecast.ageRange[0]}–{t.typecast.ageRange[1]} · {t.typecast.location}
                         </div>
                       </div>
                       <span className={cn(
-                        "text-[10px] tnum font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
+                        "text-[0.6875rem] tnum font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
                         m.score >= 85 ? "bg-success/15 text-success" : "bg-gold/15 text-gold"
                       )}>
                         {m.score}%

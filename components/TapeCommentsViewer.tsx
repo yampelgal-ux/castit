@@ -64,10 +64,10 @@ export function TapeCommentsViewer({
   return (
     <div>
       <div className="flex items-center justify-between mb-2 px-1">
-        <div className="text-[11px] uppercase tracking-widest text-gold">
+        <div className="text-[0.6875rem] uppercase tracking-widest text-gold">
           Round {tape.round} · latest tape
         </div>
-        <div className="text-[10px] text-text-muted">{fmtDate(tape.submittedAt)}</div>
+        <div className="text-[0.6875rem] text-text-muted">{fmtDate(tape.submittedAt)}</div>
       </div>
 
       <div className="rounded-2xl overflow-hidden bg-black relative">
@@ -122,7 +122,7 @@ export function TapeCommentsViewer({
       {/* Comment list */}
       {tapeComments.length > 0 && (
         <div className="mt-3 space-y-1.5">
-          <div className="text-[10px] uppercase tracking-widest text-text-muted px-1 flex items-center gap-1.5">
+          <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted px-1 flex items-center gap-1.5">
             <MessageCircle className="w-3 h-3" /> Notes ({tapeComments.length})
           </div>
           {tapeComments.map((c) => (
@@ -134,7 +134,7 @@ export function TapeCommentsViewer({
             >
               <button
                 onClick={() => seekTo(c.timeSec)}
-                className="shrink-0 h-7 px-2 rounded-full bg-gold/15 text-gold border border-gold/30 text-[11px] font-semibold tnum inline-flex items-center gap-1"
+                className="shrink-0 h-7 px-2 rounded-full bg-gold/15 text-gold border border-gold/30 text-[0.6875rem] font-semibold tnum inline-flex items-center gap-1"
               >
                 <Play className="w-3 h-3" />
                 {fmtSec(c.timeSec)}
@@ -159,7 +159,7 @@ export function TapeCommentsViewer({
             >
               <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 font-semibold tnum">
+                <span className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 font-semibold tnum">
                   {fmtSec(composeAt)}
                 </span>
                 <span className="text-xs text-text-muted">Note for this moment</span>

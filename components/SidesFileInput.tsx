@@ -68,7 +68,7 @@ export function SidesFileInput({ roleId, value, onChange }: Props) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-xs font-semibold truncate">{value.name}</div>
-          <div className="text-[10px] text-text-muted tnum">{fmtSize(value.size)}</div>
+          <div className="text-[0.6875rem] text-text-muted tnum">{fmtSize(value.size)}</div>
         </div>
         <button
           type="button"
@@ -116,7 +116,7 @@ export function SidesFileInput({ roleId, value, onChange }: Props) {
         }}
       />
       {error && (
-        <div className="text-[11px] text-danger mt-1">{error}</div>
+        <div className="text-[0.6875rem] text-danger mt-1">{error}</div>
       )}
     </>
   );
@@ -134,9 +134,9 @@ export function SidesFileViewer({ file }: { file: RoleSidesFile }) {
         <FileText className="w-5 h-5" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">סיידס מצורף</div>
+        <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">סיידס מצורף</div>
         <div className="text-xs font-semibold truncate">{file.name}</div>
-        <div className="text-[10px] text-text-muted tnum">{fmtSize(file.size)} · לחץ להורדה</div>
+        <div className="text-[0.6875rem] text-text-muted tnum">{fmtSize(file.size)} · לחץ להורדה</div>
       </div>
       <Download className="w-4 h-4 text-gold shrink-0" />
     </button>

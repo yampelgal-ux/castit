@@ -93,7 +93,7 @@ export default function CalendarPage() {
           </button>
           <div className="text-center">
             <div className="font-display text-xl tracking-editorial">{MONTHS[cursor.getMonth()]}</div>
-            <div className="text-[10px] uppercase tracking-widest text-text-muted">{cursor.getFullYear()}</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">{cursor.getFullYear()}</div>
           </div>
           <button onClick={() => shift(1)} className="w-10 h-10 rounded-full bg-bg-elevated border border-border grid place-items-center">
             <ChevronRight className="w-4 h-4" />
@@ -103,7 +103,7 @@ export default function CalendarPage() {
         {/* Day headers */}
         <div className="grid grid-cols-7 gap-1.5 mb-2">
           {DOW.map((d, i) => (
-            <div key={i} className="text-center text-[10px] uppercase tracking-wider text-text-subtle">{d}</div>
+            <div key={i} className="text-center text-[0.6875rem] uppercase tracking-wider text-text-subtle">{d}</div>
           ))}
         </div>
 
@@ -139,7 +139,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 mt-5 text-[11px] text-text-muted">
+        <div className="flex items-center gap-4 mt-5 text-[0.6875rem] text-text-muted">
           <span className="inline-flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-terra/40 border border-terra/60" /> Busy ({busyCount})
           </span>
@@ -159,7 +159,7 @@ export default function CalendarPage() {
           <div className="rounded-3xl bg-bg-elevated border border-border p-5 shadow-2xl">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-text-muted">Selected</div>
+                <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">Selected</div>
                 <div className="font-display text-lg">{new Date(selected).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</div>
               </div>
               <button onClick={() => setSelected(null)} className="w-8 h-8 rounded-full bg-bg grid place-items-center">
@@ -181,7 +181,7 @@ export default function CalendarPage() {
               </button>
             </div>
             {blockFor(new Date(selected)) && (
-              <button onClick={clear} className="w-full mt-2 text-[11px] text-text-muted underline">
+              <button onClick={clear} className="w-full mt-2 text-[0.6875rem] text-text-muted underline">
                 Clear this day
               </button>
             )}

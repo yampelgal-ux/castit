@@ -77,7 +77,7 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
               <>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-gold">Send audition invite</div>
+                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Send audition invite</div>
                     <h2 className="font-display text-xl">To: {talent.name}</h2>
                   </div>
                   <button onClick={onClose} className="p-2 -mr-2 text-text-muted">
@@ -106,7 +106,7 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
                           />
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-semibold truncate">{p.title}</div>
-                            <div className="text-[10px] text-text-muted truncate">{p.type} · {p.studio}</div>
+                            <div className="text-[0.6875rem] text-text-muted truncate">{p.type} · {p.studio}</div>
                           </div>
                           {project?.id === p.id && <CheckCircle2 className="w-4 h-4 text-gold shrink-0" />}
                         </button>
@@ -176,7 +176,7 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
 
 function Label({ children, icon: Icon, className }: { children: React.ReactNode; icon?: any; className?: string }) {
   return (
-    <div className={cn("flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-text-muted", className)}>
+    <div className={cn("flex items-center gap-1.5 text-[0.6875rem] uppercase tracking-widest text-text-muted", className)}>
       {Icon && <Icon className="w-3 h-3" />}
       {children}
     </div>

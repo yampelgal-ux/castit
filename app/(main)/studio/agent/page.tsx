@@ -178,7 +178,7 @@ export default function AgentChatPage() {
             </div>
             <span className="font-display tracking-editorial">Aria</span>
             <span className={cn(
-              "text-[10px]",
+              "text-[0.6875rem]",
               ariaSpeaking ? "text-gold" : listening ? "text-terra" : "text-sage"
             )}>
               ● {ariaSpeaking ? "speaking" : listening ? "listening" : "online"}
@@ -211,13 +211,13 @@ export default function AgentChatPage() {
           className="mx-4 mt-3 px-3 py-2 rounded-xl bg-gold/8 border border-gold/20 flex items-center gap-2"
         >
           <Volume2 className="w-3.5 h-3.5 text-gold shrink-0" />
-          <p className="text-[11px] text-gold flex-1">
+          <p className="text-[0.6875rem] text-gold flex-1">
             Voice mode is on — Aria will speak her replies aloud
           </p>
           {ariaSpeaking && (
             <button
               onClick={stopAriaSpeaking}
-              className="text-[10px] px-2 py-1 rounded-full bg-gold/20 text-gold font-semibold inline-flex items-center gap-1"
+              className="text-[0.6875rem] px-2 py-1 rounded-full bg-gold/20 text-gold font-semibold inline-flex items-center gap-1"
             >
               <Square className="w-2.5 h-2.5 fill-current" /> Stop
             </button>
@@ -243,7 +243,7 @@ export default function AgentChatPage() {
               )}
             >
               {m.text}
-              <div className={cn("text-[10px] mt-1", m.from === "user" ? "text-on-accent/60" : "text-text-subtle")}>
+              <div className={cn("text-[0.6875rem] mt-1", m.from === "user" ? "text-on-accent/60" : "text-text-subtle")}>
                 {m.time}
               </div>
             </div>
@@ -318,7 +318,7 @@ export default function AgentChatPage() {
             <div className="flex items-start gap-2 mb-2">
               <Wrench className="w-4 h-4 text-gold shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] uppercase tracking-widest text-gold font-semibold">
+                <p className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">
                   Aria wants to act
                 </p>
                 <p className="text-sm mt-0.5">
@@ -328,7 +328,7 @@ export default function AgentChatPage() {
                   {!["get_castings","apply_to_casting","block_calendar"].includes(pendingTool.name) && pendingTool.name}
                 </p>
                 {pendingTool.input && Object.keys(pendingTool.input).length > 0 && (
-                  <pre className="mt-1.5 text-[11px] text-text-muted bg-bg-elevated/60 rounded-lg p-2 overflow-x-auto">
+                  <pre className="mt-1.5 text-[0.6875rem] text-text-muted bg-bg-elevated/60 rounded-lg p-2 overflow-x-auto">
                     {JSON.stringify(pendingTool.input, null, 2)}
                   </pre>
                 )}

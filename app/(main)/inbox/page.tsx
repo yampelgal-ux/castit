@@ -180,16 +180,16 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] uppercase tracking-widest text-gold">{project.type}</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{project.type}</div>
             <h3 className="font-display text-lg leading-tight truncate">{project.title}</h3>
-            <p className="text-[11px] text-text-muted truncate">{project.studio} · {role.name}</p>
+            <p className="text-[0.6875rem] text-text-muted truncate">{project.studio} · {role.name}</p>
           </div>
           <StageBadge stage={s.stage} size="md" />
         </div>
 
         <Timeline stage={s.stage} />
 
-        <div className="flex flex-wrap items-center gap-3 mt-3 text-[11px]">
+        <div className="flex flex-wrap items-center gap-3 mt-3 text-[0.6875rem]">
           {deadline && (
             <span className={cn("inline-flex items-center gap-1", urgent ? "text-gold font-semibold" : "text-text-muted")}>
               <Clock className="w-3 h-3" />
@@ -207,14 +207,14 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
 
       <div className="border-t border-border bg-bg/40 px-3 py-2.5">
         {availState === "available" ? (
-          <div className="text-[11px] text-success font-semibold text-center px-2 w-full inline-flex items-center justify-center gap-1.5">
+          <div className="text-[0.6875rem] text-success font-semibold text-center px-2 w-full inline-flex items-center justify-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5" /> אישרת זמינות — המלהק/ת עודכן/ה.
           </div>
         ) : availState === "unavailable" ? (
-          <div className="text-[11px] text-text-muted text-center px-2 w-full">סימנת שאינך פנוי/ה. המלהק/ת עודכן/ה.</div>
+          <div className="text-[0.6875rem] text-text-muted text-center px-2 w-full">סימנת שאינך פנוי/ה. המלהק/ת עודכן/ה.</div>
         ) : availPending ? (
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-plum-light font-semibold text-center mb-2">
+            <div className="text-[0.6875rem] uppercase tracking-widest text-plum-light font-semibold text-center mb-2">
               בדיקת זמינות{s.shootDates ? ` · ${s.shootDates}` : ""}
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -233,14 +233,14 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
             </div>
           </div>
         ) : offerState === "accepted" ? (
-          <div className="text-[11px] text-success font-semibold text-center px-2 inline-flex items-center justify-center gap-1.5 w-full">
+          <div className="text-[0.6875rem] text-success font-semibold text-center px-2 inline-flex items-center justify-center gap-1.5 w-full">
             <CheckCircle2 className="w-3.5 h-3.5" /> קיבלת את ההצעה — מזל טוב! המלהק/ת יאשר/תאשר את הבוקינג.
           </div>
         ) : offerState === "declined" ? (
-          <div className="text-[11px] text-text-muted text-center px-2 w-full">דחית את ההצעה. המלהק/ת עודכן/ה.</div>
+          <div className="text-[0.6875rem] text-text-muted text-center px-2 w-full">דחית את ההצעה. המלהק/ת עודכן/ה.</div>
         ) : offerPending ? (
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-violet font-semibold text-center mb-2">
+            <div className="text-[0.6875rem] uppercase tracking-widest text-violet font-semibold text-center mb-2">
               קיבלת הצעה{s.payOffered ? ` · ${s.payOffered}` : ""}
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -270,7 +270,7 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
             {callbackTape ? "Record callback tape" : "Record self-tape"}
           </Link>
         ) : (
-          <div className="text-[11px] text-text-muted text-center px-2">
+          <div className="text-[0.6875rem] text-text-muted text-center px-2">
             {statusMessage(s.stage)}
           </div>
         )}
@@ -297,7 +297,7 @@ function Timeline({ stage }: { stage: Submission["stage"] }) {
 
   if (stage === "rejected") {
     return (
-      <div className="mt-3 inline-flex items-center gap-1.5 text-[10px] text-text-muted">
+      <div className="mt-3 inline-flex items-center gap-1.5 text-[0.6875rem] text-text-muted">
         <AlertCircle className="w-3 h-3" /> Casting moved in a different direction
       </div>
     );
@@ -315,7 +315,7 @@ function Timeline({ stage }: { stage: Submission["stage"] }) {
               reached ? (isCurrent ? "bg-gold" : "bg-gold/60") : "bg-bg"
             )} />
             <div className={cn(
-              "text-[8px] uppercase tracking-wider text-center",
+              "text-[0.6875rem] uppercase tracking-wider text-center",
               isCurrent ? "text-gold font-semibold" : reached ? "text-text" : "text-text-subtle"
             )}>
               {s.label}

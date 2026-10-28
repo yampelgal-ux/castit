@@ -63,7 +63,7 @@ export default function ProDashboardPage() {
         title={
           <span className="flex items-center gap-2">
             <span className="font-display text-lg">{t("pd.studio")}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-plum/20 text-plum-light font-semibold tracking-wider">PRO</span>
+            <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-plum/20 text-plum-light font-semibold tracking-wider">PRO</span>
           </span>
         }
         right={
@@ -105,7 +105,7 @@ export default function ProDashboardPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className={cn(
-                  "text-[10px] uppercase tracking-widest font-semibold",
+                  "text-[0.6875rem] uppercase tracking-widest font-semibold",
                   inboxCounts.urgent > 0 ? "text-danger" : "text-gold"
                 )}>
                   {t("pd.actionInbox")}
@@ -115,7 +115,7 @@ export default function ProDashboardPage() {
                     ? t("pd.urgentActions", { n: inboxCounts.urgent })
                     : t("pd.itemsWaiting", { n: inboxCounts.total })}
                 </div>
-                <div className="text-[10px] text-text-muted mt-0.5">
+                <div className="text-[0.6875rem] text-text-muted mt-0.5">
                   {inboxCounts.toReview > 0 && t("pd.tapesToReviewShort", { n: inboxCounts.toReview })}
                   {t("pd.tapOpen")}
                 </div>
@@ -137,9 +137,9 @@ export default function ProDashboardPage() {
               </div>
               <div className="flex-1">
                 <div className="text-sm font-semibold">{t("pd.triage")}</div>
-                <div className="text-[10px] text-text-muted">{t("pd.triageSub", { n: inboxCounts.toReview })}</div>
+                <div className="text-[0.6875rem] text-text-muted">{t("pd.triageSub", { n: inboxCounts.toReview })}</div>
               </div>
-              <span className="text-[10px] font-bold text-gold tnum">{inboxCounts.toReview}</span>
+              <span className="text-[0.6875rem] font-bold text-gold tnum">{inboxCounts.toReview}</span>
             </div>
           </Link>
         )}
@@ -183,9 +183,9 @@ export default function ProDashboardPage() {
               <FolderOpen className="w-7 h-7 text-gold" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">{t("pd.workspaceTag")}</div>
+              <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">{t("pd.workspaceTag")}</div>
               <div className="font-display text-xl leading-tight mt-0.5">{t("pd.projectsTitle")}</div>
-              <div className="text-[11px] text-text-muted mt-0.5">
+              <div className="text-[0.6875rem] text-text-muted mt-0.5">
                 {t("pd.projectsSub")}
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function ProDashboardPage() {
               <h2 className="text-xs uppercase tracking-widest text-text-muted">
                 {t("pd.awaiting")} <span className="text-text font-semibold tnum">({stats.toReview})</span>
               </h2>
-              <Link href="/pro/projects" className="text-[11px] text-gold font-semibold">{t("pd.seeAll")}</Link>
+              <Link href="/pro/projects" className="text-[0.6875rem] text-gold font-semibold">{t("pd.seeAll")}</Link>
             </div>
             <div className="space-y-2">
               {todo.map((s, i) => <PendingRow key={s.id} s={s} i={i} />)}
@@ -249,7 +249,7 @@ function KPI({
         <span className="font-display text-2xl tnum">{value}</span>
         {urgent && value > 0 && <span className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />}
       </div>
-      <div className="text-[10px] text-text-muted uppercase tracking-wider mt-0.5">{label}</div>
+      <div className="text-[0.6875rem] text-text-muted uppercase tracking-wider mt-0.5">{label}</div>
     </Link>
   );
 }
@@ -267,7 +267,7 @@ function QuickAction({ icon: Icon, label, tone, href }: { icon: any; label: stri
       className={cn("flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl border", color)}
     >
       <Icon className="w-5 h-5" />
-      <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
+      <span className="text-[0.6875rem] font-semibold uppercase tracking-wider">{label}</span>
     </Link>
   );
 }
@@ -287,9 +287,9 @@ function PendingRow({ s, i }: { s: Submission; i: number }) {
         <img src={s.talentPhoto} alt={s.talentName} className="w-10 h-10 rounded-xl object-cover" />
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold truncate">{s.talentName}</div>
-          <div className="text-[10px] text-text-muted">{timeAgo(s.createdAt, t)}</div>
+          <div className="text-[0.6875rem] text-text-muted">{timeAgo(s.createdAt, t)}</div>
         </div>
-        <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 font-semibold uppercase tracking-wider">
+        <span className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 font-semibold uppercase tracking-wider">
           {t("pd.review")}
         </span>
       </Link>
