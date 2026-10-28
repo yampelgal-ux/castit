@@ -15,6 +15,7 @@ import { useSettings, type TextSize } from "@/lib/settings-store";
 import { useMyReels, type MyReel } from "@/lib/reels-store";
 import { getTapePlaybackUrl } from "@/lib/tape-storage";
 import { lastPublishStatus, type PublishStatus } from "@/lib/cloud/profile";
+import { lastUploadError } from "@/lib/cloud/media";
 import { photoToDataUrl } from "@/lib/image";
 import { isCloudConfigured, isRealUserId } from "@/lib/cloud/config";
 import { signOutEverywhere } from "@/lib/cloud/auth";
@@ -231,7 +232,7 @@ function ReelRow({ reel, L }: { reel: MyReel; L: LFn }) {
           <div className="text-xs text-sage font-semibold mt-0.5">{L("מפורסם בפרופיל ובפיד", "Live on your profile and feed")}</div>
         ) : (
           <div className="text-xs text-terra mt-0.5">
-            {retryFailed ? L("ההעלאה נכשלה שוב. בדקי חיבור, או שהקובץ גדול מ-50MB.", "Upload failed again. Check your connection, or the file is over 50MB.") : L("רק במכשיר הזה, אחרים לא רואים אותו", "Only on this device, others can't see it")}
+            {retryFailed ? L(`ההעלאה נכשלה שוב (${lastUploadError() || "unknown"}).`, `Upload failed again (${lastUploadError() || "unknown"}).`) : L("רק במכשיר הזה, אחרים לא רואים אותו", "Only on this device, others can't see it")}
             {" "}
             <button
               disabled={retrying}

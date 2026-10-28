@@ -23,11 +23,15 @@ export async function uploadMedia(path: string, blob: Blob): Promise<string | nu
   lastError = "";
   if (!isCloudConfigured()) { lastError = "no-backend"; return null; }
   if (!currentSyncUser()) { lastError = "signed-out"; return null; }
+  // No upsert: Storage then also demands SELECT/UPDATE rights on the object,
+  // which the media bucket's policies don't grant. Every key here is unique,
+  // so a plain insert is enough; "already exists" means it's already there.
   const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
-    upsert: true,
+    upsert: false,
     contentType: blob.type || undefined,
     cacheControl: "31536000",
   });
+  if (error && /exists|duplicate/i.test(error.message)) return mediaPublicUrl(path);
   if (error) {
     console.warn("[media] upload failed", path, error.message);
     lastError = /size|large|413|maximum/i.test(error.message) ? "too-large" : error.message || "failed";
