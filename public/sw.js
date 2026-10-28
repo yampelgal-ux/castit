@@ -108,3 +108,17 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
 });
+
+// Reminder notifications shown via registration.showNotification (mobile):
+// tapping one focuses the app (or opens it) on the linked screen.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const href = (event.notification.data && event.notification.data.href) || "/";
+  event.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const w of wins) {
+      if ("focus" in w) { await w.focus(); if ("navigate" in w) await w.navigate(href); return; }
+    }
+    await self.clients.openWindow(href);
+  })());
+});

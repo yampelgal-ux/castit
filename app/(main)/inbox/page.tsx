@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  Inbox, Clock, Video, ChevronRight, AlertCircle, CheckCircle2,
+  Inbox, Clock, Video, ChevronRight, AlertCircle, CheckCircle2, CalendarDays,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
@@ -78,6 +78,11 @@ export default function InboxPage() {
             <Inbox className="w-4 h-4 text-gold" />
             <span className="font-display text-lg">Auditions</span>
           </span>
+        }
+        right={
+          <Link href="/calendar" aria-label="My calendar" className="w-11 h-11 -me-2 grid place-items-center">
+            <CalendarDays className="w-5 h-5" />
+          </Link>
         }
       />
 

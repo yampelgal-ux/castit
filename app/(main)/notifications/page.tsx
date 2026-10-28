@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell, FileVideo, Sparkles, ThumbsUp, MessageCircle, Heart, Briefcase,
-  Star, Megaphone, Calendar, PauseCircle, XCircle, Award,
+  Star, Megaphone, Calendar, PauseCircle, XCircle, Award, AlarmClock,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
@@ -31,13 +31,14 @@ const ICON: Record<NotifKind, typeof Bell> = {
   comment:      MessageCircle,
   casting:      Star,
   application:  Briefcase,
+  reminder:     AlarmClock,
 };
 
 const COLOR: Record<NotifKind, string> = {
-  invite:       "bg-gold/15 text-gold",
+  invite:       "bg-hi text-on-hi",
   tape_in:      "bg-gold/15 text-gold",
   callback:     "bg-success/15 text-success",
-  hold:         "bg-amber/15 text-amber",
+  hold:         "bg-hi text-on-hi",
   avail_check:  "bg-plum/15 text-plum-light",
   offered:      "bg-violet/15 text-violet",
   booked:       "bg-success/15 text-success",
@@ -48,6 +49,7 @@ const COLOR: Record<NotifKind, string> = {
   comment:      "bg-violet/15 text-violet",
   casting:      "bg-gold/15 text-gold",
   application:  "bg-success/15 text-success",
+  reminder:     "bg-hi text-on-hi",
 };
 
 function timeAgo(iso: string): string {

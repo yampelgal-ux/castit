@@ -1,108 +1,162 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, Mic, MicOff, Volume2, VolumeX, Square, Check, X, Wrench } from "lucide-react";
-import { AGENT_CHAT, type AgentMessage } from "@/lib/mock-data";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Send, Sparkles, Mic, MicOff, Volume2, VolumeX, Square, Check, Undo2, CalendarDays } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Avatar } from "@/components/Avatar";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
+import { getAgenda, agendaBriefing, useAgendaStore, eventTime, setBlockRange, loadBlocks, saveBlocks, type AgendaKind } from "@/lib/agenda";
 import {
-  speak, stopSpeaking, isSpeaking,
-  startListening, hasSpeechRecognition,
-  detectLang, type RecognitionHandle,
+  speak, stopSpeaking, startListening, hasSpeechRecognition, detectLang,
+  type RecognitionHandle,
 } from "@/lib/voice";
 import { cn } from "@/lib/utils";
 
-const SUGGESTIONS = [
-  "Any new callbacks?",
-  "Block Tuesday for self-tapes",
-  "Pass on anything unpaid",
-];
+// Aria, the talent's manager. Every message carries a live briefing of the
+// talent's auditions and calendar; the tools Aria calls (calendar events,
+// reminders, availability) are applied here on the device, with undo.
 
-type ToolCall = { id: string; name: string; input: any };
+type DoneAction = { label: string; kind: "event" | "block"; ref: string };
+type Msg = { from: "user" | "agent"; text: string; time: string; actions?: DoneAction[] };
+type ToolCall = { id: string; name: string; input: Record<string, unknown> };
+
+const CHAT_KEY = "castit_aria_chat_v1";
+const now = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+/** Local "YYYY-MM-DDTHH:mm" → ISO; date-only stays a date. */
+function toIso(local: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(local)) return local;
+  const d = new Date(local);
+  return Number.isNaN(d.getTime()) ? local : d.toISOString();
+}
 
 export default function AgentChatPage() {
-  const [msgs, setMsgs] = useState<AgentMessage[]>(AGENT_CHAT);
+  const { lang, dir } = useT();
+  const he = lang === "he";
+  const L = (h: string, e: string) => (he ? h : e);
+  const { profile, userId } = useStore();
+  const addEvent = useAgendaStore((s) => s.add);
+  const removeEvent = useAgendaStore((s) => s.remove);
+
+  const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [voiceOutput, setVoiceOutput] = useState(false); // auto-speak Aria's replies
+  const [voiceOutput, setVoiceOutput] = useState(false);
   const [listening, setListening] = useState(false);
   const [interimText, setInterimText] = useState("");
   const [ariaSpeaking, setAriaSpeaking] = useState(false);
-  const [pendingTool, setPendingTool] = useState<ToolCall | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [undone, setUndone] = useState<Set<string>>(new Set());
   const recognitionRef = useRef<RecognitionHandle | null>(null);
-  const { profile } = useStore();
-  const seed = profile.avatarSeed || "Aria";
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Restore the conversation, or open with a briefing from real data.
+  // Re-runs when the language settles so a fresh opener is in the right language.
   useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CHAT_KEY) || "null") as Msg[] | null;
+      if (saved && saved.length > 1) { setMsgs(saved); return; }
+    } catch {}
+    setMsgs([{ from: "agent", text: openingLine(), time: now() }]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
+  useEffect(() => {
+    if (msgs.length) { try { localStorage.setItem(CHAT_KEY, JSON.stringify(msgs.slice(-60))); } catch {} }
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs, interimText]);
 
-  useEffect(() => () => {
-    recognitionRef.current?.stop();
-    stopSpeaking();
-  }, []);
+  useEffect(() => () => { recognitionRef.current?.stop(); stopSpeaking(); }, []);
+
+  function openingLine(): string {
+    const { events, actions } = getAgenda(userId, he);
+    const soon = events.filter((e) => eventTime(e) > Date.now() && eventTime(e) < Date.now() + 7 * 86400_000);
+    const name = profile.name?.split(" ")[0] || "";
+    if (!soon.length && !actions.length) {
+      return L(
+        `היי${name ? ` ${name}` : ""}, אני Aria, המנהלת שלך. היומן שלך פנוי השבוע. ספרי לי על אודישנים, צילומים או ימים שאת לא פנויה, ואסדר הכל ביומן עם תזכורות.`,
+        `Hi${name ? ` ${name}` : ""}, I'm Aria, your manager. Your week is clear. Tell me about auditions, shoots or days you're unavailable and I'll put them in your calendar with reminders.`
+      );
+    }
+    const parts: string[] = [];
+    if (actions.length) parts.push(L(`${actions.length} דברים מחכים לתשובה שלך (${actions[0].title}: ${actions[0].detail})`, `${actions.length} things need your answer (${actions[0].title}: ${actions[0].detail})`));
+    if (soon.length) parts.push(L(`השבוע ביומן: ${soon.slice(0, 2).map((e) => e.title).join(", ")}`, `This week: ${soon.slice(0, 2).map((e) => e.title).join(", ")}`));
+    return L(`היי${name ? ` ${name}` : ""}! ${parts.join(". ")}. במה להתחיל?`, `Hi${name ? ` ${name}` : ""}! ${parts.join(". ")}. Where do we start?`);
+  }
+
+  function applyTool(call: ToolCall): DoneAction | null {
+    const i = call.input as Record<string, string>;
+    if (call.name === "add_calendar_event" && i.title && i.start) {
+      const kinds: AgendaKind[] = ["audition", "callback", "shoot", "self_tape", "personal"];
+      const ev = addEvent({
+        title: i.title, start: toIso(i.start), allDay: i.start.length <= 10,
+        kind: kinds.includes(i.kind as AgendaKind) ? (i.kind as AgendaKind) : "personal",
+        location: i.location || undefined, note: i.note || undefined, source: "aria",
+      });
+      return { kind: "event", ref: ev.id, label: `${L("נוסף ליומן", "Added to calendar")}: ${i.title}` };
+    }
+    if (call.name === "set_reminder" && i.text && i.at) {
+      const ev = addEvent({ title: i.text, start: toIso(i.at), kind: "reminder", source: "aria" });
+      const when = new Date(eventTime(ev)).toLocaleString(he ? "he-IL" : "en-US", { weekday: "short", hour: "2-digit", minute: "2-digit" });
+      return { kind: "event", ref: ev.id, label: `${L("תזכורת", "Reminder")}: ${i.text} · ${when}` };
+    }
+    if (call.name === "block_calendar" && i.from) {
+      const status = i.status === "available" ? "available" : "busy";
+      const before = JSON.stringify(loadBlocks());
+      const n = setBlockRange(i.from, i.to || i.from, status, i.reason);
+      return { kind: "block", ref: before, label: status === "busy" ? L(`סומנו ${n} ימים כתפוסים`, `Marked ${n} day(s) busy`) : L(`סומנו ${n} ימים כפנויים`, `Marked ${n} day(s) available`) };
+    }
+    return null;
+  }
+
+  function undo(a: DoneAction) {
+    if (a.kind === "event") removeEvent(a.ref);
+    else { try { saveBlocks(JSON.parse(a.ref)); } catch {} }
+    setUndone((s) => new Set(s).add(a.ref));
+  }
 
   async function send(t: string) {
     if (!t.trim() || loading) return;
-    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const userMsg: AgentMessage = { from: "user", text: t, time };
-    const newMsgs = [...msgs, userMsg];
-    setMsgs(newMsgs);
+    const next = [...msgs, { from: "user" as const, text: t, time: now() }];
+    setMsgs(next);
     setText("");
     setInterimText("");
     setLoading(true);
-
     try {
-      const apiMessages = newMsgs.map((m) => ({
-        role: m.from === "user" ? "user" : "assistant",
-        content: m.text,
-      }));
-
+      // The API needs alternating turns starting with the user.
+      const history = next.slice(next.findIndex((m) => m.from === "user")).slice(-30)
+        .map((m) => ({ role: m.from === "user" ? "user" : "assistant", content: m.text }));
       const res = await fetch("/api/aria", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: apiMessages,
-          userName: profile.name || "talent",
+          messages: history,
+          userName: profile.name || undefined,
           userTypecast: profile.typecast,
           mode: "agent",
+          lang,
+          briefing: agendaBriefing(userId),
         }),
       });
-
-      const { text: reply, toolCalls } = await res.json();
-      const replyMsg: AgentMessage = {
-        from: "agent",
-        text: reply || "Working on it…",
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      setMsgs((m) => [...m, replyMsg]);
-
-      // Surface the first tool call for confirmation (skip auto-execution)
-      if (toolCalls?.length) {
-        setPendingTool(toolCalls[0]);
-      }
-
-      // Auto-speak the reply if voice output is on
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Aria error");
+      const actions = ((data.toolCalls ?? []) as ToolCall[]).map(applyTool).filter(Boolean) as DoneAction[];
+      const reply: string = data.text || (actions.length ? L("סידרתי.", "Done.") : L("לא הצלחתי לענות הפעם. נסי שוב?", "I couldn't answer that one. Try again?"));
+      setMsgs((m) => [...m, { from: "agent", text: reply, time: now(), actions }]);
       if (voiceOutput) {
         setAriaSpeaking(true);
-        speak({
-          text: reply,
-          voice: "female",
-          tone: "neutral",
-          lang: detectLang(reply),
-          onEnd: () => setAriaSpeaking(false),
-          onError: () => setAriaSpeaking(false),
-        });
+        speak({ text: reply, voice: "female", tone: "neutral", lang: detectLang(reply),
+          onEnd: () => setAriaSpeaking(false), onError: () => setAriaSpeaking(false) });
       }
-    } catch {
-      const errMsg: AgentMessage = {
-        from: "agent",
-        text: "On it. I'll update you the moment something changes.",
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      setMsgs((m) => [...m, errMsg]);
+    } catch (e) {
+      setMsgs((m) => [...m, {
+        from: "agent", time: now(),
+        text: e instanceof Error && /many requests/i.test(e.message)
+          ? L("יותר מדי הודעות ברצף. חכי דקה ונמשיך.", "Too many messages at once. Give it a minute.")
+          : L("אין לי חיבור כרגע. ההודעה לא נשלחה, נסי שוב עוד רגע.", "I can't connect right now. Your message wasn't sent; try again in a moment."),
+      }]);
     } finally {
       setLoading(false);
     }
@@ -115,281 +169,122 @@ export default function AgentChatPage() {
       if (interimText.trim()) send(interimText);
       return;
     }
-
     if (!hasSpeechRecognition()) {
-      alert("Voice input is not supported in this browser. Try Chrome or Edge.");
+      setNotice(L("הדפדפן הזה לא תומך בהקלדה קולית. נסי Chrome או Edge.", "Voice input isn't supported in this browser. Try Chrome or Edge."));
       return;
     }
-
-    // Stop Aria mid-sentence if user starts talking
     stopSpeaking();
     setAriaSpeaking(false);
-
+    setNotice(null);
     setListening(true);
     setInterimText("");
     recognitionRef.current = startListening({
-      lang: "en-US",
+      lang: he ? "he-IL" : "en-US",
       continuous: false,
       interimResults: true,
       onResult: (transcript, isFinal) => {
         setInterimText(transcript);
-        if (isFinal) {
-          setListening(false);
-          send(transcript);
-        }
+        if (isFinal) { setListening(false); send(transcript); }
       },
       onEnd: () => setListening(false),
       onError: (err) => {
-        console.error("STT error:", err);
         setListening(false);
-        if (err !== "no-speech" && err !== "aborted") {
-          alert(`Voice error: ${err}`);
-        }
+        if (err !== "no-speech" && err !== "aborted") setNotice(L("המיקרופון לא זמין. בדקי הרשאות בדפדפן.", "Microphone unavailable. Check browser permissions."));
       },
     });
   }
 
-  function toggleVoiceOutput() {
-    setVoiceOutput((v) => {
-      if (v) {
-        stopSpeaking();
-        setAriaSpeaking(false);
-      }
-      return !v;
-    });
-  }
-
-  function stopAriaSpeaking() {
-    stopSpeaking();
-    setAriaSpeaking(false);
-  }
+  const suggestions = he
+    ? ["מה מחכה לי השבוע?", "יש לי אודישן ביום שלישי ב-11:00 בתל אביב", "תזכירי לי מחר ב-9 ללמוד את הסיידס", "אני לא פנויה בסוף השבוע הבא"]
+    : ["What's on this week?", "I have an audition Tuesday at 11:00", "Remind me tomorrow at 9 to learn my sides", "I'm unavailable next weekend"];
 
   return (
-    <div className="flex flex-col min-h-dvh bg-bg">
+    <div className="flex flex-col min-h-dvh bg-bg" dir={dir}>
       <Header
         back
         title={
           <span className="flex items-center gap-2">
-            <div className="relative">
-              <Avatar seed={seed} size={28} />
-              {(ariaSpeaking || listening) && (
-                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-gold ring-2 ring-bg animate-pulse" />
-              )}
-            </div>
-            <span className="font-display tracking-editorial">Aria</span>
-            <span className={cn(
-              "text-[0.6875rem]",
-              ariaSpeaking ? "text-gold" : listening ? "text-terra" : "text-sage"
-            )}>
-              ● {ariaSpeaking ? "speaking" : listening ? "listening" : "online"}
-            </span>
+            <Avatar seed={profile.avatarSeed || "Aria"} size={28} />
+            <span className="font-display">Aria</span>
+            <span className="text-xs text-text-muted font-sans">{ariaSpeaking ? L("מדברת", "speaking") : listening ? L("מקשיבה", "listening") : L("המנהלת שלך", "your manager")}</span>
           </span>
         }
         right={
-          <div className="flex items-center gap-1">
+          <div className="flex items-center">
+            <Link href="/calendar" aria-label={L("היומן שלי", "My calendar")} className="w-11 h-11 grid place-items-center"><CalendarDays className="w-5 h-5" /></Link>
             <button
-              onClick={toggleVoiceOutput}
-              className={cn(
-                "p-1.5 rounded-full transition-colors",
-                voiceOutput ? "text-gold bg-gold/10" : "text-text-muted"
-              )}
-              aria-label="Toggle voice output"
-              title={voiceOutput ? "Voice mode ON" : "Voice mode OFF"}
-            >
-              {voiceOutput ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              onClick={() => setVoiceOutput((v) => { if (v) { stopSpeaking(); setAriaSpeaking(false); } return !v; })}
+              aria-pressed={voiceOutput}
+              aria-label={L("הקראת התשובות בקול", "Read replies aloud")}
+              className={cn("w-11 h-11 grid place-items-center rounded-full", voiceOutput && "bg-hi text-on-hi")}>
+              {voiceOutput ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
             </button>
-            <Sparkles className="w-4 h-4 text-gold" />
           </div>
         }
       />
 
-      {/* Voice mode banner */}
-      {voiceOutput && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-4 mt-3 px-3 py-2 rounded-xl bg-gold/8 border border-gold/20 flex items-center gap-2"
-        >
-          <Volume2 className="w-3.5 h-3.5 text-gold shrink-0" />
-          <p className="text-[0.6875rem] text-gold flex-1">
-            Voice mode is on — Aria will speak her replies aloud
-          </p>
-          {ariaSpeaking && (
-            <button
-              onClick={stopAriaSpeaking}
-              className="text-[0.6875rem] px-2 py-1 rounded-full bg-gold/20 text-gold font-semibold inline-flex items-center gap-1"
-            >
-              <Square className="w-2.5 h-2.5 fill-current" /> Stop
-            </button>
-          )}
-        </motion.div>
+      {ariaSpeaking && (
+        <button onClick={() => { stopSpeaking(); setAriaSpeaking(false); }} className="mx-4 mt-3 h-10 rounded-lg bg-hi text-on-hi text-sm font-semibold inline-flex items-center justify-center gap-2">
+          <Square className="w-3 h-3 fill-current" aria-hidden /> {L("עצירת ההקראה", "Stop reading")}
+        </button>
       )}
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" role="log" aria-live="polite">
         {msgs.map((m, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={cn("flex", m.from === "user" ? "justify-end" : "justify-start")}
-          >
-            <div
-              className={cn(
-                "max-w-[78%] px-4 py-2.5 rounded-2xl text-sm leading-snug",
-                m.from === "user"
-                  ? "bg-gold text-on-accent rounded-br-md"
-                  : "bg-bg-elevated border border-border rounded-bl-md"
-              )}
-            >
+          <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            className={cn("flex flex-col gap-1.5", m.from === "user" ? "items-end" : "items-start")}>
+            <div className={cn("max-w-[82%] px-4 py-2.5 rounded-xl text-[0.95rem] leading-relaxed whitespace-pre-wrap",
+              m.from === "user" ? "bg-gold text-on-accent" : "sheet")}>
               {m.text}
-              <div className={cn("text-[0.6875rem] mt-1", m.from === "user" ? "text-on-accent/60" : "text-text-subtle")}>
-                {m.time}
-              </div>
+              <div className={cn("text-xs mt-1", m.from === "user" ? "text-on-accent/70" : "text-text-subtle")}>{m.time}</div>
             </div>
+            {m.actions?.map((a) => (
+              <div key={a.ref} className="max-w-[82%] flex items-center gap-2 rounded-lg bg-hi-soft border border-border px-3 py-2 text-sm">
+                <Check className="w-4 h-4 text-sage shrink-0" aria-hidden />
+                <span className={cn("flex-1", undone.has(a.ref) && "line-through text-text-muted")}>{a.label}</span>
+                {!undone.has(a.ref) && (
+                  <button onClick={() => undo(a)} className="h-8 px-2 rounded-md text-xs font-semibold inline-flex items-center gap-1 underline">
+                    <Undo2 className="w-3.5 h-3.5" aria-hidden /> {L("ביטול", "Undo")}
+                  </button>
+                )}
+              </div>
+            ))}
           </motion.div>
         ))}
-
         {loading && (
-          <div className="flex justify-start">
-            <div className="px-4 py-3 rounded-2xl bg-bg-elevated border border-border rounded-bl-md text-text-muted text-sm flex items-center gap-2">
-              <div className="flex gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-                <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: "0.2s" }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: "0.4s" }} />
-              </div>
-              <span>Aria is thinking…</span>
-            </div>
+          <div className="sheet rounded-xl px-4 py-3 w-fit text-sm text-text-muted flex items-center gap-2" role="status">
+            <Sparkles className="w-4 h-4 animate-pulse" aria-hidden /> {L("Aria חושבת…", "Aria is thinking…")}
           </div>
         )}
-
-        {/* Live transcription bubble */}
         {listening && interimText && (
-          <div className="flex justify-end">
-            <div className="max-w-[78%] px-4 py-2.5 rounded-2xl text-sm leading-snug bg-gold/20 text-gold border border-gold/40 italic">
-              {interimText}…
-            </div>
-          </div>
+          <div className="flex justify-end"><div className="max-w-[82%] px-4 py-2.5 rounded-xl text-sm bg-hi-soft border border-border italic">{interimText}…</div></div>
         )}
-
         <div ref={bottomRef} />
       </div>
 
-      {/* Suggestions */}
+      {notice && <p role="alert" className="mx-4 mb-2 text-sm text-terra">{notice}</p>}
+
       {!listening && (
         <div className="px-4 pb-2 flex gap-2 overflow-x-auto no-scrollbar">
-          {SUGGESTIONS.map((s) => (
-            <button
-              key={s}
-              onClick={() => send(s)}
-              className="shrink-0 px-3 h-8 rounded-full bg-bg-elevated border border-border text-xs text-text-muted whitespace-nowrap hover:text-text hover:border-border-strong transition-colors"
-            >
-              {s}
-            </button>
+          {suggestions.map((s) => (
+            <button key={s} onClick={() => send(s)} className="shrink-0 px-3 h-9 rounded-full border border-border bg-bg-elevated text-sm whitespace-nowrap">{s}</button>
           ))}
         </div>
       )}
 
-      {/* Listening waveform */}
-      {listening && !interimText && (
-        <div className="px-4 pb-2 flex items-center justify-center gap-4">
-          <span className="text-xs text-terra animate-pulse">● Listening…</span>
-          <div className="flex items-end gap-1 h-6">
-            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-              <span
-                key={i}
-                className="wave-bar"
-                style={{ animationDelay: `${i * 0.1}s` }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Tool-call confirmation */}
-      <AnimatePresence>
-        {pendingTool && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 12 }}
-            className="mx-3 mb-2 rounded-2xl border border-gold/30 bg-gold/8 p-3"
-          >
-            <div className="flex items-start gap-2 mb-2">
-              <Wrench className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <p className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">
-                  Aria wants to act
-                </p>
-                <p className="text-sm mt-0.5">
-                  {pendingTool.name === "get_castings" && "Fetch open castings"}
-                  {pendingTool.name === "apply_to_casting" && "Submit an application"}
-                  {pendingTool.name === "block_calendar" && "Block dates on your calendar"}
-                  {!["get_castings","apply_to_casting","block_calendar"].includes(pendingTool.name) && pendingTool.name}
-                </p>
-                {pendingTool.input && Object.keys(pendingTool.input).length > 0 && (
-                  <pre className="mt-1.5 text-[0.6875rem] text-text-muted bg-bg-elevated/60 rounded-lg p-2 overflow-x-auto">
-                    {JSON.stringify(pendingTool.input, null, 2)}
-                  </pre>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setMsgs((m) => [...m, {
-                    from: "agent",
-                    text: `Done — ${pendingTool.name.replace(/_/g, " ")} completed.`,
-                    time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                  }]);
-                  setPendingTool(null);
-                }}
-                className="flex-1 h-9 rounded-full bg-gold text-on-accent font-semibold text-xs inline-flex items-center justify-center gap-1.5"
-              >
-                <Check className="w-3.5 h-3.5" /> Approve
-              </button>
-              <button
-                onClick={() => setPendingTool(null)}
-                className="flex-1 h-9 rounded-full bg-bg-elevated border border-border text-xs inline-flex items-center justify-center gap-1.5"
-              >
-                <X className="w-3.5 h-3.5" /> Decline
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Input bar */}
-      <div className="p-3 border-t border-border glass">
-        <form
-          onSubmit={(e) => { e.preventDefault(); send(text); }}
-          className="flex items-center gap-2"
-        >
-          <button
-            type="button"
-            onClick={toggleListening}
-            className={cn(
-              "w-11 h-11 rounded-full grid place-items-center transition-all shrink-0",
-              listening
-                ? "bg-terra text-text recording-pulse"
-                : "bg-bg-elevated border border-border text-text-muted hover:text-gold hover:border-gold/40"
-            )}
-            aria-label={listening ? "Stop listening" : "Start voice input"}
-          >
+      <div className="p-3 border-t border-border bg-bg-elevated pb-[calc(env(safe-area-inset-bottom)+12px)]">
+        <form onSubmit={(e) => { e.preventDefault(); send(text); }} className="flex items-center gap-2">
+          <button type="button" onClick={toggleListening}
+            className={cn("w-11 h-11 rounded-full grid place-items-center shrink-0 border-2 border-border-strong", listening && "bg-terra text-white recording-pulse")}
+            aria-label={listening ? L("עצירת הקלטה", "Stop listening") : L("דיבור במקום הקלדה", "Speak instead of typing")}>
             {listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </button>
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={listening ? "Listening…" : "Tell Aria what you need…"}
-            disabled={listening}
-            className="flex-1 h-11 px-4 rounded-full bg-bg-elevated border border-border outline-none text-sm placeholder:text-text-subtle disabled:opacity-50 focus:border-gold/40 transition-colors"
-          />
-          <button
-            type="submit"
-            className="w-11 h-11 rounded-full bg-gold text-on-accent grid place-items-center disabled:opacity-50 hover:bg-gold-light transition-colors shrink-0"
-            disabled={!text.trim() || loading}
-          >
+          <label htmlFor="aria-input" className="sr-only">{L("הודעה ל-Aria", "Message Aria")}</label>
+          <input id="aria-input" value={text} onChange={(e) => setText(e.target.value)} disabled={listening}
+            placeholder={listening ? L("מקשיבה…", "Listening…") : L("מה צריך לסדר?", "What do you need?")}
+            className="flex-1 h-11 px-4 rounded-full bg-bg-muted border border-border text-base placeholder:text-text-subtle disabled:opacity-50" />
+          <button type="submit" disabled={!text.trim() || loading} aria-label={L("שליחה", "Send")}
+            className="w-11 h-11 rounded-full bg-gold text-on-accent grid place-items-center disabled:opacity-40 shrink-0">
             <Send className="w-4 h-4" />
           </button>
         </form>

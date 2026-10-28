@@ -51,11 +51,11 @@ const TONE_OPTIONS: { key: Tone; label: string; color: string }[] = [
   { key: "happy",        label: "שמח",        color: "text-success" },
   { key: "sad",          label: "עצוב",       color: "text-plum-light" },
   { key: "scared",       label: "מפוחד",      color: "text-violet" },
-  { key: "worried",      label: "מודאג",      color: "text-amber" },
+  { key: "worried",      label: "מודאג",      color: "text-terra-dark" },
   { key: "angry",        label: "כועס",       color: "text-danger" },
   { key: "tender",       label: "רך",         color: "text-pink-light" },
   { key: "sarcastic",    label: "ציני",       color: "text-text" },
-  { key: "tense",        label: "מתוח",       color: "text-amber" },
+  { key: "tense",        label: "מתוח",       color: "text-terra-dark" },
   { key: "flirtatious",  label: "מפלרטט",     color: "text-pink-light" },
   { key: "cold",         label: "קר",         color: "text-text-muted" },
 ];

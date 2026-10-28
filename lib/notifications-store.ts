@@ -17,7 +17,8 @@ export type NotifKind =
   | "like"          // social like on reel
   | "comment"       // social comment on reel
   | "casting"       // new casting match
-  | "application";  // application status change
+  | "application"   // application status change
+  | "reminder";     // Aria reminder: deadline, callback, calendar event
 
 export type AppNotification = {
   id: string;

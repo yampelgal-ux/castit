@@ -9,6 +9,7 @@ import { CloudSync } from "@/components/CloudSync";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { NativeBridge } from "@/components/NativeBridge";
 import { A11yHydrator } from "@/components/A11yHydrator";
+import { ReminderEngine } from "@/components/ReminderEngine";
 
 // Fonts with full Hebrew + Latin coverage. next/font downloads them at build
 // time and serves them from our own domain, so they also work offline and
@@ -82,6 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ServiceWorker />
             <NativeBridge />
             <A11yHydrator />
+            <ReminderEngine />
             <DemoSeeder />
             <OnboardingTour />
           </div>
