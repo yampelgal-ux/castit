@@ -5,10 +5,11 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { useStore } from "@/lib/store";
-import { REELS, TALENTS } from "@/lib/mock-data";
+import { useAllReels } from "@/lib/cloud/talents";
 
 export default function SavedPage() {
   const { bookmarks } = useStore();
+  const { reels: REELS, talents: TALENTS } = useAllReels();
   const saved = REELS.filter((r) => bookmarks.has(r.id));
 
   return (

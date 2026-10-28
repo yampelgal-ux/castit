@@ -3,7 +3,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, X, Sparkles, Bookmark, BookmarkCheck, Star } from "lucide-react";
-import { TALENTS } from "@/lib/mock-data";
+import type { Talent } from "@/lib/mock-data";
+import { useAllTalents } from "@/lib/cloud/talents";
+import { DEMO_MODE } from "@/lib/cloud/config";
 import { SKIN_TONES, EYE_COLORS, HAIR_COLORS } from "@/lib/typecast-palette";
 import { ColorSwatchPicker } from "@/components/ColorSwatchPicker";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
@@ -49,7 +51,7 @@ function colorScore(a: string, b: string): number {
   return Math.max(0, 1 - dist / 441);
 }
 
-function calculateMatch(talent: typeof TALENTS[number], filters: Filters): number {
+function calculateMatch(talent: Talent, filters: Filters): number {
   const scores: number[] = [];
 
   if (filters.gender) scores.push(talent.typecast.gender === filters.gender ? 1 : 0);
@@ -96,12 +98,13 @@ function countActiveFilters(f: Filters): number {
   return n;
 }
 
-// Featured/sponsored talent slot — injected at grid position 3
-const FEATURED_TALENT = TALENTS[0];
 
 export default function DiscoverPage() {
   const { savedSearches, saveSearch, deleteSavedSearch } = useStore();
   const { t, lang } = useT();
+  const TALENTS = useAllTalents();
+  // Featured/sponsored slot (grid position 3) — a demo-only showcase.
+  const FEATURED_TALENT = DEMO_MODE ? TALENTS[0] : undefined;
   const [quick, setQuick] = useState("All");
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -125,7 +128,7 @@ export default function DiscoverPage() {
 
     if (filtersActive) scored.sort((a, b) => b.score - a.score);
     return scored;
-  }, [search, quick, filters, filtersActive]);
+  }, [TALENTS, search, quick, filters, filtersActive]);
 
   function filtersAsRecord(): Record<string, unknown> {
     return { ...filters, quick, search };
@@ -148,7 +151,7 @@ export default function DiscoverPage() {
 
   // Insert featured card at index 3 if no active filters
   function buildGrid() {
-    if (filtersActive || results.length === 0) return { items: results, featuredIdx: -1 };
+    if (filtersActive || results.length === 0 || !FEATURED_TALENT) return { items: results, featuredIdx: -1 };
     return { items: results, featuredIdx: Math.min(3, results.length) };
   }
 
@@ -264,11 +267,19 @@ export default function DiscoverPage() {
 
         {results.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3 text-text-muted">
-            <Search className="w-10 h-10 opacity-30" />
-            <p className="text-sm">No matches found</p>
-            <button onClick={() => setFilters(DEFAULT_FILTERS)} className="text-xs text-gold mt-2">
-              Reset filters
-            </button>
+            <Search className="w-10 h-10 opacity-30" aria-hidden />
+            {TALENTS.length === 0 ? (
+              <p className="text-sm text-center max-w-xs">
+                {lang === "he" ? "עוד אין כישרונות רשומים. כשאנשים יירשמו ויפרסמו פרופיל, הם יופיעו כאן." : "No talent has signed up yet. People appear here once they publish a profile."}
+              </p>
+            ) : (
+              <>
+                <p className="text-sm">{lang === "he" ? "לא נמצאו התאמות" : "No matches found"}</p>
+                <button onClick={() => setFilters(DEFAULT_FILTERS)} className="text-xs text-gold mt-2">
+                  {lang === "he" ? "איפוס סינון" : "Reset filters"}
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
@@ -284,8 +295,8 @@ export default function DiscoverPage() {
                   >
                     <div className="relative shrink-0">
                       <img
-                        src={FEATURED_TALENT.photo}
-                        alt={FEATURED_TALENT.name}
+                        src={FEATURED_TALENT!.photo}
+                        alt={FEATURED_TALENT!.name}
                         className="w-16 h-16 rounded-full object-cover border-2 border-gold/40"
                       />
                       <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-gold text-on-accent text-[0.6875rem] font-bold uppercase tracking-wide">
@@ -294,17 +305,17 @@ export default function DiscoverPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm">{FEATURED_TALENT.name}</span>
-                        {FEATURED_TALENT.verified && <VerifiedBadge />}
+                        <span className="font-semibold text-sm">{FEATURED_TALENT!.name}</span>
+                        {FEATURED_TALENT!.verified && <VerifiedBadge />}
                       </div>
-                      <p className="text-[0.6875rem] text-text-muted mt-0.5 line-clamp-2">{FEATURED_TALENT.bio}</p>
+                      <p className="text-[0.6875rem] text-text-muted mt-0.5 line-clamp-2">{FEATURED_TALENT!.bio}</p>
                       <div className="flex items-center gap-1.5 mt-2">
                         <Star className="w-3 h-3 text-gold fill-gold" />
                         <span className="text-[0.6875rem] text-gold font-semibold">Spotlight talent this week</span>
                       </div>
                     </div>
                     <Link
-                      href={`/profile/${FEATURED_TALENT.username}`}
+                      href={`/profile/${FEATURED_TALENT!.username}`}
                       className="shrink-0 h-9 px-3 rounded-full bg-gold text-on-accent text-xs font-semibold grid place-items-center"
                     >
                       View

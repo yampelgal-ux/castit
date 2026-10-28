@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, RefreshCw, X, Info } from "lucide-react";
-import { seedDemo, resetDemo, isDemoSeeded } from "@/lib/demo-seed";
-import { CLOUD_UID_KEY } from "@/lib/cloud/config";
+import { seedDemo, resetDemo, isDemoSeeded, clearDemoData } from "@/lib/demo-seed";
+import { CLOUD_UID_KEY, DEMO_MODE } from "@/lib/cloud/config";
 
 const BADGE_DISMISSED = "castit_demo_badge_dismissed_v1";
 
@@ -15,6 +15,12 @@ export function DemoSeeder() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Live app (real backend): no demo at all. A guest browser that was seeded
+    // before the backend existed gets its demo data cleared.
+    if (!DEMO_MODE) {
+      if (!localStorage.getItem(CLOUD_UID_KEY) && isDemoSeeded()) clearDemoData();
+      return;
+    }
     // Signed-in (cloud) accounts hold real data — never seed or show the demo badge.
     if (localStorage.getItem(CLOUD_UID_KEY)) return;
     // Run seed on first mount (idempotent — won't override real data)

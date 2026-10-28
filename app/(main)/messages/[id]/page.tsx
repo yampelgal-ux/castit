@@ -1,4 +1,5 @@
 "use client";
+import { DEMO_MODE } from "@/lib/cloud/config";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -42,7 +43,7 @@ export default function ConversationPage() {
         const other = data.find((m: any) => m.sender_id !== userId);
         if (other?.sender?.name) setOtherName(other.sender.name);
       } else {
-        setMsgs(MOCK_MSGS);
+        setMsgs(DEMO_MODE ? MOCK_MSGS : []);
       }
     }
     load();

@@ -14,6 +14,8 @@ export type MyReel = {
   caption: string;
   createdAt: number;
   sizeBytes: number;
+  /** True once the video is in cloud Storage (visible to others). */
+  cloud?: boolean;
 };
 
 type ReelsState = {
@@ -32,8 +34,8 @@ export const useMyReels = create<ReelsState>()(
       add: async (file, caption) => {
         const id = `reel_${Date.now().toString(36)}`;
         const blobKey = newTapeKey(id);
-        await saveTapeVideo(blobKey, file);
-        const reel: MyReel = { id, blobKey, caption, createdAt: Date.now(), sizeBytes: file.size };
+        const where = await saveTapeVideo(blobKey, file);
+        const reel: MyReel = { id, blobKey, caption, createdAt: Date.now(), sizeBytes: file.size, cloud: where === "cloud" };
         set({ reels: [reel, ...get().reels] });
         return reel;
       },

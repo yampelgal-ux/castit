@@ -1,11 +1,12 @@
 "use client";
+import { useAllTalents } from "@/lib/cloud/talents";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Sparkles, ArrowRight, ArrowLeft, Check, Megaphone, Users } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
-import { TALENTS, type Audition, type BodyType, type VoiceType, type UnionStatus, type ExperienceLevel } from "@/lib/mock-data";
+import { type Audition, type BodyType, type VoiceType, type UnionStatus, type ExperienceLevel } from "@/lib/mock-data";
 import { matchTalent } from "@/lib/matching";
 import { addAudition } from "@/lib/auditions-store";
 import { haptic } from "@/lib/haptics";
@@ -23,6 +24,7 @@ const SKILLS = ["Stage Combat", "Krav Maga", "Horseback Riding", "Singing (Mezzo
 const HAIR_LENGTHS: ("Short"|"Medium"|"Long")[] = ["Short", "Medium", "Long"];
 
 export default function NewAuditionPage() {
+  const TALENTS = useAllTalents();
   const router = useRouter();
   const { profile, userId } = useStore();
   const [step, setStep] = useState(0);
@@ -76,7 +78,7 @@ export default function NewAuditionPage() {
     return TALENTS.map((t) => ({ talent: t, match: matchTalent(t, target) }))
       .filter((r) => r.match.passes)
       .sort((a, b) => b.match.score - a.match.score);
-  }, [target]);
+  }, [TALENTS, target]);
 
   const briefValid = title.length >= 3 && location.length >= 2 && description.length >= 10;
 

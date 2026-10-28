@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { AccountButton } from "@/components/AccountButton";
@@ -8,7 +9,13 @@ import { SendAuditionSheet } from "@/components/SendAuditionSheet";
 import { TalentNotes } from "@/components/TalentNotes";
 import { TalentHistory } from "@/components/TalentHistory";
 import { ProProfileView } from "@/components/ProProfileView";
-import { TALENTS, REELS } from "@/lib/mock-data";
+import { REELS, type Talent } from "@/lib/mock-data";
+import { useAllTalents } from "@/lib/cloud/talents";
+import { DEMO_MODE } from "@/lib/cloud/config";
+import { useMyReels, type MyReel } from "@/lib/reels-store";
+import { getTapePlaybackUrl } from "@/lib/tape-storage";
+import { useT } from "@/lib/i18n";
+import { Plus, UserX } from "lucide-react";
 import { Header } from "@/components/Header";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { TypecastBadge } from "@/components/TypecastBadge";
@@ -33,6 +40,13 @@ export default function ProfilePage() {
   const router = useRouter();
   const { profile: myProfile, userId, setProfile, streak } = useStore();
   const isMe = username === "me";
+  const allTalents = useAllTalents();
+  const ownReels = useMyReels((s) => s.reels);
+  const { lang } = useT();
+  const he = lang === "he";
+  const [tab, setTab] = useState<typeof TABS[number]>("Reels");
+  const [showEdit, setShowEdit] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
 
   // Pro looking at their own profile (or another pro) → distinct industry-focused view
   if (isMe && myProfile.role === "Casting Pro") {
@@ -45,14 +59,14 @@ export default function ProfilePage() {
       />
     );
   }
-  const talent = isMe
+  const talent: Talent | undefined = isMe
     ? {
         id: "me",
         username: myProfile.username || "you",
         name: myProfile.name || "You",
-        verified: true,
+        verified: DEMO_MODE,
         photo: myProfile.photoUrl || "",
-        cover: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1200",
+        cover: DEMO_MODE ? "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1200" : "",
         bio: myProfile.bio || "Welcome to your profile.",
         followers: 0,
         likes: 0,
@@ -71,17 +85,27 @@ export default function ProfilePage() {
           skills: myProfile.typecast.skills ?? [],
           genres: myProfile.typecast.genres ?? [],
         },
-      }
-    : TALENTS.find((t) => t.username === username) ?? TALENTS[0];
+      } as Talent
+    : allTalents.find((t) => t.username === username || t.id === username) ?? (DEMO_MODE ? allTalents[0] : undefined);
 
-  const [tab, setTab] = useState<typeof TABS[number]>("Reels");
-  const [showEdit, setShowEdit] = useState(false);
-  const [showInvite, setShowInvite] = useState(false);
+  if (!talent) {
+    return (
+      <div>
+        <Header back title={`@${username}`} />
+        <div className="px-8 py-20 text-center text-text-muted">
+          <UserX className="w-10 h-10 mx-auto opacity-40" aria-hidden />
+          <p className="mt-3 text-sm">{he ? "הפרופיל הזה לא נמצא." : "This profile wasn't found."}</p>
+        </div>
+      </div>
+    );
+  }
+
   const isPro = myProfile.role === "Casting Pro";
-  const myReels = REELS.filter((r) => r.talentId === talent.id);
+  const theirReels = talent.reels ?? [];
 
+  const t0 = talent;
   function handleMessage() {
-    router.push(`/messages?with=${talent.id}&name=${encodeURIComponent(talent.name)}`);
+    router.push(`/messages?with=${t0.id}&name=${encodeURIComponent(t0.name)}`);
   }
 
   return (
@@ -96,7 +120,7 @@ export default function ProfilePage() {
       {/* Cover + Avatar */}
       <div className="relative">
         <div className="h-40 relative">
-          <img src={talent.cover} alt="" className="w-full h-full object-cover" />
+          {talent.cover ? <img src={talent.cover} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full clapper" aria-hidden />}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-bg" />
         </div>
         <div className="px-5 -mt-12 relative">
@@ -148,8 +172,8 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* Who viewed you */}
-          {isMe && (
+          {/* Who viewed you (demo showcase only) */}
+          {isMe && DEMO_MODE && (
             <div className="mt-4 rounded-2xl bg-bg-elevated border border-border p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -276,18 +300,39 @@ export default function ProfilePage() {
           className="px-5 pt-4 pb-8"
         >
           {tab === "Reels" && (
+            <>
             <div className="grid grid-cols-3 gap-1">
-              {(myReels.length ? myReels : REELS.slice(0, 6)).map((r) => (
+              {isMe && (
+                <Link
+                  href="/studio/upload"
+                  className="aspect-[3/4] rounded-md border-2 border-dashed border-border-strong grid place-items-center text-text-muted hover:bg-bg-muted"
+                >
+                  <span className="flex flex-col items-center gap-1 text-xs font-semibold">
+                    <Plus className="w-6 h-6" aria-hidden /> {he ? "העלאת סרטון" : "Upload video"}
+                  </span>
+                </Link>
+              )}
+              {isMe
+                ? ownReels.map((r) => <OwnReelTile key={r.id} reel={r} />)
+                : theirReels.map((r) => (
+                    <video key={r.id} src={r.url} controls playsInline preload="metadata" aria-label={r.caption || talent.name}
+                      className="aspect-[3/4] w-full rounded-md bg-black object-cover" />
+                  ))}
+              {DEMO_MODE && !isMe && theirReels.length === 0 && REELS.filter((r) => r.talentId === talent.id).map((r) => (
                 <div key={r.id} className="aspect-[3/4] rounded-md overflow-hidden bg-bg-elevated relative">
                   <img src={r.poster} alt="" className="w-full h-full object-cover" />
                   <div className="absolute bottom-1 left-1 text-[0.6875rem] text-white font-semibold drop-shadow tnum">▶ {formatNumber(r.likes)}</div>
                 </div>
               ))}
             </div>
+            {!isMe && theirReels.length === 0 && !DEMO_MODE && (
+              <p className="text-sm text-text-muted text-center py-8">{he ? "עוד אין סרטונים." : "No videos yet."}</p>
+            )}
+            </>
           )}
           {tab === "Headshots" && (
             <div className="grid grid-cols-2 gap-2">
-              {[talent.photo, talent.cover, talent.photo, talent.cover].map((src, i) => (
+              {[talent.photo, talent.cover].filter(Boolean).map((src, i) => (
                 <div key={i} className="aspect-[3/4] rounded-2xl overflow-hidden bg-bg-elevated">
                   <img src={src} alt="" className="w-full h-full object-cover" />
                 </div>
@@ -488,5 +533,23 @@ function ColorField({ label, color, paletteName }: { label: string; color: strin
         <span className="text-xs text-text font-medium">{paletteName}</span>
       </div>
     </div>
+  );
+}
+
+function OwnReelTile({ reel }: { reel: MyReel }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let revoke: (() => void) | undefined;
+    let alive = true;
+    getTapePlaybackUrl({ blobKey: reel.blobKey }).then((r) => {
+      if (alive) { setUrl(r.url); revoke = r.revoke; } else r.revoke?.();
+    });
+    return () => { alive = false; revoke?.(); };
+  }, [reel.blobKey]);
+  return url ? (
+    <video src={url} controls playsInline preload="metadata" aria-label={reel.caption || "video"}
+      className="aspect-[3/4] w-full rounded-md bg-black object-cover" />
+  ) : (
+    <div className="aspect-[3/4] rounded-md bg-bg-muted animate-pulse" />
   );
 }

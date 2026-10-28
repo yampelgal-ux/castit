@@ -1,4 +1,5 @@
 "use client";
+import { useAllTalents } from "@/lib/cloud/talents";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -7,11 +8,12 @@ import { MapPin, Clock, DollarSign, Calendar, Users, MessageCircle, Share2, Mega
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { getAudition } from "@/lib/auditions-store";
-import { TALENTS, type Audition } from "@/lib/mock-data";
+import { type Audition } from "@/lib/mock-data";
 import { matchTalent } from "@/lib/matching";
 import { cn } from "@/lib/utils";
 
 export default function AuditionDetailPage() {
+  const TALENTS = useAllTalents();
   const { id } = useParams<{ id: string }>();
   const [a, setA] = useState<Audition | null>(null);
 

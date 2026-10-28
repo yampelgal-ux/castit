@@ -1,6 +1,7 @@
 "use client";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { DEMO_MODE } from "@/lib/cloud/config";
 
 // Pro-only public profile fields (visible to talents browsing a pro)
 export type ProPublicCredit = {
@@ -94,7 +95,7 @@ export const useStore = create<State>()(persist((set, get) => ({
   shortlist: new Set(),
   unreadNotifications: 0,
   onboarded: false,
-  streak: 14,
+  streak: DEMO_MODE ? 14 : 0,
   ariaCredits: 20,
   savedSearches: [],
   setProfile: (p) => set((s) => ({ profile: { ...s.profile, ...p } })),

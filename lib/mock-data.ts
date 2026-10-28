@@ -1,3 +1,4 @@
+import { DEMO_MODE } from "@/lib/cloud/config";
 export type BodyType = "Slim" | "Athletic" | "Average" | "Curvy" | "Muscular" | "Plus-size";
 export type VoiceType = "Soprano" | "Mezzo" | "Alto" | "Tenor" | "Baritone" | "Bass" | "Spoken only";
 export type UnionStatus = "Union" | "Non-union" | "Eligible";
@@ -14,6 +15,8 @@ export type Talent = {
   followers: number;
   likes: number;
   submissions: number;
+  /** Showreels a real (signed-up) talent published from their profile. */
+  reels?: { id: string; url: string; caption: string; createdAt: number }[];
   typecast: {
     // Physical
     heightCm: number;
@@ -119,7 +122,7 @@ export type Negotiation = {
 const UNSPLASH = (id: string, w = 800) =>
   `https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`;
 
-export const TALENTS: Talent[] = [
+const DEMO_TALENTS: Talent[] = [
   {
     id: "t1",
     username: "mayalevi",
@@ -363,7 +366,7 @@ export type Audition = {
   createdAt: string;
 };
 
-export const REELS: ReelPost[] = [
+const DEMO_REELS: ReelPost[] = [
   {
     id: "r1",
     talentId: "t1",
@@ -416,7 +419,7 @@ export const REELS: ReelPost[] = [
   },
 ];
 
-export const DAILY_TASKS: DailyTask[] = [
+const DEMO_DAILY_TASKS: DailyTask[] = [
   {
     id: "d1",
     title: "30-Second Monologue",
@@ -455,7 +458,7 @@ export const DAILY_TASKS: DailyTask[] = [
   },
 ];
 
-export const CASTINGS: Casting[] = [
+const DEMO_CASTINGS: Casting[] = [
   {
     id: "c1",
     title: "Lead — 'After the Rain' (Feature)",
@@ -524,7 +527,7 @@ export const CASTINGS: Casting[] = [
   },
 ];
 
-export const STARS_OF_WEEK: StarRanking[] = [
+const DEMO_STARS_OF_WEEK: StarRanking[] = [
   { rank: 1, talentId: "t5", category: "Modeling", weeklyLikes: 124000, growth: 32 },
   { rank: 2, talentId: "t2", category: "Action", weeklyLikes: 89200, growth: 18 },
   { rank: 3, talentId: "t1", category: "Drama", weeklyLikes: 71400, growth: 24 },
@@ -571,7 +574,7 @@ export const SCENES: Scene[] = [
   },
 ];
 
-export const AGENT_CHAT: AgentMessage[] = [
+const DEMO_AGENT_CHAT: AgentMessage[] = [
   { from: "agent", text: "Morning ☀️ Three updates: Northwind sent a callback for tomorrow 10:30. Adidas wants your reel by Friday. I drafted a polite pass on the music video — too low budget, conflicts with the Northwind dates. Approve?", time: "08:14" },
   { from: "user", text: "Approve the pass. Push Northwind to 11:00 — I'm coaching at 9.", time: "08:16" },
   { from: "agent", text: "Done. Northwind confirmed 11:00, added to your calendar. I'll send the Adidas reel today and start prepping callback sides for you to review tonight.", time: "08:17" },
@@ -579,8 +582,22 @@ export const AGENT_CHAT: AgentMessage[] = [
   { from: "agent", text: "One. Limited series, lead support, paid well. Fits your typecast 89%. I'll keep watching — won't bother you unless something hits 90+.", time: "08:18" },
 ];
 
-export const NEGOTIATIONS: Negotiation[] = [
+const DEMO_NEGOTIATIONS: Negotiation[] = [
   { id: "n1", project: "After the Rain (Lead)", studio: "Northwind Pictures", status: "Scheduling", proposedDate: "May 17, 11:00", fee: "Negotiating $4.5K/day" },
   { id: "n2", project: "Adidas Commercial", studio: "Adidas IL", status: "Pending response", fee: "$3.2K + usage" },
   { id: "n3", project: "Indie MV — pass draft", studio: "Strand Films", status: "Closed" },
 ];
+
+// ── Demo roster vs. live app ───────────────────────────────
+// With a real Supabase project wired up the app is live: no invented people,
+// reels, castings or rankings. Everything shown comes from real accounts.
+// Practice scenes and daily challenges are content, so they stay (without
+// made-up participation numbers).
+export { DEMO_TALENTS };
+export const TALENTS: Talent[] = DEMO_MODE ? DEMO_TALENTS : [];
+export const REELS: ReelPost[] = DEMO_MODE ? DEMO_REELS : [];
+export const CASTINGS: Casting[] = DEMO_MODE ? DEMO_CASTINGS : [];
+export const STARS_OF_WEEK: StarRanking[] = DEMO_MODE ? DEMO_STARS_OF_WEEK : [];
+export const AGENT_CHAT: AgentMessage[] = DEMO_MODE ? DEMO_AGENT_CHAT : [];
+export const NEGOTIATIONS: Negotiation[] = DEMO_MODE ? DEMO_NEGOTIATIONS : [];
+export const DAILY_TASKS: DailyTask[] = DEMO_MODE ? DEMO_DAILY_TASKS : DEMO_DAILY_TASKS.map((t) => ({ ...t, participants: 0 }));

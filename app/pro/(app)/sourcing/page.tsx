@@ -1,10 +1,10 @@
 "use client";
+import { useAllTalents } from "@/lib/cloud/talents";
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Send, Wand2, Sparkles, ArrowRight, Loader2 } from "lucide-react";
 import { Header } from "@/components/Header";
-import { TALENTS } from "@/lib/mock-data";
 import { matchTalent } from "@/lib/matching";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ const EXAMPLES = [
 ];
 
 export default function SourcingPage() {
+  const TALENTS = useAllTalents();
   const [brief, setBrief] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ summary: string; filters: any } | null>(null);

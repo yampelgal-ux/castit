@@ -9,7 +9,8 @@ import { Header } from "@/components/Header";
 import { LazyVideo } from "@/components/LazyVideo";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { TypecastBadge } from "@/components/TypecastBadge";
-import { REELS, TALENTS, type Talent, type ReelPost } from "@/lib/mock-data";
+import { type Talent, type ReelPost } from "@/lib/mock-data";
+import { useAllReels } from "@/lib/cloud/talents";
 import { loadAuditions } from "@/lib/auditions-store";
 import { matchTalent } from "@/lib/matching";
 import { useStore } from "@/lib/store";
@@ -22,6 +23,7 @@ export default function ProReelsPage() {
   const { profile } = useStore();
   const [tab, setTab] = useState<Tab>("All");
   const [auditionId, setAuditionId] = useState<string | null>(null);
+  const { reels: REELS, talents: TALENTS } = useAllReels();
   const auditions = useMemo(() => (typeof window !== "undefined" ? loadAuditions() : []), []);
 
   // Default the "Matches" filter to the most recent audition
@@ -47,7 +49,7 @@ export default function ProReelsPage() {
       items.sort((a, b) => b.match!.score - a.match!.score);
     }
     return items;
-  }, [tab, target]);
+  }, [REELS, TALENTS, tab, target]);
 
   return (
     <div className="relative -mb-20"> {/* compensate parent layout pb-20 */}

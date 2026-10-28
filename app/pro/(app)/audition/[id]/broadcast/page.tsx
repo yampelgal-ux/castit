@@ -1,4 +1,5 @@
 "use client";
+import { useAllTalents } from "@/lib/cloud/talents";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -6,12 +7,13 @@ import { Send, Megaphone, Check, Sparkles, Users } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Avatar } from "@/components/Avatar";
 import { getAudition } from "@/lib/auditions-store";
-import { TALENTS, type Audition, type Talent } from "@/lib/mock-data";
+import { type Audition, type Talent } from "@/lib/mock-data";
 import { matchTalent } from "@/lib/matching";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 export default function BroadcastPage() {
+  const TALENTS = useAllTalents();
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [audition, setAudition] = useState<Audition | undefined>();
@@ -35,7 +37,7 @@ export default function BroadcastPage() {
       .map((t) => ({ t, m: matchTalent(t, audition.targetTypecast) }))
       .filter((r) => r.m.passes && r.m.score >= minScore)
       .sort((a, b) => b.m.score - a.m.score);
-  }, [audition, minScore]);
+  }, [TALENTS, audition, minScore]);
 
   // Auto-select all on first match update
   useEffect(() => {

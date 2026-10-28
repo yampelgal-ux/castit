@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Sparkles, MessageSquare, Calendar, Mail, ChevronRight, Bot } from "lucide-react";
 import { SCENES, NEGOTIATIONS } from "@/lib/mock-data";
+import { DEMO_MODE } from "@/lib/cloud/config";
 import { Header } from "@/components/Header";
 import { Avatar } from "@/components/Avatar";
 import { useStore } from "@/lib/store";
@@ -147,15 +148,17 @@ function Agent() {
             <div className="text-[0.6875rem] text-text-muted">Your personal casting agent</div>
           </div>
         </div>
-        <p className="text-sm text-text mt-4 leading-relaxed">
-          "3 new opportunities reviewed today. I scheduled Northwind for 11am and politely passed on the unpaid MV."
-        </p>
+        {DEMO_MODE && (
+          <p className="text-sm text-text mt-4 leading-relaxed">
+            "3 new opportunities reviewed today. I scheduled Northwind for 11am and politely passed on the unpaid MV."
+          </p>
+        )}
         <div className="mt-4 inline-flex items-center gap-1.5 text-xs text-gold font-semibold">
           Open chat <ChevronRight className="w-3.5 h-3.5" />
         </div>
       </Link>
 
-      <div className="text-xs uppercase tracking-wider text-text-muted px-1 mt-6 mb-3">Active negotiations</div>
+      {NEGOTIATIONS.length > 0 && <div className="text-xs uppercase tracking-wider text-text-muted px-1 mt-6 mb-3">Active negotiations</div>}
 
       <div className="space-y-2">
         {NEGOTIATIONS.map((n) => (

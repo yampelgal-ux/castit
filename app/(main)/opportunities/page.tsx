@@ -135,9 +135,11 @@ function DailyView() {
             <span className="inline-flex items-center gap-1 text-text-muted">
               <Clock className="w-3.5 h-3.5" /> {DAILY_TASKS[0].daysLeft} days left
             </span>
-            <span className="inline-flex items-center gap-1 text-text-muted">
-              <Flame className="w-3.5 h-3.5" /> {formatNumber(DAILY_TASKS[0].participants)} joined
-            </span>
+            {DAILY_TASKS[0].participants > 0 && (
+              <span className="inline-flex items-center gap-1 text-text-muted">
+                <Flame className="w-3.5 h-3.5" /> {formatNumber(DAILY_TASKS[0].participants)} joined
+              </span>
+            )}
           </div>
           <button className="mt-4 h-11 px-5 rounded-full bg-gold text-on-accent text-sm font-semibold">
             Submit your take

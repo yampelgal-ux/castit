@@ -7,7 +7,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { isCloudConfigured } from "./config";
-import { TALENTS, type Talent } from "@/lib/mock-data";
+import { TALENTS, REELS, type Talent, type ReelPost } from "@/lib/mock-data";
 
 let cache: Talent[] = [];
 let inflight: Promise<Talent[]> | null = null;
@@ -54,4 +54,21 @@ export function useAllTalents(): Talent[] {
 export function useTalentById(id: string | undefined): Talent | undefined {
   const all = useAllTalents();
   return id ? all.find((t) => t.id === id) : undefined;
+}
+
+/** Reels from real talents' published cards (newest first), plus the demo reels in demo mode. */
+export function reelsFromTalents(talents: Talent[]): ReelPost[] {
+  const real: ReelPost[] = talents
+    .flatMap((t) => (t.reels ?? []).map((r) => ({
+      id: r.id, talentId: t.id, videoUrl: r.url, poster: "", caption: r.caption,
+      likes: 0, comments: 0, shares: 0, createdAt: r.createdAt,
+    })))
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .map(({ createdAt: _c, ...r }) => r);
+  return [...real, ...REELS.filter((r) => !real.some((x) => x.id === r.id))];
+}
+
+export function useAllReels(): { reels: ReelPost[]; talents: Talent[] } {
+  const talents = useAllTalents();
+  return { reels: reelsFromTalents(talents), talents };
 }

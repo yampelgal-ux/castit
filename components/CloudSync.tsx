@@ -15,6 +15,7 @@ import { installStorageHooks, onSyncedKeyChange, startSync, stopSync } from "@/l
 import { refreshShared, startShared, stopShared } from "@/lib/cloud/shared";
 import { loadAccountIntoStore } from "@/lib/cloud/auth";
 import { publishMyProfile } from "@/lib/cloud/profile";
+import { useMyReels } from "@/lib/reels-store";
 
 export function CloudSync() {
   const [remoteChange, setRemoteChange] = useState(false);
@@ -103,11 +104,12 @@ export function CloudSync() {
   // Publish profile / typecast changes so casting pros can find this talent.
   const profile = useStore((s) => s.profile);
   const userId = useStore((s) => s.userId);
+  const reels = useMyReels((s) => s.reels);
   useEffect(() => {
     if (!isCloudConfigured() || !isRealUserId(userId)) return;
-    const t = setTimeout(() => { void publishMyProfile(userId, profile); }, 1500);
+    const t = setTimeout(() => { void publishMyProfile(userId, profile, reels); }, 1500);
     return () => clearTimeout(t);
-  }, [profile, userId]);
+  }, [profile, userId, reels]);
 
   return (
     <AnimatePresence>

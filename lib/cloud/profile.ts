@@ -4,7 +4,8 @@ import { supabase } from "@/lib/supabase";
 import type { useStore } from "@/lib/store";
 import type { Talent } from "@/lib/mock-data";
 import { toDbRole } from "./auth";
-import { dataUrlToBlob, uploadMedia } from "./media";
+import { dataUrlToBlob, uploadMedia, mediaPublicUrl } from "./media";
+import type { MyReel } from "@/lib/reels-store";
 
 type Profile = ReturnType<typeof useStore.getState>["profile"];
 
@@ -25,7 +26,7 @@ async function resolvePhoto(userId: string, photo?: string): Promise<string | un
   return undefined;
 }
 
-function toTalentCard(userId: string, p: Profile, photo?: string): Talent {
+function toTalentCard(userId: string, p: Profile, photo?: string, reels: MyReel[] = []): Talent {
   const tc = p.typecast || {};
   const min = tc.ageRangeMin ?? 20;
   const max = tc.ageRangeMax ?? Math.max(min + 10, 30);
@@ -40,6 +41,10 @@ function toTalentCard(userId: string, p: Profile, photo?: string): Talent {
     followers: 0,
     likes: 0,
     submissions: 0,
+    reels: reels
+      .filter((r) => r.cloud)
+      .map((r) => ({ id: r.id, url: mediaPublicUrl(`tapes/${r.blobKey}`) || "", caption: r.caption, createdAt: r.createdAt }))
+      .filter((r) => r.url),
     typecast: {
       heightCm: tc.heightCm ?? 170,
       weightKg: tc.weightKg ?? 65,
@@ -59,9 +64,9 @@ function toTalentCard(userId: string, p: Profile, photo?: string): Talent {
 }
 
 /** Upsert the signed-in user's public profile (+ talent card for talents). */
-export async function publishMyProfile(userId: string, p: Profile) {
+export async function publishMyProfile(userId: string, p: Profile, reels: MyReel[] = []) {
   if (!p.name) return;
-  const hash = JSON.stringify([userId, p]);
+  const hash = JSON.stringify([userId, p, reels]);
   if (hash === lastHash) return;
 
   const photo = await resolvePhoto(userId, p.photoUrl);
@@ -75,7 +80,7 @@ export async function publishMyProfile(userId: string, p: Profile) {
     bio: p.bio ?? null,
     photo_url: photo ?? null,
     role: toDbRole(p.role),
-    talent_card: isTalent ? toTalentCard(userId, p, photo) : null,
+    talent_card: isTalent ? toTalentCard(userId, p, photo, reels) : null,
     updated_at: new Date().toISOString(),
   };
 

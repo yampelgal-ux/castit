@@ -2,7 +2,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MessageCircle, Share2, Send, Music2, Bookmark } from "lucide-react";
-import { REELS, TALENTS } from "@/lib/mock-data";
+import { useAllReels } from "@/lib/cloud/talents";
+import Link from "next/link";
+import { Film, Upload } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { TypecastBadge } from "@/components/TypecastBadge";
@@ -15,7 +17,12 @@ import { haptic } from "@/lib/haptics";
 import { cn, formatNumber } from "@/lib/utils";
 
 export default function FeedPage() {
-  const { t } = useT();
+  const { t, lang } = useT();
+  const he = lang === "he";
+  const { reels, talents } = useAllReels();
+  const items = reels
+    .map((reel) => ({ reel, talent: talents.find((x) => x.id === reel.talentId) }))
+    .filter((x) => x.talent);
   return (
     <div className="snap-feed no-scrollbar bg-black -mx-0">
       {/* Header overlay */}
@@ -30,10 +37,22 @@ export default function FeedPage() {
         </div>
       </div>
 
-      {REELS.map((reel) => {
-        const talent = TALENTS.find((t) => t.id === reel.talentId)!;
-        return <ReelView key={reel.id} reel={reel} talent={talent} />;
-      })}
+      {items.map(({ reel, talent }) => <ReelView key={reel.id} reel={reel} talent={talent} />)}
+
+      {items.length === 0 && (
+        <div className="h-dvh grid place-items-center px-8 text-center text-white">
+          <div className="max-w-xs">
+            <Film className="w-10 h-10 mx-auto text-hi" aria-hidden />
+            <h2 className="font-display text-2xl mt-4">{he ? "עוד אין סרטונים בפיד" : "No videos in the feed yet"}</h2>
+            <p className="text-sm text-white/70 mt-2">
+              {he ? "כשתעלי סרטון לפרופיל, הוא יופיע כאן וגם אצל המלהקים." : "When you upload a video to your profile it shows up here and for casting directors."}
+            </p>
+            <Link href="/studio/upload" className="mt-6 inline-flex items-center gap-2 h-12 px-6 rounded-full bg-hi text-on-hi font-semibold">
+              <Upload className="w-4 h-4" aria-hidden /> {he ? "העלאת סרטון" : "Upload a video"}
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
