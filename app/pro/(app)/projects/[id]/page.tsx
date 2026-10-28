@@ -8,6 +8,7 @@ import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { ProjectInsights } from "@/components/ProjectInsights";
 import { ProjectTeam } from "@/components/ProjectTeam";
+import { ProjectAgenda } from "@/components/ProjectAgenda";
 import { BulkRolesSheet } from "@/components/BulkRolesSheet";
 import { SidesFileInput } from "@/components/SidesFileInput";
 import type { RoleSidesFile } from "@/lib/projects-store";
@@ -81,6 +82,8 @@ export default function ProjectDetailPage() {
         {project.description && (
           <p className="text-sm text-text-muted leading-relaxed">{project.description}</p>
         )}
+
+        <ProjectAgenda projectId={project.id} />
 
         <div className="flex items-center justify-between">
           <h2 className="text-xs uppercase tracking-widest text-text-muted">

@@ -627,3 +627,44 @@ export function roleCounts(roleId: string) {
     rejected: by("rejected"),
   };
 }
+
+// Everything the projects board needs about one project in a single pass:
+// pipeline distribution, what's waiting on the casting team, and what's next.
+export function projectOverview(projectId: string) {
+  const roles = getRolesByProject(projectId);
+  const roleIds = new Set(roles.map((r) => r.id));
+  const subs = loadSubmissions().filter((s) => roleIds.has(s.roleId));
+  const byStage = Object.fromEntries((Object.keys(STAGE_META) as Stage[]).map((st) => [st, 0])) as Record<Stage, number>;
+  for (const s of subs) byStage[s.stage] += 1;
+  const now = Date.now();
+  const week = now + 7 * 86400_000;
+  const roleById = new Map(roles.map((r) => [r.id, r]));
+  const deadlines = subs
+    .filter((s) => s.stage === "invited")
+    .map((s) => s.inviteDeadline || roleById.get(s.roleId)?.deadline)
+    .concat(roles.map((r) => r.deadline))
+    .filter((d): d is string => !!d && new Date(d).getTime() >= now - 86400_000)
+    .sort();
+  const callbacksThisWeek = subs.filter((s) =>
+    s.stage === "callback" && s.callbackScheduledAt && !s.callbackCompleted &&
+    new Date(s.callbackScheduledAt).getTime() >= now && new Date(s.callbackScheduledAt).getTime() <= week).length;
+  const lastActivity = subs.reduce((m, s) => {
+    const t = Math.max(new Date(s.createdAt).getTime(), ...s.tapes.map((tp) => new Date(tp.submittedAt).getTime()));
+    return t > m ? t : m;
+  }, 0);
+  const toReview = byStage.submitted;
+  const awaitingTalent = subs.filter((s) => s.offerResponse === "pending" || s.availResponse === "pending").length;
+  return {
+    roles: roles.length,
+    total: subs.length,
+    byStage,
+    toReview,
+    awaitingTalent,
+    callbacksThisWeek,
+    nextDeadline: deadlines[0] as string | undefined,
+    openRoles: roles.filter((r) => !subs.some((s) => s.roleId === r.id && s.stage === "booked")).length,
+    lastActivity,
+    // Higher = needs the casting team sooner (used to sort the board)
+    urgency: toReview * 3 + callbacksThisWeek * 2 + (deadlines[0] && new Date(deadlines[0]).getTime() < week ? 2 : 0),
+  };
+}
