@@ -7,6 +7,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { isCloudConfigured } from "./config";
+import { mediaPublicUrl } from "./media";
+import { useMyReels } from "@/lib/reels-store";
+import { useStore } from "@/lib/store";
 import { TALENTS, REELS, type Talent, type ReelPost } from "@/lib/mock-data";
 
 let cache: Talent[] = [];
@@ -19,7 +22,7 @@ export function getCachedRealTalents(): Talent[] {
 
 export async function fetchRealTalents(force = false): Promise<Talent[]> {
   if (!isCloudConfigured()) return [];
-  if (!force && Date.now() - fetchedAt < 60_000) return cache;
+  if (!force && Date.now() - fetchedAt < 10_000) return cache;
   if (inflight) return inflight;
   inflight = (async () => {
     const { data, error } = await supabase
@@ -70,5 +73,21 @@ export function reelsFromTalents(talents: Talent[]): ReelPost[] {
 
 export function useAllReels(): { reels: ReelPost[]; talents: Talent[] } {
   const talents = useAllTalents();
-  return { reels: reelsFromTalents(talents), talents };
+  // My own published videos show up right away, before the shared list refreshes.
+  const mine = useMyReels((s) => s.reels);
+  const userId = useStore((s) => s.userId);
+  const profile = useStore((s) => s.profile);
+  const myCloud = mine.filter((r) => r.cloud);
+  if (!userId || myCloud.length === 0) return { reels: reelsFromTalents(talents), talents };
+  const existing = talents.find((t) => t.id === userId);
+  const me: Talent = {
+    ...(existing ?? {
+      id: userId, username: profile.username || "me", name: profile.name || "", verified: false,
+      photo: profile.photoUrl || "", cover: "", bio: profile.bio || "", followers: 0, likes: 0, submissions: 0,
+      typecast: { heightCm: 170, weightKg: 65, ageRange: [20, 30], gender: "Female", ethnicity: "", skinTone: "", eyeColor: "", hairColor: "", hairLength: "Medium", languages: [], skills: [], genres: [] },
+    }),
+    reels: myCloud.map((r) => ({ id: r.id, url: mediaPublicUrl(`tapes/${r.blobKey}`) || "", caption: r.caption, createdAt: r.createdAt })),
+  };
+  const merged = [me, ...talents.filter((t) => t.id !== userId)];
+  return { reels: reelsFromTalents(merged), talents: merged };
 }

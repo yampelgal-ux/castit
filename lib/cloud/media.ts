@@ -14,15 +14,25 @@ export function mediaPublicUrl(path: string): string | null {
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path.split("/").map(encodeURIComponent).join("/")}`;
 }
 
+let lastError = "";
+/** Why the most recent upload didn't reach the cloud ("" when it did). */
+export function lastUploadError(): string { return lastError; }
+
 /** Upload (best-effort). Only signed-in users can upload; guests stay local. */
 export async function uploadMedia(path: string, blob: Blob): Promise<string | null> {
-  if (!isCloudConfigured() || !currentSyncUser()) return null;
+  lastError = "";
+  if (!isCloudConfigured()) { lastError = "no-backend"; return null; }
+  if (!currentSyncUser()) { lastError = "signed-out"; return null; }
   const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
     upsert: true,
     contentType: blob.type || undefined,
     cacheControl: "31536000",
   });
-  if (error) { console.warn("[media] upload failed", path, error.message); return null; }
+  if (error) {
+    console.warn("[media] upload failed", path, error.message);
+    lastError = /size|large|413|maximum/i.test(error.message) ? "too-large" : error.message || "failed";
+    return null;
+  }
   return mediaPublicUrl(path);
 }
 

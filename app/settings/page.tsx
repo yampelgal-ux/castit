@@ -187,6 +187,9 @@ function VideosSection({ L }: { L: LFn }) {
 
 function ReelRow({ reel, L }: { reel: MyReel; L: LFn }) {
   const remove = useMyReels((s) => s.remove);
+  const retry = useMyReels((s) => s.retry);
+  const [retrying, setRetrying] = useState(false);
+  const [retryFailed, setRetryFailed] = useState(false);
   const [url, setUrl] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
   useEffect(() => {
@@ -202,6 +205,21 @@ function ReelRow({ reel, L }: { reel: MyReel; L: LFn }) {
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold truncate">{reel.caption || L("ללא כותרת", "Untitled")}</div>
         <div className="text-xs text-text-muted">{new Date(reel.createdAt).toLocaleDateString()} · {(reel.sizeBytes / 1048576).toFixed(1)}MB</div>
+        {reel.cloud ? (
+          <div className="text-xs text-sage font-semibold mt-0.5">{L("מפורסם בפרופיל ובפיד", "Live on your profile and feed")}</div>
+        ) : (
+          <div className="text-xs text-terra mt-0.5">
+            {retryFailed ? L("ההעלאה נכשלה שוב. בדקי חיבור, או שהקובץ גדול מ-50MB.", "Upload failed again. Check your connection, or the file is over 50MB.") : L("רק במכשיר הזה, אחרים לא רואים אותו", "Only on this device, others can't see it")}
+            {" "}
+            <button
+              disabled={retrying}
+              onClick={async () => { setRetrying(true); setRetryFailed(!(await retry(reel.id))); setRetrying(false); }}
+              className="underline font-semibold disabled:opacity-50"
+            >
+              {retrying ? L("מעלה…", "Uploading…") : L("פרסום", "Publish")}
+            </button>
+          </div>
+        )}
       </div>
       {confirm ? (
         <div className="flex gap-1">
