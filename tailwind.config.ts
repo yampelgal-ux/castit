@@ -23,18 +23,24 @@ export default {
         sage: { DEFAULT: v("sage"), dark: v("sage-dark"), light: v("sage-light") },
         plum: { DEFAULT: v("plum"), dark: v("plum-dark"), light: v("plum-light") },
         violet: { DEFAULT: v("violet"), dark: v("violet-dark") },
+        // Clapperboard yellow highlight, and the ink that sits on it
+        hi: { DEFAULT: v("hi"), soft: v("hi-soft") },
+        "on-hi": v("on-hi"),
         // Text/icon color that sits on a solid accent fill (bg-gold, bg-wine…)
         "on-accent": v("on-accent"),
         success: v("sage"),
         danger: v("terra"),
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        display: ["var(--font-playfair)", "Georgia", "serif"],
+        sans: ["var(--font-body)", "Assistant", "Arial Hebrew", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Secular One", "Arial Hebrew", "system-ui", "sans-serif"],
       },
+      // Tighter, print-like corners
       borderRadius: {
-        "2xl": "1.25rem",
-        "3xl": "1.75rem",
+        lg: "0.375rem",
+        xl: "0.5rem",
+        "2xl": "0.625rem",
+        "3xl": "0.875rem",
       },
       letterSpacing: {
         "editorial": "-0.02em",

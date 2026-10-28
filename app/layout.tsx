@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
+import { Assistant, Secular_One } from "next/font/google";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OnboardingTour } from "@/components/OnboardingTour";
@@ -9,20 +9,20 @@ import { CloudSync } from "@/components/CloudSync";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { NativeBridge } from "@/components/NativeBridge";
 
-// Self-hosted fonts: no runtime dependency on Google Fonts, so the app
-// also renders correctly offline / inside the native (Capacitor) shell.
-const inter = localFont({
-  src: "./fonts/Inter.woff2",
-  variable: "--font-inter",
+// Fonts with full Hebrew + Latin coverage. next/font downloads them at build
+// time and serves them from our own domain, so they also work offline and
+// inside the native (Capacitor) shell.
+const assistant = Assistant({
+  subsets: ["hebrew", "latin"],
+  variable: "--font-body",
   display: "swap",
-  weight: "100 900",
 });
 
-const playfair = localFont({
-  src: "./fonts/PlayfairDisplay.woff2",
-  variable: "--font-playfair",
+const secularOne = Secular_One({
+  subsets: ["hebrew", "latin"],
+  weight: "400",
+  variable: "--font-display",
   display: "swap",
-  weight: "400 900",
 });
 
 export const metadata: Metadata = {
@@ -60,16 +60,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0A0A0B",
+  themeColor: "#FAF9F5",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${assistant.variable} ${secularOne.variable}`}>
       <body className="font-sans">
         <a href="#main-content" className="skip-link">Skip to content</a>
         <div className="device-frame">
