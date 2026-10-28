@@ -43,6 +43,15 @@ export type Talent = {
     experienceLevel?: ExperienceLevel;
     location?: string;
     willingToTravel?: boolean;
+
+    // Extra detail for fine-grained casting search
+    hairType?: string;
+    facialHair?: string;
+    clothingSize?: string;
+    shoeSizeEU?: number;
+    driverLicense?: boolean;
+    hasAgent?: boolean;
+    workPermits?: string[];
   };
 };
 
@@ -361,6 +370,16 @@ export type Audition = {
     experienceLevels?: ExperienceLevel[];
     locations?: string[];
     mustTravel?: boolean;
+    weightRange?: [number, number];
+    hairTypes?: string[];
+    facialHair?: string[];
+    features?: string[];
+    genres?: string[];
+    clothingSizes?: string[];
+    shoeRange?: [number, number];
+    needsLicense?: boolean;
+    needsAgent?: boolean;
+    workPermits?: string[];
   };
   applicants: number;
   createdAt: string;

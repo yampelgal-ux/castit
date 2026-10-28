@@ -31,6 +31,22 @@ type Profile = {
     ageRangeMin: number;
     ageRangeMax: number;
     genres: string[];
+    ethnicity: string;
+    bodyType: string;
+    hairType: string;
+    facialHair: string;
+    features: string[];
+    accents: string[];
+    voiceType: string;
+    unionStatus: string;
+    experienceLevel: string;
+    location: string;
+    willingToTravel: boolean;
+    clothingSize: string;
+    shoeSizeEU: number;
+    driverLicense: boolean;
+    hasAgent: boolean;
+    workPermits: string[];
   }>;
   avatarSeed: string;
   // Pro-only public profile
