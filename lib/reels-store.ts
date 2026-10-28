@@ -28,6 +28,8 @@ type ReelsState = {
   rename: (id: string, caption: string) => void;
   /** Try the cloud upload again for a video that only lives on this device. */
   retry: (id: string) => Promise<boolean>;
+  /** Upload every video that hasn't reached the cloud yet (runs after sign-in). */
+  retryAll: () => Promise<void>;
 };
 
 // Supabase Storage on the free plan accepts files up to 50MB.
@@ -61,6 +63,11 @@ export const useMyReels = create<ReelsState>()(
         if (!url) return false;
         set({ reels: get().reels.map((x) => (x.id === id ? { ...x, cloud: true } : x)) });
         return true;
+      },
+      retryAll: async () => {
+        for (const r of get().reels.filter((x) => !x.cloud)) {
+          try { await get().retry(r.id); } catch {}
+        }
       },
       rename: (id, caption) => set({ reels: get().reels.map((r) => (r.id === id ? { ...r, caption } : r)) }),
     }),

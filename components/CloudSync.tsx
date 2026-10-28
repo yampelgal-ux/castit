@@ -61,6 +61,8 @@ export function CloudSync() {
       if (data.user) await loadAccountIntoStore(data.user);
       await startShared(userId);
       if (changed) setRemoteChange(true);
+      // Videos recorded while the upload couldn't reach the cloud: try again now.
+      void useMyReels.getState().retryAll();
     }
 
     async function deactivate() {
