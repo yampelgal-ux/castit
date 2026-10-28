@@ -270,6 +270,7 @@ export default function ProTriagePage() {
                 <Link
                   href={`/pro/projects/${current.project.id}/role/${current.role.id}/submission/${sub.id}`}
                   className="w-8 h-8 rounded-full bg-bg border border-border grid place-items-center text-text-muted shrink-0"
+                  aria-label="Open full submission"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <ExternalLink className="w-3.5 h-3.5" />

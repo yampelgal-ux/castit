@@ -101,7 +101,7 @@ const FEATURED_TALENT = TALENTS[0];
 
 export default function DiscoverPage() {
   const { savedSearches, saveSearch, deleteSavedSearch } = useStore();
-  const { t } = useT();
+  const { t, lang } = useT();
   const [quick, setQuick] = useState("All");
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -165,6 +165,8 @@ export default function DiscoverPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t("disc.searchPh")}
+              aria-label={t("disc.searchPh")}
+              type="search"
               className="flex-1 bg-transparent outline-none text-sm placeholder:text-text-subtle"
             />
           </div>
@@ -173,12 +175,14 @@ export default function DiscoverPage() {
               onClick={() => setShowSaveModal(true)}
               className="w-11 h-11 grid place-items-center rounded-full bg-bg-elevated border border-gold/30 text-gold"
               title="Save this search"
+              aria-label={lang === "he" ? "שמירת החיפוש" : "Save this search"}
             >
               <Bookmark className="w-4 h-4" />
             </button>
           )}
           <button
             onClick={() => setShowFilters(true)}
+            aria-label={lang === "he" ? "סינון" : "Filters"}
             className={cn(
               "relative w-11 h-11 grid place-items-center rounded-full border transition-colors",
               filtersActive ? "bg-gold/10 border-gold/40 text-gold" : "bg-bg-elevated border-border"

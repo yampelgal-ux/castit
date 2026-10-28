@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronLeft, ShieldCheck, Camera } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { useLangStore } from "@/lib/i18n";
 import { SKIN_TONES, EYE_COLORS, HAIR_COLORS } from "@/lib/typecast-palette";
 import { TypecastPicker } from "@/components/TypecastPicker";
 import { PhotoPicker } from "@/components/PhotoPicker";
@@ -19,6 +20,7 @@ const STEPS = ["Physical", "Appearance", "Skills", "Range"] as const;
 export default function TypecastPage() {
   const router = useRouter();
   const { setTypecast, setProfile, signIn, profile } = useStore();
+  const lang = useLangStore((s) => s.lang);
   const [step, setStep] = useState(0);
   const [tc, setTc] = useState({
     heightCm: 175,
@@ -67,7 +69,7 @@ export default function TypecastPage() {
       {/* Top bar */}
       <div className="sticky top-0 z-40 glass border-b border-border">
         <div className="px-4 h-14 flex items-center justify-between">
-          <button onClick={back} className="-ml-2 p-2 rounded-full hover:bg-bg-elevated">
+          <button onClick={back} aria-label={lang === "he" ? "חזרה" : "Back"} className="-ml-2 p-2 rounded-full hover:bg-bg-elevated">
             <ChevronLeft className="w-5 h-5" />
           </button>
           <span className="text-xs text-text-muted tnum">Step {step + 1} of {STEPS.length}</span>
@@ -295,6 +297,7 @@ function Slider({
       </div>
       <input
         type="range" min={min} max={max} value={value}
+        aria-label={label}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full"
       />
@@ -333,6 +336,7 @@ function NumberBox({ label, value, onChange }: { label: string; value: number; o
       <div className="text-[0.6875rem] text-text-muted uppercase tracking-wider mb-1">{label}</div>
       <input
         type="number" value={value}
+        aria-label={label}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full h-14 px-4 rounded-2xl bg-bg-elevated border border-border text-center font-display text-2xl text-gold tnum outline-none focus:border-gold/60"
       />

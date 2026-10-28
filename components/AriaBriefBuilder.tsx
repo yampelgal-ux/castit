@@ -87,6 +87,7 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
           value={brief}
           onChange={(e) => setBrief(e.target.value)}
           rows={3}
+          aria-label="Casting brief"
           placeholder='e.g. "Female lead, 30s, Mediterranean, fluent Hebrew + Arabic, stage combat background, Tel Aviv based"'
           className="w-full px-3 py-2.5 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60 resize-none"
           disabled={loading}

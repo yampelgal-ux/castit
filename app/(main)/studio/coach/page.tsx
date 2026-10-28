@@ -910,6 +910,7 @@ export default function CoachPage() {
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
             placeholder={`SARAH: I've been thinking about what you said.\nMARK: And?`}
+            aria-label="Scene text"
             className="w-full mt-4 min-h-[140px] p-3 rounded-2xl bg-bg-elevated border border-border text-sm leading-relaxed resize-y"
             dir="auto"
           />
