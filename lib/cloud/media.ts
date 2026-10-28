@@ -22,7 +22,11 @@ export function lastUploadError(): string { return lastError; }
 export async function uploadMedia(path: string, blob: Blob): Promise<string | null> {
   lastError = "";
   if (!isCloudConfigured()) { lastError = "no-backend"; return null; }
-  if (!currentSyncUser()) { lastError = "signed-out"; return null; }
+  if (!currentSyncUser()) {
+    // Sync may still be starting; what Storage needs is a live auth session.
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) { lastError = "signed-out"; return null; }
+  }
   // No upsert: Storage then also demands SELECT/UPDATE rights on the object,
   // which the media bucket's policies don't grant. Every key here is unique,
   // so a plain insert is enough; "already exists" means it's already there.
