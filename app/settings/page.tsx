@@ -12,6 +12,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { useInstallPrompt } from "@/components/InstallPrompt";
 import { useStore } from "@/lib/store";
 import { useSettings, type TextSize } from "@/lib/settings-store";
+import { useReelStats } from "@/lib/cloud/social";
 import { useMyReels, type MyReel } from "@/lib/reels-store";
 import { getTapePlaybackUrl } from "@/lib/tape-storage";
 import { lastPublishStatus, type PublishStatus } from "@/lib/cloud/profile";
@@ -215,6 +216,7 @@ function ReelRow({ reel, L }: { reel: MyReel; L: LFn }) {
   const [retryFailed, setRetryFailed] = useState(false);
   const [url, setUrl] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
+  const stats = useReelStats(reel.id);
   useEffect(() => {
     let revoke: (() => void) | undefined;
     getTapePlaybackUrl({ blobKey: reel.blobKey }).then((r) => { setUrl(r.url); revoke = r.revoke; });
@@ -229,7 +231,12 @@ function ReelRow({ reel, L }: { reel: MyReel; L: LFn }) {
         <div className="text-sm font-semibold truncate">{reel.caption || L("ללא כותרת", "Untitled")}</div>
         <div className="text-xs text-text-muted">{new Date(reel.createdAt).toLocaleDateString()} · {(reel.sizeBytes / 1048576).toFixed(1)}MB</div>
         {reel.cloud ? (
-          <div className="text-xs text-sage font-semibold mt-0.5">{L("מפורסם בפרופיל ובפיד", "Live on your profile and feed")}</div>
+          <>
+            <div className="text-xs text-sage font-semibold mt-0.5">{L("מפורסם בפרופיל ובפיד", "Live on your profile and feed")}</div>
+            <div className="text-xs text-text-muted mt-0.5 tnum">
+              {L(`${stats.views} צפיות · ${stats.likes} לייקים · ${stats.comments} תגובות`, `${stats.views} views · ${stats.likes} likes · ${stats.comments} comments`)}
+            </div>
+          </>
         ) : (
           <div className="text-xs text-terra mt-0.5">
             {retryFailed ? L(`ההעלאה נכשלה שוב (${lastUploadError() || "unknown"}).`, `Upload failed again (${lastUploadError() || "unknown"}).`) : L("רק במכשיר הזה, אחרים לא רואים אותו", "Only on this device, others can't see it")}

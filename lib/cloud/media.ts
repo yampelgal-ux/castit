@@ -44,6 +44,12 @@ export async function uploadMedia(path: string, blob: Blob): Promise<string | nu
   return mediaPublicUrl(path);
 }
 
+/** Remove an object this user uploaded (best-effort). */
+export async function removeMedia(path: string): Promise<void> {
+  if (!isCloudConfigured()) return;
+  try { await supabase.storage.from(BUCKET).remove([path]); } catch {}
+}
+
 /** Download a previously uploaded object (e.g. on another device). */
 export async function downloadMedia(path: string): Promise<Blob | null> {
   const url = mediaPublicUrl(path);

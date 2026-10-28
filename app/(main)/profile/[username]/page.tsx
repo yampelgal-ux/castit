@@ -15,7 +15,10 @@ import { DEMO_MODE } from "@/lib/cloud/config";
 import { useMyReels, type MyReel } from "@/lib/reels-store";
 import { getTapePlaybackUrl } from "@/lib/tape-storage";
 import { useT } from "@/lib/i18n";
-import { Plus, UserX } from "lucide-react";
+import { Plus, UserX, MoreHorizontal, Heart } from "lucide-react";
+import { useReelStats, toggleReelLike, recordReelView } from "@/lib/cloud/social";
+import { ReelCommentsSheet } from "@/components/reels/ReelCommentsSheet";
+import { ReelManageSheet } from "@/components/reels/ReelManageSheet";
 import { Header } from "@/components/Header";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { TypecastBadge } from "@/components/TypecastBadge";
@@ -314,10 +317,7 @@ export default function ProfilePage() {
               )}
               {isMe
                 ? ownReels.map((r) => <OwnReelTile key={r.id} reel={r} />)
-                : theirReels.map((r) => (
-                    <video key={r.id} src={r.url} controls playsInline preload="metadata" aria-label={r.caption || talent.name}
-                      className="aspect-[3/4] w-full rounded-md bg-black object-cover" />
-                  ))}
+                : theirReels.map((r) => <TheirReelTile key={r.id} reel={r} ownerId={talent.id} label={r.caption || talent.name} />)}
               {DEMO_MODE && !isMe && theirReels.length === 0 && REELS.filter((r) => r.talentId === talent.id).map((r) => (
                 <div key={r.id} className="aspect-[3/4] rounded-md overflow-hidden bg-bg-elevated relative">
                   <img src={r.poster} alt="" className="w-full h-full object-cover" />
@@ -538,6 +538,11 @@ function ColorField({ label, color, paletteName }: { label: string; color: strin
 
 function OwnReelTile({ reel }: { reel: MyReel }) {
   const [url, setUrl] = useState<string | null>(null);
+  const [sheet, setSheet] = useState<null | "manage" | "comments">(null);
+  const stats = useReelStats(reel.id);
+  const myId = useStore((s) => s.userId) || "";
+  const { lang } = useT();
+  const he = lang === "he";
   useEffect(() => {
     let revoke: (() => void) | undefined;
     let alive = true;
@@ -546,10 +551,52 @@ function OwnReelTile({ reel }: { reel: MyReel }) {
     });
     return () => { alive = false; revoke?.(); };
   }, [reel.blobKey]);
-  return url ? (
-    <video src={url} controls playsInline preload="metadata" aria-label={reel.caption || "video"}
-      className="aspect-[3/4] w-full rounded-md bg-black object-cover" />
-  ) : (
-    <div className="aspect-[3/4] rounded-md bg-bg-muted animate-pulse" />
+  return (
+    <div className="relative">
+      {url ? (
+        <video src={url} controls playsInline preload="metadata" aria-label={reel.caption || "video"}
+          className="aspect-[3/4] w-full rounded-md bg-black object-cover" />
+      ) : (
+        <div className="aspect-[3/4] rounded-md bg-bg-muted animate-pulse" />
+      )}
+      <button onClick={() => setSheet("manage")} aria-label={he ? "הגדרות הסרטון" : "Video settings"}
+        className="absolute top-1 end-1 w-9 h-9 rounded-full bg-black/60 text-white grid place-items-center">
+        <MoreHorizontal className="w-4 h-4" />
+      </button>
+      <div className="absolute top-2 start-2 text-[0.6875rem] text-white font-semibold drop-shadow tnum inline-flex items-center gap-1 pointer-events-none">
+        <Eye className="w-3 h-3" aria-hidden /> {formatNumber(stats.views)}
+      </div>
+      <AnimatePresence>
+        {sheet === "manage" && <ReelManageSheet reel={reel} onClose={() => setSheet(null)} onComments={() => setSheet("comments")} />}
+        {sheet === "comments" && <ReelCommentsSheet reelId={reel.id} ownerId={myId} onClose={() => setSheet(null)} />}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function TheirReelTile({ reel, ownerId, label }: { reel: { id: string; url: string }; ownerId: string; label: string }) {
+  const stats = useReelStats(reel.id);
+  const [comments, setComments] = useState(false);
+  const { lang } = useT();
+  const he = lang === "he";
+  return (
+    <div className="relative">
+      <video src={reel.url} controls playsInline preload="metadata" aria-label={label}
+        onPlay={() => void recordReelView(reel.id, ownerId)}
+        className="aspect-[3/4] w-full rounded-md bg-black object-cover" />
+      <div className="absolute top-1 start-1 end-1 flex justify-between">
+        <button onClick={() => void toggleReelLike(reel.id, ownerId)} aria-label={he ? "לייק" : "Like"} aria-pressed={stats.liked}
+          className="h-8 px-2 rounded-full bg-black/60 text-white text-[0.6875rem] font-semibold inline-flex items-center gap-1 tnum">
+          <Heart className={cn("w-3.5 h-3.5", stats.liked && "fill-danger stroke-danger")} /> {formatNumber(stats.likes)}
+        </button>
+        <button onClick={() => setComments(true)} aria-label={he ? "תגובות" : "Comments"}
+          className="h-8 px-2 rounded-full bg-black/60 text-white text-[0.6875rem] font-semibold inline-flex items-center gap-1 tnum">
+          <MessageCircle className="w-3.5 h-3.5" /> {formatNumber(stats.comments)}
+        </button>
+      </div>
+      <AnimatePresence>
+        {comments && <ReelCommentsSheet reelId={reel.id} ownerId={ownerId} onClose={() => setComments(false)} />}
+      </AnimatePresence>
+    </div>
   );
 }

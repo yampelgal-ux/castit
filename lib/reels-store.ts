@@ -2,7 +2,8 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { saveTapeVideo, deleteTapeVideo, newTapeKey, loadTapeVideo } from "@/lib/tape-storage";
-import { uploadMedia } from "@/lib/cloud/media";
+import { uploadMedia, removeMedia } from "@/lib/cloud/media";
+import { deleteReelSocial } from "@/lib/cloud/social";
 import { DEMO_MODE } from "@/lib/cloud/config";
 
 // The talent's own showreels / portfolio videos.
@@ -47,7 +48,9 @@ export const useMyReels = create<ReelsState>()(
       remove: async (id) => {
         const r = get().reels.find((x) => x.id === id);
         set({ reels: get().reels.filter((x) => x.id !== id) });
-        if (r) { try { await deleteTapeVideo(r.blobKey); } catch {} }
+        if (!r) return;
+        try { await deleteTapeVideo(r.blobKey); } catch {}
+        if (r.cloud) { void removeMedia(`tapes/${r.blobKey}`); void deleteReelSocial(r.id); }
       },
       retry: async (id) => {
         const r = get().reels.find((x) => x.id === id);

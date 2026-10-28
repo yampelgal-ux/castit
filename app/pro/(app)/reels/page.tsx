@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bookmark, MessageCircle, Megaphone, Sparkles, Info, Ruler, Languages, Check, X, Filter,
+  Bookmark, MessageCircle, Heart, MessagesSquare, Megaphone, Sparkles, Info, Ruler, Languages, Check, X, Filter,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { LazyVideo } from "@/components/LazyVideo";
@@ -14,6 +14,9 @@ import { useAllReels } from "@/lib/cloud/talents";
 import { loadAuditions } from "@/lib/auditions-store";
 import { matchTalent } from "@/lib/matching";
 import { useStore } from "@/lib/store";
+import { useReelStats, toggleReelLike, recordReelView } from "@/lib/cloud/social";
+import { ReelCommentsSheet } from "@/components/reels/ReelCommentsSheet";
+import { SendAuditionSheet } from "@/components/SendAuditionSheet";
 import { haptic } from "@/lib/haptics";
 import { cn, formatNumber } from "@/lib/utils";
 
@@ -142,6 +145,8 @@ function ProReelView({
   const { shortlist, toggleShortlist } = useStore();
   const [showInfo, setShowInfo] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const stats = useReelStats(reel.id);
   const isShortlisted = shortlist.has(talent.id);
 
   return (
@@ -150,6 +155,8 @@ function ProReelView({
         src={reel.videoUrl}
         poster={reel.poster}
         className="absolute inset-0 w-full h-full object-cover"
+        tapToUnmute
+        onView={() => void recordReelView(reel.id, talent.id)}
       />
 
       {/* Vignette */}
@@ -199,6 +206,29 @@ function ProReelView({
             <Megaphone className="w-5 h-5" />
           </div>
           <span className="text-[0.6875rem] font-medium">Invite</span>
+        </button>
+
+        <button
+          onClick={async () => { if (await toggleReelLike(reel.id, talent.id)) haptic(stats.liked ? "light" : "success"); }}
+          className="flex flex-col items-center gap-1 text-white"
+          aria-label="Like"
+          aria-pressed={stats.liked}
+        >
+          <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur grid place-items-center">
+            <Heart className={cn("w-5 h-5", stats.liked && "fill-danger stroke-danger")} />
+          </div>
+          <span className="text-[0.6875rem] font-medium tnum">{formatNumber(reel.likes + stats.likes)}</span>
+        </button>
+
+        <button
+          onClick={() => setShowComments(true)}
+          className="flex flex-col items-center gap-1 text-white"
+          aria-label="Comments"
+        >
+          <div className="w-12 h-12 rounded-full bg-white/15 backdrop-blur grid place-items-center">
+            <MessagesSquare className="w-5 h-5" />
+          </div>
+          <span className="text-[0.6875rem] font-medium tnum">{formatNumber(reel.comments + stats.comments)}</span>
         </button>
 
         <Link
@@ -254,15 +284,9 @@ function ProReelView({
       {/* Sheets */}
       <AnimatePresence>
         {showInfo && <TypecastSheet talent={talent} onClose={() => setShowInfo(false)} />}
-        {showInvite && (
-          <InviteSheet
-            talent={talent}
-            auditions={auditions}
-            defaultId={defaultAuditionId}
-            onClose={() => setShowInvite(false)}
-          />
-        )}
+        {showComments && <ReelCommentsSheet reelId={reel.id} ownerId={talent.id} onClose={() => setShowComments(false)} />}
       </AnimatePresence>
+      <SendAuditionSheet open={showInvite} onClose={() => setShowInvite(false)} talent={talent} />
     </div>
   );
 }
@@ -339,110 +363,6 @@ function TypecastSheet({ talent, onClose }: { talent: Talent; onClose: () => voi
             </Link>
           </div>
         </div>
-      </motion.div>
-    </>
-  );
-}
-
-function InviteSheet({
-  talent, auditions, defaultId, onClose,
-}: {
-  talent: Talent;
-  auditions: ReturnType<typeof loadAuditions>;
-  defaultId: string | null;
-  onClose: () => void;
-}) {
-  const [picked, setPicked] = useState<string | null>(defaultId);
-  const [sent, setSent] = useState(false);
-
-  function invite() {
-    setSent(true);
-    haptic("success");
-    setTimeout(onClose, 1300);
-  }
-
-  return (
-    <>
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/70 z-40" onClick={onClose}
-      />
-      <motion.div
-        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-        transition={{ type: "spring", stiffness: 300, damping: 32 }}
-        className="fixed bottom-0 inset-x-0 max-w-[440px] mx-auto z-50 bg-bg-elevated border-t border-border rounded-t-3xl max-h-[80dvh] overflow-y-auto"
-      >
-        {sent ? (
-          <div className="flex flex-col items-center py-10 px-6 gap-3">
-            <div className="w-14 h-14 rounded-full bg-success/15 grid place-items-center">
-              <Check className="w-7 h-7 text-success" strokeWidth={2.5} />
-            </div>
-            <p className="font-display text-xl">Invitation sent</p>
-            <p className="text-text-muted text-sm text-center">{talent.name} will see it in their alerts.</p>
-          </div>
-        ) : (
-          <div className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-display text-xl">Invite to audition</h3>
-                <p className="text-[0.6875rem] text-text-muted">Pick a role for {talent.name}</p>
-              </div>
-              <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-bg-muted grid place-items-center">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {auditions.length === 0 ? (
-              <div className="rounded-2xl border border-border bg-bg p-4 text-center">
-                <p className="text-sm text-text-muted">You haven't posted any auditions yet.</p>
-                <Link
-                  href="/pro/audition/new"
-                  className="inline-flex mt-3 h-10 px-4 rounded-full bg-gold text-on-accent text-xs font-semibold items-center gap-1.5"
-                >
-                  <Megaphone className="w-3.5 h-3.5" /> Post one now
-                </Link>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-2 mb-4">
-                  {auditions.map((a) => (
-                    <button
-                      key={a.id}
-                      onClick={() => setPicked(a.id)}
-                      className={cn(
-                        "w-full text-left p-3 rounded-xl border transition-colors",
-                        picked === a.id ? "border-gold bg-gold/10" : "border-border bg-bg-elevated"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{a.type}</div>
-                          <div className="text-sm font-semibold leading-tight truncate">{a.title}</div>
-                          <div className="text-[0.6875rem] text-text-muted truncate mt-0.5">{a.studio} · {a.location}</div>
-                        </div>
-                        {picked === a.id && (
-                          <div className="w-5 h-5 rounded-full bg-gold grid place-items-center shrink-0">
-                            <Check className="w-3 h-3 text-on-accent" strokeWidth={3} />
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={invite}
-                  disabled={!picked}
-                  className={cn(
-                    "w-full h-12 rounded-2xl font-semibold inline-flex items-center justify-center gap-2",
-                    picked ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
-                  )}
-                >
-                  <Megaphone className="w-4 h-4" /> Send invitation
-                </button>
-              </>
-            )}
-          </div>
-        )}
       </motion.div>
     </>
   );

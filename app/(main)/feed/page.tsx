@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { MessageCircle, Share2, Send, Music2, Bookmark } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { MessageCircle, Share2, Music2, Bookmark, MoreHorizontal, Eye } from "lucide-react";
 import { useAllReels } from "@/lib/cloud/talents";
 import Link from "next/link";
 import { Film, Upload } from "lucide-react";
@@ -12,6 +13,12 @@ import { AnimatedLike } from "@/components/AnimatedLike";
 import { Brand } from "@/components/Brand";
 import { LazyVideo } from "@/components/LazyVideo";
 import { useStore } from "@/lib/store";
+import { useMyReels } from "@/lib/reels-store";
+import { useReelStats, toggleReelLike, recordReelView } from "@/lib/cloud/social";
+import { ReelCommentsSheet } from "@/components/reels/ReelCommentsSheet";
+import { ReelManageSheet } from "@/components/reels/ReelManageSheet";
+import { shareReel } from "@/components/reels/share";
+import type { ReelPost, Talent } from "@/lib/mock-data";
 import { useT } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
 import { cn, formatNumber } from "@/lib/utils";
@@ -37,7 +44,7 @@ export default function FeedPage() {
         </div>
       </div>
 
-      {items.map(({ reel, talent }) => <ReelView key={reel.id} reel={reel} talent={talent} />)}
+      {items.map(({ reel, talent }) => <ReelView key={reel.id} reel={reel} talent={talent!} />)}
 
       {items.length === 0 && (
         <div className="h-dvh grid place-items-center px-8 text-center text-white">
@@ -57,11 +64,24 @@ export default function FeedPage() {
   );
 }
 
-function ReelView({ reel, talent }: { reel: any; talent: any }) {
-  const [liked, setLiked] = useState(false);
-  const { toggleLike, toggleBookmark, bookmarks } = useStore();
+function ReelView({ reel, talent }: { reel: ReelPost; talent: Talent }) {
+  const { toggleBookmark, bookmarks, userId } = useStore();
   const bookmarked = bookmarks.has(reel.id);
-  const { t } = useT();
+  const { t, lang } = useT();
+  const he = lang === "he";
+  const router = useRouter();
+  const stats = useReelStats(reel.id);
+  const myReel = useMyReels((s) => s.reels.find((r) => r.id === reel.id));
+  const isMine = !!myReel || talent.id === userId;
+  const [sheet, setSheet] = useState<null | "comments" | "manage">(null);
+  const [toast, setToast] = useState("");
+  const say = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2200); };
+
+  async function like() {
+    const ok = await toggleReelLike(reel.id, talent.id);
+    if (!ok) { say(he ? "צריך להתחבר כדי לעשות לייק" : "Sign in to like"); return; }
+    haptic(stats.liked ? "light" : "success");
+  }
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-black">
@@ -69,6 +89,8 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
         src={reel.videoUrl}
         poster={reel.poster}
         className="absolute inset-0 w-full h-full object-cover"
+        tapToUnmute
+        onView={() => void recordReelView(reel.id, talent.id)}
       />
 
       {/* Vignette */}
@@ -76,28 +98,18 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
 
       {/* Right rail */}
       <div className="absolute right-3 bottom-28 z-10 flex flex-col items-center gap-5">
-        <div className="flex flex-col items-center gap-1">
-          <Avatar src={talent.photo} size={48} ring />
-          <button className="-mt-3 w-5 h-5 rounded-full bg-danger text-white text-sm grid place-items-center font-bold leading-none">
-            +
-          </button>
-        </div>
+        <Link href={`/profile/${talent.username}`} className="flex flex-col items-center gap-1" aria-label={talent.name}>
+          <Avatar src={talent.photo} seed={talent.name} size={48} ring />
+        </Link>
 
         <Action
-          icon={
-            <AnimatedLike
-              active={liked}
-              onClick={() => {
-                setLiked(!liked);
-                toggleLike(reel.id);
-                haptic(liked ? "light" : "success");
-              }}
-              size={32}
-            />
-          }
-          label={formatNumber(reel.likes + (liked ? 1 : 0))}
+          icon={<AnimatedLike active={stats.liked} onClick={like} size={32} />}
+          label={formatNumber(reel.likes + stats.likes)}
         />
-        <Action icon={<MessageCircle className="w-7 h-7" />} label={formatNumber(reel.comments)} />
+        <button onClick={() => setSheet("comments")} className="flex flex-col items-center gap-1 text-white" aria-label={he ? "תגובות" : "Comments"}>
+          <MessageCircle className="w-7 h-7" />
+          <span className="text-[0.6875rem] font-medium tnum">{formatNumber(reel.comments + stats.comments)}</span>
+        </button>
         <button
           onClick={() => { toggleBookmark(reel.id); haptic(bookmarked ? "light" : "medium"); }}
           className="flex flex-col items-center gap-1 text-white"
@@ -106,8 +118,19 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
           <Bookmark className={cn("w-7 h-7 transition-colors", bookmarked && "fill-gold text-gold")} />
           <span className="text-[0.6875rem] font-medium tnum">{bookmarked ? t("feed.saved") : t("feed.save")}</span>
         </button>
-        <Action icon={<Send className="w-7 h-7" />} label={t("feed.send")} />
-        <Action icon={<Share2 className="w-7 h-7" />} label={formatNumber(reel.shares)} />
+        <button
+          onClick={async () => { const r = await shareReel(talent.username, reel.caption, he); if (r === "copied") say(he ? "הקישור הועתק" : "Link copied"); }}
+          className="flex flex-col items-center gap-1 text-white" aria-label={he ? "שיתוף" : "Share"}
+        >
+          <Share2 className="w-7 h-7" />
+          <span className="text-[0.6875rem] font-medium">{he ? "שיתוף" : "Share"}</span>
+        </button>
+        {isMine && myReel && (
+          <button onClick={() => setSheet("manage")} className="flex flex-col items-center gap-1 text-white" aria-label={he ? "הגדרות הסרטון" : "Video settings"}>
+            <MoreHorizontal className="w-7 h-7" />
+            <span className="text-[0.6875rem] font-medium tnum inline-flex items-center gap-0.5"><Eye className="w-3 h-3" />{formatNumber(stats.views)}</span>
+          </button>
+        )}
       </div>
 
       {/* Bottom info */}
@@ -118,20 +141,19 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
         className="absolute left-4 right-20 bottom-24 z-10"
       >
         <div className="flex items-center gap-2 mb-2">
-          <span className="font-semibold">@{talent.username}</span>
+          <Link href={`/profile/${talent.username}`} className="font-semibold">@{talent.username}</Link>
           {talent.verified && <VerifiedBadge />}
-          <button className="ml-1 px-3 py-1 text-[0.6875rem] font-semibold rounded-full bg-white/10 backdrop-blur border border-white/20">
-            {t("feed.follow")}
-          </button>
         </div>
-        <p className="text-sm leading-snug text-white/95 mb-3">{reel.caption}</p>
+        {reel.caption && <p className="text-sm leading-snug text-white/95 mb-3" dir="auto">{reel.caption}</p>}
 
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          <TypecastBadge>{talent.typecast.heightCm}cm</TypecastBadge>
-          <TypecastBadge color={talent.typecast.eyeColor}>{t("feed.eyes")}</TypecastBadge>
-          <TypecastBadge color={talent.typecast.hairColor}>{talent.typecast.hairLength} {t("feed.hair")}</TypecastBadge>
-          <TypecastBadge>{talent.typecast.languages.slice(0, 2).join(" · ")}</TypecastBadge>
-        </div>
+        {talent.typecast && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {talent.typecast.heightCm ? <TypecastBadge>{talent.typecast.heightCm}cm</TypecastBadge> : null}
+            {talent.typecast.eyeColor && <TypecastBadge color={talent.typecast.eyeColor}>{t("feed.eyes")}</TypecastBadge>}
+            {talent.typecast.hairColor && <TypecastBadge color={talent.typecast.hairColor}>{talent.typecast.hairLength} {t("feed.hair")}</TypecastBadge>}
+            {talent.typecast.languages?.length ? <TypecastBadge>{talent.typecast.languages.slice(0, 2).join(" · ")}</TypecastBadge> : null}
+          </div>
+        )}
 
         <div className="flex items-center gap-2 text-xs text-white/80">
           <Music2 className="w-3.5 h-3.5" />
@@ -139,10 +161,23 @@ function ReelView({ reel, talent }: { reel: any; talent: any }) {
         </div>
       </motion.div>
 
-      {/* Send to casting CTA */}
-      <button className="absolute left-4 bottom-6 z-10 px-4 py-2.5 rounded-full bg-gold text-on-accent font-semibold text-xs shadow-lg shadow-gold/20">
-        ✦ {t("feed.sendToPro")}
-      </button>
+      {!isMine && (
+        <button onClick={() => router.push(`/profile/${talent.username}`)}
+          className="absolute left-4 bottom-6 z-10 px-4 py-2.5 rounded-full bg-gold text-on-accent font-semibold text-xs shadow-lg shadow-gold/20">
+          ✦ {he ? "לפרופיל המלא" : "Full profile"}
+        </button>
+      )}
+
+      {toast && (
+        <div role="status" className="absolute top-20 inset-x-0 mx-auto w-max max-w-[85vw] z-20 rounded-full bg-black/80 text-white text-xs px-4 py-2">{toast}</div>
+      )}
+
+      <AnimatePresence>
+        {sheet === "comments" && <ReelCommentsSheet reelId={reel.id} ownerId={talent.id} onClose={() => setSheet(null)} />}
+        {sheet === "manage" && myReel && (
+          <ReelManageSheet reel={myReel} onClose={() => setSheet(null)} onComments={() => setSheet("comments")} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
