@@ -367,13 +367,17 @@ function AccountSection({ L }: { L: LFn }) {
           : L("הנתונים נשמרים רק במכשיר הזה. התחברו כדי לשמור אותם בחשבון.", "Saved on this device only. Sign in to keep them in your account.")}>
         <span />
       </Row>
-      {install.canInstall && (
-        <div className="p-4">
+      <div className="p-4">
+        {install.canInstall ? (
           <button onClick={install.prompt} className="w-full h-12 rounded-lg border-2 border-border-strong font-semibold flex items-center justify-center gap-2">
             <Smartphone className="w-4 h-4" aria-hidden /> {L("התקנת CastIt כאפליקציה", "Install CastIt as an app")}
           </button>
-        </div>
-      )}
+        ) : (
+          <Link href="/install" className="w-full h-12 rounded-lg border-2 border-border-strong font-semibold flex items-center justify-center gap-2">
+            <Smartphone className="w-4 h-4" aria-hidden /> {L("הורדת האפליקציה לטלפון", "Get the app on your phone")}
+          </Link>
+        )}
+      </div>
       <div className="p-4">
         {isAuthed ? (
           <button onClick={async () => { await signOutEverywhere(); router.replace("/welcome"); }}

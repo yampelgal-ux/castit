@@ -4,7 +4,7 @@
  *  • Images (Unsplash / Dicebear / own icons): stale-while-revalidate
  *  • Never touches /api/*, auth, Supabase or video streams.
  */
-const VERSION = "castit-v1";
+const VERSION = "castit-v2";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const IMAGES = `${VERSION}-images`;

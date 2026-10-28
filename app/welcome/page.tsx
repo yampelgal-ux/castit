@@ -118,6 +118,10 @@ export default function WelcomePage() {
             </Link>
           </motion.div>
 
+          <Link href="/install" className="mt-4 block text-center text-xs font-semibold text-gold">
+            📱 {t("welcome.install")}
+          </Link>
+
           <p className="mt-3 text-center text-[0.6875rem] text-text-subtle leading-relaxed">
             By continuing you agree to our Terms of Service & Privacy Policy.
           </p>
