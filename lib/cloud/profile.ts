@@ -10,6 +10,15 @@ import type { MyReel } from "@/lib/reels-store";
 type Profile = ReturnType<typeof useStore.getState>["profile"];
 
 let lastHash = "";
+
+/** Outcome of the latest public-profile publish, for the settings screen. */
+export type PublishStatus = { ok: boolean; error?: string; at: number; reels: number } | null;
+let status: PublishStatus = null;
+export function lastPublishStatus(): PublishStatus { return status; }
+function report(next: PublishStatus) {
+  status = next;
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("castit:profile-published"));
+}
 const uploadedPhotos = new Map<string, string>(); // data-URL fingerprint → public URL
 
 async function resolvePhoto(userId: string, photo?: string): Promise<string | undefined> {
@@ -65,7 +74,7 @@ function toTalentCard(userId: string, p: Profile, photo?: string, reels: MyReel[
 
 /** Upsert the signed-in user's public profile (+ talent card for talents). */
 export async function publishMyProfile(userId: string, p: Profile, reels: MyReel[] = []) {
-  if (!p.name) return;
+  if (!p.name) { report({ ok: false, error: "missing-name", at: Date.now(), reels: 0 }); return; }
   const hash = JSON.stringify([userId, p, reels]);
   if (hash === lastHash) return;
 
@@ -89,7 +98,12 @@ export async function publishMyProfile(userId: string, p: Profile, reels: MyReel
     const retry = { ...row, username: `${baseUsername}${userId.slice(0, 4)}` };
     ({ error } = await supabase.from("profiles").upsert(retry, { onConflict: "id" }));
   }
-  if (error) { console.warn("[profile] publish failed", error.message); return; }
+  if (error) {
+    console.warn("[profile] publish failed", error.message);
+    report({ ok: false, error: error.message, at: Date.now(), reels: 0 });
+    return;
+  }
+  report({ ok: true, at: Date.now(), reels: row.talent_card?.reels?.length ?? 0 });
 
   if (isTalent) {
     const tc = p.typecast || {};

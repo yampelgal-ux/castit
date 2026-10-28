@@ -14,6 +14,7 @@ import { useStore } from "@/lib/store";
 import { useSettings, type TextSize } from "@/lib/settings-store";
 import { useMyReels, type MyReel } from "@/lib/reels-store";
 import { getTapePlaybackUrl } from "@/lib/tape-storage";
+import { lastPublishStatus, type PublishStatus } from "@/lib/cloud/profile";
 import { photoToDataUrl } from "@/lib/image";
 import { isCloudConfigured, isRealUserId } from "@/lib/cloud/config";
 import { signOutEverywhere } from "@/lib/cloud/auth";
@@ -176,12 +177,33 @@ function VideosSection({ L }: { L: LFn }) {
         {L("שואוריל, מונולוגים וקטעי עבודה. הסרטונים נשמרים בחשבון ומוצגים למלהקים בפרופיל שלך.", "Showreels, monologues and clips. Saved to your account and shown to casting pros on your profile.")}
       </div>
       {reels.map((r) => <ReelRow key={r.id} reel={r} L={L} />)}
+      {reels.length > 0 && <PublishLine L={L} />}
       <div className="p-4">
         <Link href="/studio/upload" className="w-full h-12 rounded-lg bg-gold text-on-accent font-semibold flex items-center justify-center gap-2">
           <Upload className="w-4 h-4" aria-hidden /> {L("העלאת סרטון", "Upload a video")}
         </Link>
       </div>
     </Section>
+  );
+}
+
+function PublishLine({ L }: { L: LFn }) {
+  const [st, setSt] = useState<PublishStatus>(null);
+  useEffect(() => {
+    const on = () => setSt(lastPublishStatus());
+    on();
+    window.addEventListener("castit:profile-published", on);
+    return () => window.removeEventListener("castit:profile-published", on);
+  }, []);
+  if (!st) return null;
+  return (
+    <div className={cn("px-4 pb-3 text-xs", st.ok ? "text-sage" : "text-terra")} role="status">
+      {st.ok
+        ? L(`הפרופיל הציבורי עודכן · ${st.reels} סרטונים גלויים לכולם`, `Public profile updated · ${st.reels} videos visible to everyone`)
+        : st.error === "missing-name"
+          ? L("כדי שאחרים יראו את הסרטונים צריך שם בפרופיל (למעלה).", "Add a name to your profile (above) so others can see your videos.")
+          : L(`פרסום הפרופיל נכשל: ${st.error}`, `Publishing your profile failed: ${st.error}`)}
+    </div>
   );
 }
 
