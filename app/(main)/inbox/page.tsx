@@ -2,7 +2,7 @@
 import { GuardianBanner } from "@/components/TrustBanners";
 import { PushPrompt } from "@/components/PushPrompt";
 import { useTrust } from "@/lib/cloud/trust";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Megaphone, ChevronLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -110,6 +110,17 @@ export default function InboxPage() {
             {L("כל ההזמנות וכל הסטטוסים, במקום אחד.", "Every invite, every status, in one place.")}
           </p>
         </div>
+
+        <Link href="/auditions" className="flex items-center gap-2.5 p-3 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40">
+          <div className="w-8 h-8 rounded-lg bg-gold/15 text-gold grid place-items-center shrink-0">
+            <Megaphone className="w-4 h-4" aria-hidden />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold">{L("אודישנים פתוחים", "Open auditions")}</div>
+            <div className="text-[0.6875rem] text-text-muted">{L("תפקידים שכל אחד/ת יכול/ה להגיש אליהם", "Roles anyone can apply to")}</div>
+          </div>
+          <ChevronLeft className="w-4 h-4 text-text-muted ltr:rotate-180" aria-hidden />
+        </Link>
 
         {counts.needTape > 0 && tab === "active" && (
           <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-gold/10 border border-gold/30">

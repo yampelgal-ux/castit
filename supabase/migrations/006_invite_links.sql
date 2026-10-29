@@ -67,3 +67,29 @@ begin
 end $$;
 revoke all on function public.claim_open_invite(text) from public, anon;
 grant execute on function public.claim_open_invite(text) to authenticated;
+
+-- ── Open auditions board ────────────────────────────────────────
+-- A casting director can also list an invite link on the open auditions
+-- board (data.listed = true). Every signed-in actor sees listed calls from
+-- approved casting directors and applies with claim_open_invite().
+create or replace function public.list_open_calls()
+returns table (code text, data jsonb, owner_id uuid, created_at timestamptz, applied boolean)
+language sql stable security definer set search_path = public as $$
+  select r.slug, r.data - 'joined', r.owner_id, r.created_at,
+         exists (select 1 from public.shared_records s
+                  where s.kind = 'submission' and s.owner_id = r.owner_id and auth.uid() = any(s.member_ids)
+                    and s.data->'submission'->>'roleId' = r.data->'role'->>'id')
+    from public.shared_records r
+    join public.profiles p on p.id = r.owner_id
+   where r.kind = 'open_invite' and r.is_public
+     and coalesce((r.data->>'listed')::boolean, false)
+     and not coalesce((r.data->>'closed')::boolean, false)
+     and p.pro_status = 'approved' and not p.banned
+     and (coalesce(r.data->>'deadline', '') !~ '^\d{4}-\d{2}-\d{2}' or left(r.data->>'deadline', 10)::date >= current_date)
+     and r.owner_id <> auth.uid()
+     and not public.is_blocked_between(auth.uid(), r.owner_id)
+   order by r.created_at desc
+   limit 200;
+$$;
+revoke all on function public.list_open_calls() from public, anon;
+grant execute on function public.list_open_calls() to authenticated;

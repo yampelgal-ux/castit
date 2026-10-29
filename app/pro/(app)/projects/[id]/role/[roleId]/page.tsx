@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   FileVideo, Calendar, DollarSign, ChevronRight, ScrollText, Clock, Edit3, Columns,
-  Check, X, CheckSquare, Square, Sparkles, PauseCircle, XCircle, MessageCircle,
+  Check, X, CheckSquare, Square, Sparkles, PauseCircle, XCircle, MessageCircle, Megaphone,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
@@ -46,7 +46,7 @@ export default function RoleDetailPage() {
   const [editingBrief, setEditingBrief] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [inviting, setInviting] = useState(false);
+  const [inviting, setInviting] = useState<null | "whatsapp" | "board">(null);
   const { lang, dir } = useT();
   const he = lang === "he";
   const L = (h: string, e: string) => (he ? h : e);
@@ -174,7 +174,7 @@ export default function RoleDetailPage() {
 
         {/* Invite actors who aren't on CastIt yet */}
         <button
-          onClick={() => setInviting(true)}
+          onClick={() => setInviting("whatsapp")}
           className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40 text-sm text-start"
         >
           <div className="w-8 h-8 rounded-lg bg-[#25D366]/15 text-[#1a9e4b] grid place-items-center shrink-0">
@@ -183,6 +183,20 @@ export default function RoleDetailPage() {
           <div className="flex-1">
             <div className="font-semibold">{L("הזמנה בוואטסאפ", "Invite on WhatsApp")}</div>
             <div className="text-[0.6875rem] text-text-muted">{L("קישור לשחקנים שעוד לא ב-CastIt", "A link for actors not on CastIt yet")}</div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-text-muted rtl:rotate-180" aria-hidden />
+        </button>
+
+        <button
+          onClick={() => setInviting("board")}
+          className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40 text-sm text-start"
+        >
+          <div className="w-8 h-8 rounded-lg bg-gold/15 text-gold grid place-items-center shrink-0">
+            <Megaphone className="w-4 h-4" aria-hidden />
+          </div>
+          <div className="flex-1">
+            <div className="font-semibold">{L("פרסום כאודישן פתוח", "Post as an open audition")}</div>
+            <div className="text-[0.6875rem] text-text-muted">{L("כל השחקנים באפליקציה יוכלו להגיש", "Every actor on the app can apply")}</div>
           </div>
           <ChevronRight className="w-4 h-4 text-text-muted rtl:rotate-180" aria-hidden />
         </button>
@@ -313,7 +327,7 @@ export default function RoleDetailPage() {
         </motion.div>
       )}
 
-      {inviting && <InviteLinkSheet role={role} project={project} onClose={() => setInviting(false)} />}
+      {inviting && <InviteLinkSheet role={role} project={project} mode={inviting} onClose={() => setInviting(null)} />}
 
       {editingBrief && (
         <EditBriefSheet

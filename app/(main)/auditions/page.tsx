@@ -2,163 +2,97 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Megaphone, MapPin, Clock, DollarSign, Sparkles, Filter } from "lucide-react";
+import { Megaphone, MapPin, Clock, DollarSign, Check } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
-import { useStore } from "@/lib/store";
-import { TALENTS, type Audition, type Talent } from "@/lib/mock-data";
-import { matchTalent } from "@/lib/matching";
-import { loadAuditions } from "@/lib/auditions-store";
-import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import { optLabel } from "@/lib/typecast-options";
+import { listOpenCalls, type OpenCall } from "@/lib/cloud/invites";
+import { isCloudConfigured } from "@/lib/cloud/config";
+import { cn } from "@/lib/utils";
 
-const FILTER_HE: Record<string, string> = { "For You": "בשבילך", All: "הכל", Paid: "בתשלום", Local: "קרוב אליי" };
+const FILTERS = [["all", "הכל", "All"], ["paid", "בתשלום", "Paid"], ["new", "לא הגשתי", "Not applied"]] as const;
 
-const FILTERS = ["For You", "All", "Paid", "Local"] as const;
-
+// Open auditions every actor can apply to. Casting directors list a role here
+// from the role screen; applying adds the actor to that role like an invite.
 export default function AuditionsPage() {
-  const { profile, userId } = useStore();
-  const [auditions, setAuditions] = useState<Audition[]>([]);
-  const [filter, setFilter] = useState<typeof FILTERS[number]>("For You");
   const { lang } = useT();
   const he = lang === "he";
   const L = (h: string, e: string) => (he ? h : e);
+  const [calls, setCalls] = useState<OpenCall[] | null>(null);
+  const [filter, setFilter] = useState<(typeof FILTERS)[number][0]>("all");
 
-  useEffect(() => { setAuditions(loadAuditions()); }, []);
+  useEffect(() => {
+    if (!isCloudConfigured()) { setCalls([]); return; }
+    listOpenCalls().then((c) => setCalls(c ?? []));
+  }, []);
 
-  // Build a "me" talent from store profile for matching
-  const me: Talent = useMemo(() => ({
-    id: userId ?? "me",
-    username: profile.username || "you",
-    name: profile.name || "You",
-    verified: false,
-    photo: "",
-    cover: "",
-    bio: "",
-    followers: 0,
-    likes: 0,
-    submissions: 0,
-    typecast: {
-      heightCm: profile.typecast.heightCm ?? 175,
-      weightKg: profile.typecast.weightKg ?? 65,
-      ageRange: [profile.typecast.ageRangeMin ?? 22, profile.typecast.ageRangeMax ?? 35],
-      gender: (profile.typecast.gender as any) ?? "Female",
-      ethnicity: "",
-      skinTone: profile.typecast.skinTone ?? "#EBC8A7",
-      eyeColor: profile.typecast.eyeColor ?? "#6B8E4E",
-      hairColor: profile.typecast.hairColor ?? "#3B2A1E",
-      hairLength: (profile.typecast.hairLength as any) ?? "Medium",
-      languages: profile.typecast.languages ?? ["English"],
-      skills: profile.typecast.skills ?? [],
-      genres: profile.typecast.genres ?? [],
-      location: "Tel Aviv",
-      willingToTravel: true,
-    },
-  }), [profile, userId]);
+  const shown = useMemo(() => (calls ?? []).filter((c) =>
+    filter === "paid" ? !!c.data.role.payRange : filter === "new" ? !c.applied : true), [calls, filter]);
 
-  const ranked = useMemo(() => {
-    let list = auditions.map((a) => ({ a, m: matchTalent(me, a.targetTypecast) }));
-
-    if (filter === "Paid")  list = list.filter((r) => r.a.paid);
-    if (filter === "Local") list = list.filter((r) => r.a.location.toLowerCase().includes((me.typecast.location ?? "").toLowerCase()));
-    if (filter === "For You") {
-      list = list
-        .filter((r) => r.m.passes)
-        .sort((x, y) => y.m.score - x.m.score);
-    } else {
-      list.sort((x, y) => new Date(y.a.createdAt).getTime() - new Date(x.a.createdAt).getTime());
-    }
-    return list;
-  }, [auditions, filter, me]);
+  const fmt = (iso?: string) => iso ? new Date(iso).toLocaleDateString(he ? "he-IL" : "en-US", { day: "numeric", month: "short" }) : "";
 
   return (
     <div className="min-h-dvh pb-8">
-      <Header
+      <Header back
         title={he ? <span>אודישנים <em className="text-gold-gradient not-italic">פתוחים</em></span> : <span>Open <em className="text-gold-gradient not-italic">auditions</em></span>}
       />
 
       <div className="px-4 pt-2">
         <div className="flex gap-1 p-1 rounded-2xl bg-bg-elevated border border-border">
-          {FILTERS.map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={cn(
-                "flex-1 h-9 rounded-xl text-xs font-medium transition-all",
-                filter === f ? "bg-gold text-on-accent" : "text-text-muted"
-              )}
-            >
-              {L(FILTER_HE[f], f)}
+          {FILTERS.map(([id, h, e]) => (
+            <button key={id} onClick={() => setFilter(id)} aria-pressed={filter === id}
+              className={cn("flex-1 h-9 rounded-xl text-xs font-medium transition-all", filter === id ? "bg-gold text-on-accent" : "text-text-muted")}>
+              {L(h, e)}
             </button>
           ))}
         </div>
       </div>
 
       <div className="px-4 pt-4 space-y-2.5">
-        {ranked.length === 0 ? (
+        {calls === null ? (
+          <p className="text-sm text-text-muted text-center py-10">{L("טוען…", "Loading…")}</p>
+        ) : shown.length === 0 ? (
           <EmptyState
             icon={Megaphone}
             tone="gold"
-            title={L("עוד אין אודישן שמתאים לך", "Nothing matches you — yet")}
-            description={filter === "For You"
-              ? L("השלימו את הטייפקאסט כדי שמלהקים ימצאו אתכם כשהם מפרסמים אודישנים חדשים.", "Complete your typecast so casting pros can find you when they post new auditions.")
-              : L("אודישנים חדשים עולים כל הזמן. כדאי לבדוק שוב בקרוב.", "Check back soon — new auditions drop daily.")}
+            title={calls.length ? L("אין כאן כרגע", "Nothing here right now") : L("עוד אין אודישנים פתוחים", "No open auditions yet")}
+            description={L("כשמלהקים מפרסמים אודישן פתוח הוא יופיע כאן. בינתיים כדאי להשלים את הפרופיל כדי שימצאו אותך בחיפוש.",
+              "When casting directors post an open audition it shows up here. Meanwhile, complete your profile so they find you in search.")}
             ctaLabel={L("עריכת הטייפקאסט", "Edit my typecast")}
             ctaHref="/typecast"
           />
         ) : (
-          ranked.map(({ a, m }, i) => (
-            <motion.div
-              key={a.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="rounded-2xl bg-bg-elevated border border-border overflow-hidden"
-            >
-              <Link href={`/auditions/${a.id}`} className="block p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{optLabel(a.type, he)}</div>
-                    <h3 className="font-display text-lg leading-tight mt-0.5">{a.title}</h3>
-                    <p className="text-[0.6875rem] text-text-muted mt-0.5">{a.studio}</p>
+          shown.map((c, i) => {
+            const d = c.data;
+            return (
+              <motion.div key={c.code} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 8) * 0.04 }}
+                className="rounded-2xl bg-bg-elevated border border-border overflow-hidden">
+                <Link href={`/auditions/${c.code}`} className="block p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      {d.project?.type && <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{optLabel(d.project.type, he)}</div>}
+                      <h3 className="font-display text-lg leading-tight mt-0.5">{d.role.name}</h3>
+                      <p className="text-[0.6875rem] text-text-muted mt-0.5 truncate">{[d.project?.title, d.studio || d.proName].filter(Boolean).join(" · ")}</p>
+                    </div>
+                    {c.applied && (
+                      <span className="text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full bg-success/15 text-success border border-success/30 whitespace-nowrap inline-flex items-center gap-1">
+                        <Check className="w-3 h-3" aria-hidden /> {L("הגשת", "Applied")}
+                      </span>
+                    )}
                   </div>
-                  {filter === "For You" && m.passes && (
-                    <span className={cn(
-                      "text-[0.6875rem] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap",
-                      m.score >= 85 ? "bg-success/15 text-success border-success/30"
-                        : m.score >= 65 ? "bg-gold/15 text-gold border-gold/30"
-                        : "bg-bg text-text-muted border-border"
-                    )}>
-                      <Sparkles className="w-2.5 h-2.5 inline me-0.5" /> {m.score}%
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap gap-3 text-[0.6875rem] text-text-muted mt-3">
-                  <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {a.location}</span>
-                  <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> {L("עד", "by")} {a.deadline}</span>
-                  {a.paid && (
-                    <span className="inline-flex items-center gap-1 text-success font-semibold">
-                      <DollarSign className="w-3 h-3" /> {a.fee || L("בתשלום", "Paid")}
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-xs text-text mt-3 leading-relaxed line-clamp-2">{a.description}</p>
-              </Link>
-              <div className="flex items-center justify-between px-4 py-2.5 border-t border-border bg-bg/40">
-                <span className="text-[0.6875rem] text-text-muted tnum">{he ? `${a.applicants} הגישו` : `${a.applicants} applied`}</span>
-                <Link
-                  href={`/auditions/${a.id}`}
-                  className="h-8 px-4 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center"
-                >
-                  {L("לפרטים", "View")}
+                  <div className="flex flex-wrap gap-3 text-[0.6875rem] text-text-muted mt-3">
+                    {d.location && <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" aria-hidden /> {d.location}</span>}
+                    {d.role.deadline && <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" aria-hidden /> {L("עד", "by")} {fmt(d.role.deadline)}</span>}
+                    {d.role.payRange && <span className="inline-flex items-center gap-1 text-success font-semibold"><DollarSign className="w-3 h-3" aria-hidden /> {d.role.payRange}</span>}
+                  </div>
+                  {d.role.description && <p className="text-xs text-text mt-3 leading-relaxed line-clamp-2" dir="auto">{d.role.description}</p>}
                 </Link>
-              </div>
-            </motion.div>
-          ))
+              </motion.div>
+            );
+          })
         )}
+        <p className="text-[0.6875rem] text-text-subtle text-center pt-2">{L("רק מלהקים שאושרו ידנית יכולים לפרסם כאן. אודישן אמיתי לא עולה כסף.", "Only casting directors we approved by hand can post here. A real audition never costs money.")}</p>
       </div>
     </div>
   );

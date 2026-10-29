@@ -24,6 +24,9 @@ export type InviteLink = {
   createdAt: string;
   joined?: number;
   closed?: boolean;
+  /** Also shown on the open auditions board. */
+  listed?: boolean;
+  location?: string;
 };
 
 const PENDING = "pending_invite"; // no castit_ prefix: it must survive sign-out wipes
@@ -74,12 +77,26 @@ export async function createInviteLink(role: Role, project: Project | null, mess
   return data;
 }
 
-export async function setInviteClosed(link: InviteLink, closed: boolean): Promise<InviteLink | null> {
+export function setInviteClosed(link: InviteLink, closed: boolean) {
+  return updateInvite(link, { closed });
+}
+
+export async function updateInvite(link: InviteLink, patch: Partial<InviteLink>): Promise<InviteLink | null> {
   // Re-read first so a join that just happened isn't overwritten.
   const { data: cur } = await supabase.from("shared_records").select("data").eq("id", `inv:${link.code}`).maybeSingle();
-  const next = { ...((cur?.data as InviteLink) ?? link), closed };
+  const next = { ...((cur?.data as InviteLink) ?? link), ...patch };
   const { error } = await supabase.from("shared_records").update({ data: next }).eq("id", `inv:${link.code}`);
   return error ? null : next;
+}
+
+export type OpenCall = { code: string; data: InviteLink; owner_id: string; created_at: string; applied: boolean };
+
+/** Listed open auditions from approved casting directors (signed-in users). */
+export async function listOpenCalls(): Promise<OpenCall[] | null> {
+  if (!isCloudConfigured()) return null;
+  const { data, error } = await supabase.rpc("list_open_calls");
+  if (error) { console.warn("[invites] open calls", error.message); return null; }
+  return (data ?? []) as OpenCall[];
 }
 
 /** Anyone with the link, signed in or not. */
