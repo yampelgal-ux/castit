@@ -308,6 +308,7 @@ export default function ProSearchPage() {
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className="font-semibold text-sm truncate">{talent.name}</span>
                         {talent.verified && <VerifiedBadge />}
+                        {talent.minor && <span className="text-[0.625rem] font-semibold px-1.5 py-0.5 rounded-full bg-plum/15 text-plum-light">{lang === "he" ? "קטין/ה" : "Minor"}</span>}
                       </div>
                       <MatchBadge score={match.score} />
                     </div>

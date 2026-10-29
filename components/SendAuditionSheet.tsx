@@ -7,6 +7,10 @@ import {
   type Project, type Role,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+import { useCanContactTalent } from "@/lib/cloud/trust";
+import { NotApprovedNotice } from "@/components/TrustBanners";
+import { optLabel } from "@/lib/typecast-options";
 
 type Props = {
   open: boolean;
@@ -15,6 +19,10 @@ type Props = {
 };
 
 export function SendAuditionSheet({ open, onClose, talent }: Props) {
+  const { lang } = useT();
+  const he = lang === "he";
+  const L = (h: string, e: string) => (he ? h : e);
+  const can = useCanContactTalent();
   const [projects, setProjects] = useState<Project[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -30,9 +38,12 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
     setRoles([]);
     setRoleId("");
     setDeadline("");
-    setMessage(`Hi ${talent.name.split(" ")[0]} — we'd love you to read for a role we're casting. Sides + instructions attached. Please submit your self-tape by the deadline.`);
+    const first = talent.name.split(" ")[0];
+    setMessage(he
+      ? `היי ${first}, נשמח שתקרא/י לתפקיד שאנחנו מלהקים. הטקסט וההנחיות מצורפים. אפשר להגיש טייפ עד הדדליין.`
+      : `Hi ${first}, we'd love you to read for a role we're casting. Sides and instructions attached. Please submit your self-tape by the deadline.`);
     setSent(false);
-  }, [open, talent.name]);
+  }, [open, talent.name, he]);
 
   useEffect(() => {
     if (!project) { setRoles([]); setRoleId(""); return; }
@@ -49,7 +60,7 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
   }, [roleId]);
 
   function submit() {
-    if (!roleId) return;
+    if (!roleId || !can.ok) return;
     inviteTalent(roleId, talent, { message: message.trim(), deadline: deadline || undefined });
     setSent(true);
     setTimeout(() => { onClose(); }, 1400);
@@ -68,35 +79,38 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
             initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
             className="relative w-full bg-bg-elevated border-t border-border rounded-t-3xl p-5 max-h-[85dvh] overflow-y-auto"
+            dir={he ? "rtl" : "ltr"}
           >
             <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
 
             {sent ? (
-              <SentConfirmation talentName={talent.name} />
+              <SentConfirmation talentName={talent.name} he={he} />
             ) : (
               <>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Send audition invite</div>
-                    <h2 className="font-display text-xl">To: {talent.name}</h2>
+                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{L("הזמנה לאודישן", "Send audition invite")}</div>
+                    <h2 className="font-display text-xl">{L("אל:", "To:")} {talent.name}</h2>
                   </div>
-                  <button onClick={onClose} className="p-2 -mr-2 text-text-muted">
+                  <button onClick={onClose} aria-label={L("סגירה", "Close")} className="p-2 -me-2 text-text-muted">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                {projects.length === 0 ? (
-                  <EmptyProjects onClose={onClose} />
+                {!can.ok ? (
+                  <NotApprovedNotice />
+                ) : projects.length === 0 ? (
+                  <EmptyProjects onClose={onClose} he={he} />
                 ) : (
                   <>
-                    <Label icon={FolderOpen}>Project</Label>
+                    <Label icon={FolderOpen}>{L("פרויקט", "Project")}</Label>
                     <div className="grid grid-cols-1 gap-2 mt-1.5">
                       {projects.map((p) => (
                         <button
                           key={p.id}
                           onClick={() => setProject(p)}
                           className={cn(
-                            "flex items-center gap-3 p-3 rounded-2xl border text-left transition-all",
+                            "flex items-center gap-3 p-3 rounded-2xl border text-start transition-all",
                             project?.id === p.id ? "border-gold bg-gold/8" : "border-border bg-bg hover:border-border-strong"
                           )}
                         >
@@ -106,7 +120,7 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
                           />
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-semibold truncate">{p.title}</div>
-                            <div className="text-[0.6875rem] text-text-muted truncate">{p.type} · {p.studio}</div>
+                            <div className="text-[0.6875rem] text-text-muted truncate">{optLabel(p.type, he)}{p.studio ? ` · ${p.studio}` : ""}</div>
                           </div>
                           {project?.id === p.id && <CheckCircle2 className="w-4 h-4 text-gold shrink-0" />}
                         </button>
@@ -115,10 +129,10 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
 
                     {project && (
                       <>
-                        <Label icon={Users} className="mt-4">Role</Label>
+                        <Label icon={Users} className="mt-4">{L("תפקיד", "Role")}</Label>
                         {roles.length === 0 ? (
                           <p className="text-xs text-text-muted mt-2 px-1">
-                            This project has no roles yet — add one first.
+                            {L("בפרויקט הזה עוד אין תפקידים. צריך להוסיף אחד קודם.", "This project has no roles yet. Add one first.")}
                           </p>
                         ) : (
                           <div className="flex flex-wrap gap-2 mt-1.5">
@@ -135,7 +149,7 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
                           </div>
                         )}
 
-                        <Label className="mt-4">Tape deadline</Label>
+                        <Label className="mt-4">{L("דדליין להגשת טייפ", "Tape deadline")}</Label>
                         <input
                           type="date"
                           value={deadline}
@@ -143,11 +157,11 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
                           className="w-full mt-1.5 h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
                         />
 
-                        <Label className="mt-4">Personal note</Label>
+                        <Label className="mt-4">{L("הודעה אישית", "Personal note")}</Label>
                         <textarea
                           value={message}
                           onChange={(e) => setMessage(e.target.value)}
-                          rows={4}
+                          rows={4} dir="auto"
                           className="w-full mt-1.5 px-3 py-2.5 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
                         />
                       </>
@@ -161,7 +175,7 @@ export function SendAuditionSheet({ open, onClose, talent }: Props) {
                         roleId ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
                       )}
                     >
-                      Send invite <Send className="w-4 h-4" />
+                      {L("שליחת הזמנה", "Send invite")} <Send className="w-4 h-4 rtl:-scale-x-100" />
                     </button>
                   </>
                 )}
@@ -183,7 +197,7 @@ function Label({ children, icon: Icon, className }: { children: React.ReactNode;
   );
 }
 
-function SentConfirmation({ talentName }: { talentName: string }) {
+function SentConfirmation({ talentName, he }: { talentName: string; he: boolean }) {
   return (
     <div className="text-center py-10">
       <motion.div
@@ -194,30 +208,30 @@ function SentConfirmation({ talentName }: { talentName: string }) {
       >
         <CheckCircle2 className="w-8 h-8 text-success" />
       </motion.div>
-      <h3 className="font-display text-xl">Invite sent</h3>
+      <h3 className="font-display text-xl">{he ? "ההזמנה נשלחה" : "Invite sent"}</h3>
       <p className="text-sm text-text-muted mt-1">
-        {talentName.split(" ")[0]} will get a notification with your message.
+        {he ? `${talentName.split(" ")[0]} יקבל/תקבל את ההזמנה עם ההודעה שלך.` : `${talentName.split(" ")[0]} will get a notification with your message.`}
       </p>
     </div>
   );
 }
 
-function EmptyProjects({ onClose }: { onClose: () => void }) {
+function EmptyProjects({ onClose, he }: { onClose: () => void; he: boolean }) {
   return (
     <div className="text-center py-8">
       <div className="w-14 h-14 rounded-2xl bg-gold/10 text-gold grid place-items-center mx-auto mb-3">
         <FolderOpen className="w-6 h-6" />
       </div>
-      <h3 className="font-display text-lg mb-1">No projects yet</h3>
+      <h3 className="font-display text-lg mb-1">{he ? "עוד אין פרויקטים" : "No projects yet"}</h3>
       <p className="text-xs text-text-muted max-w-[260px] mx-auto">
-        Create a casting project first — then you can invite talents to read for specific roles.
+        {he ? "קודם יוצרים פרויקט ליהוק, ואז אפשר להזמין שחקנים לתפקידים ספציפיים." : "Create a casting project first, then invite talent to read for specific roles."}
       </p>
       <a
         href="/pro/projects"
         onClick={onClose}
         className="inline-flex items-center gap-2 mt-5 px-5 h-11 rounded-full bg-gold text-on-accent text-sm font-semibold"
       >
-        Create project <ArrowRight className="w-4 h-4" />
+        {he ? "יצירת פרויקט" : "Create project"} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
       </a>
     </div>
   );

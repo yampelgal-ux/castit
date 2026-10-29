@@ -19,6 +19,8 @@ type Profile = {
   photoUrl?: string;
   /** Extra photos (headshots, full body…): public URLs, or data URLs on a device without the cloud. */
   headshots?: string[];
+  /** Talent's birth year; under 18 means a parent has to approve the profile. */
+  birthYear?: number;
   bio?: string;
   typecast: Partial<{
     heightCm: number;

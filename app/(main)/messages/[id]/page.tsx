@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { Send, MoreHorizontal, Ban } from "lucide-react";
 import { UserActionsSheet } from "@/components/UserActionsSheet";
 import { useHiddenUsers } from "@/lib/cloud/safety";
+import { useCanContactTalent } from "@/lib/cloud/trust";
+import { NotApprovedNotice } from "@/components/TrustBanners";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
@@ -42,6 +44,7 @@ export default function ConversationPage() {
   const [sendFailed, setSendFailed] = useState(false);
   const hidden = useHiddenUsers();
   const blocked = !!otherId && hidden.has(otherId);
+  const can = useCanContactTalent();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Who the other person is, even before they've written anything.
@@ -171,7 +174,9 @@ export default function ConversationPage() {
         <div ref={bottomRef} />
       </div>
 
-      {blocked ? (
+      {!can.ok ? (
+        <div className="p-3 border-t border-border"><NotApprovedNotice /></div>
+      ) : blocked ? (
         <div className="p-4 border-t border-border glass text-center text-sm text-text-muted flex items-center justify-center gap-2">
           <Ban className="w-4 h-4" aria-hidden /> {he ? "אי אפשר לשלוח הודעות בשיחה הזו." : "You can't send messages in this conversation."}
         </div>

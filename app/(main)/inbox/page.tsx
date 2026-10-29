@@ -1,4 +1,7 @@
 "use client";
+import { GuardianBanner } from "@/components/TrustBanners";
+import { useTrust } from "@/lib/cloud/trust";
+import { ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -94,6 +97,7 @@ export default function InboxPage() {
           </Link>
         }
       />
+      <GuardianBanner />
 
       <div className="px-5 pt-3 space-y-4">
         <div>
@@ -157,6 +161,7 @@ export default function InboxPage() {
 }
 
 function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
+  const trust = useTrust();
   const { submission: s, role, project } = item;
   const [offerState, setOfferState] = useState<"idle" | "accepted" | "declined">("idle");
   const [availState, setAvailState] = useState<"idle" | "available" | "unavailable">("idle");
@@ -198,6 +203,11 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
             <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{optLabel(project.type, he)}</div>
             <h3 className="font-display text-lg leading-tight truncate">{project.title}</h3>
             <p className="text-[0.6875rem] text-text-muted truncate">{project.studio} · {role.name}</p>
+            {trust.available && (s as any)._ownerId && (
+              <p className="text-[0.6875rem] text-sage font-semibold mt-0.5 inline-flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3" aria-hidden /> {L("מלהק/ת מאומת/ת", "Verified casting pro")}
+              </p>
+            )}
           </div>
           <StageBadge stage={s.stage} size="md" />
         </div>

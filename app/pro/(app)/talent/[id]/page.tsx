@@ -100,6 +100,7 @@ export default function TalentDossierPage() {
             <div className="flex items-center gap-1.5">
               <h1 className="font-display text-xl tracking-editorial truncate">{talent.name}</h1>
               {talent.verified && <VerifiedBadge />}
+              {talent.minor && <span className="text-[0.625rem] font-semibold px-1.5 py-0.5 rounded-full bg-plum/15 text-plum-light shrink-0">{L("קטין/ה · באישור הורה", "Minor · parent approved")}</span>}
             </div>
             <p className="text-[0.6875rem] text-text-muted truncate">
               {[optLabel(talent.typecast.gender, lang === "he"), `${talent.typecast.ageRange[0]}–${talent.typecast.ageRange[1]}`, `${talent.typecast.heightCm} ${L("ס״מ", "cm")}`, talent.typecast.location ? optLabel(talent.typecast.location, lang === "he") : ""].filter(Boolean).join(" · ")}

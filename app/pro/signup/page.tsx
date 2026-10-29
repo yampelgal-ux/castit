@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { saveProApplication } from "@/lib/cloud/trust";
 import { motion } from "framer-motion";
 import { Mail, Lock, User as UserIcon, Building2, ArrowRight, AlertCircle } from "lucide-react";
 import { Header } from "@/components/Header";
@@ -72,6 +73,7 @@ export default function ProSignupPage() {
           }, { onConflict: "id" });
         }
         signIn(data.user.id);
+        if (data.session) await saveProApplication({ company, job_title: proRole });
       }
     } else {
       signIn();

@@ -19,13 +19,17 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [birthYear, setBirthYear] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [needsConfirm, setNeedsConfirm] = useState(false);
   const { lang } = useT();
   const L = (he: string, en: string) => (lang === "he" ? he : en);
 
-  const valid = name.length >= 2 && email.includes("@") && password.length >= 6;
+  const thisYear = new Date().getFullYear();
+  const by = Number(birthYear) || undefined;
+  const minor = !!by && thisYear - by < 18;
+  const valid = name.length >= 2 && email.includes("@") && password.length >= 6 && (role !== "Talent" || !!by);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,18 +63,15 @@ export default function SignupPage() {
         return;
       }
       if (data.user) {
-        setProfile({ name, email, role, username, avatarSeed: name });
+        setProfile({ name, email, role, username, avatarSeed: name, ...(role === "Talent" ? { birthYear: by } : {}) });
         // Only a real session counts as signed in. Without one (email
         // confirmation pending) nothing can reach the cloud yet.
         if (data.session) {
           claimDeviceForNewAccount(data.user.id);
           signIn(data.user.id);
-          await supabase.from("profiles").upsert({
-            id: data.user.id,
-            username,
-            name,
-            role: role === "Talent" ? "talent" : "casting_pro",
-          }, { onConflict: "id" });
+          const row = { id: data.user.id, username, name, role: role === "Talent" ? "talent" : "casting_pro" };
+          const { error: upErr } = await supabase.from("profiles").upsert((minor ? { ...row, is_minor: true } : row) as Record<string, unknown>, { onConflict: "id" });
+          if (upErr && /is_minor/i.test(upErr.message)) await supabase.from("profiles").upsert(row, { onConflict: "id" });
         } else {
           // Email confirmation is on: let them finish onboarding now; everything
           // is pushed to the account automatically after they confirm + sign in.
@@ -80,7 +81,7 @@ export default function SignupPage() {
         }
       }
     } else {
-      setProfile({ name, email, role, username, avatarSeed: name });
+      setProfile({ name, email, role, username, avatarSeed: name, ...(role === "Talent" ? { birthYear: by } : {}) });
       signIn();
     }
 
@@ -148,6 +149,22 @@ export default function SignupPage() {
           <Field icon={UserIcon} placeholder={L("שם מלא", "Full name")} value={name} onChange={setName} />
           <Field icon={Mail} placeholder={L("מייל", "Email")} type="email" value={email} onChange={setEmail} />
           <Field icon={Lock} placeholder={L("סיסמה (לפחות 6 תווים)", "Password (min 6 chars)")} type="password" value={password} onChange={setPassword} />
+          {role === "Talent" && (
+            <div>
+              <label htmlFor="birth-year" className="sr-only">{L("שנת לידה", "Birth year")}</label>
+              <select id="birth-year" value={birthYear} onChange={(e) => setBirthYear(e.target.value)}
+                className={cn("w-full h-14 px-4 rounded-2xl bg-bg-elevated border border-border outline-none focus:border-gold text-sm", !birthYear && "text-text-subtle")}>
+                <option value="">{L("שנת לידה", "Birth year")}</option>
+                {Array.from({ length: 80 }, (_, i) => thisYear - 6 - i).map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+              {minor && (
+                <p className="text-xs text-text-muted mt-2 px-1 leading-relaxed">
+                  {L("מתחת לגיל 18 צריך אישור של הורה. אחרי ההרשמה תקבלו קישור לשלוח להורה, ועד שיאשר הפרופיל לא יוצג למלהקים.",
+                     "Under 18 you need a parent's approval. After signing up you'll get a link to send to a parent; until they approve, casting directors won't see your profile.")}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {error && (

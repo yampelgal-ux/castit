@@ -14,6 +14,7 @@ import { useAllTalents } from "@/lib/cloud/talents";
 import { DEMO_MODE, isRealUserId } from "@/lib/cloud/config";
 import { UserActionsSheet } from "@/components/UserActionsSheet";
 import { MyHeadshots, HeadshotGrid } from "@/components/Headshots";
+import { GuardianBanner } from "@/components/TrustBanners";
 import { shareReel } from "@/components/reels/share";
 import { useMyReels, type MyReel } from "@/lib/reels-store";
 import { usePoster, posterPathFor } from "@/lib/video-poster";
@@ -135,6 +136,8 @@ export default function ProfilePage() {
         )}
         transparent
       />
+
+      {isMe && <GuardianBanner />}
 
       {/* Cover + Avatar */}
       <div className="relative">

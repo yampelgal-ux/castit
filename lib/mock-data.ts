@@ -19,6 +19,8 @@ export type Talent = {
   reels?: { id: string; url: string; caption: string; createdAt: number; poster?: string }[];
   /** Headshot photo URLs a real talent published. */
   headshots?: string[];
+  /** Under 18, shown only after a parent approved. */
+  minor?: boolean;
   typecast: {
     // Physical
     heightCm: number;

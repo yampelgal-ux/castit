@@ -36,6 +36,10 @@ async function resolvePhoto(userId: string, photo?: string): Promise<string | un
   return undefined;
 }
 
+function isMinor(p: Profile): boolean {
+  return !!p.birthYear && new Date().getFullYear() - p.birthYear < 18;
+}
+
 function toTalentCard(userId: string, p: Profile, photo?: string, reels: MyReel[] = [], headshots: string[] = []): Talent {
   const tc = p.typecast || {};
   const min = tc.ageRangeMin ?? 20;
@@ -52,6 +56,7 @@ function toTalentCard(userId: string, p: Profile, photo?: string, reels: MyReel[
     likes: 0,
     submissions: 0,
     headshots,
+    ...(isMinor(p) ? { minor: true } : {}),
     reels: reels
       .filter((r) => r.cloud)
       .map((r) => ({
@@ -115,7 +120,9 @@ export async function publishMyProfile(userId: string, p: Profile, reels: MyReel
     updated_at: new Date().toISOString(),
   };
 
-  let { error } = await supabase.from("profiles").upsert(row, { onConflict: "id" });
+  // is_minor exists once migration 005 ran; without it, publish as before.
+  let { error } = await supabase.from("profiles").upsert((isMinor(p) ? { ...row, is_minor: true } : row) as Record<string, unknown>, { onConflict: "id" });
+  if (error && /is_minor/i.test(error.message)) ({ error } = await supabase.from("profiles").upsert(row, { onConflict: "id" }));
   if (error && /username|duplicate|unique/i.test(error.message)) {
     const retry = { ...row, username: `${baseUsername}${userId.slice(0, 4)}` };
     ({ error } = await supabase.from("profiles").upsert(retry, { onConflict: "id" }));

@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { deleteMyAccount, refreshHidden, unblockUser, useHidden } from "@/lib/cloud/safety";
+import { useTrust } from "@/lib/cloud/trust";
+import { GuardianBanner } from "@/components/TrustBanners";
 import { Header } from "@/components/Header";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { MyHeadshots } from "@/components/Headshots";
@@ -35,6 +37,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-dvh bg-bg pb-16" dir={dir}>
       <Header back title={L("הגדרות", "Settings")} />
+      <GuardianBanner />
       <div className="px-4 pt-4 space-y-6">
         <ProfileSection L={L} />
         <VideosSection L={L} />
@@ -464,6 +467,7 @@ function PrivacySection({ L }: { L: LFn }) {
   const mine = useHidden((s) => s.mine);
   const [names, setNames] = useState<Record<string, string>>({});
   const live = isCloudConfigured() && isRealUserId(userId);
+  const trust = useTrust();
 
   useEffect(() => { if (live) void refreshHidden(); }, [live]);
   useEffect(() => {
@@ -493,6 +497,11 @@ function PrivacySection({ L }: { L: LFn }) {
             </ul>
           )}
         </div>
+      )}
+      {trust.isAdmin && (
+        <Link href="/admin" className="flex items-center gap-2 px-4 py-3 min-h-[52px] text-sm font-semibold text-gold">
+          <Shield className="w-4 h-4" aria-hidden /> {L("מסך ניהול (מלהקים ודיווחים)", "Admin (casting pros & reports)")}
+        </Link>
       )}
       <Link href="/terms" className="flex items-center gap-2 px-4 py-3 min-h-[52px] text-sm font-semibold">
         <FileText className="w-4 h-4" aria-hidden /> {L("תנאי שימוש", "Terms of use")}
