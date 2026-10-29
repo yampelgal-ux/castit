@@ -6,6 +6,7 @@ import type { Talent } from "@/lib/mock-data";
 import { toDbRole } from "./auth";
 import { dataUrlToBlob, uploadMedia, mediaPublicUrl } from "./media";
 import type { MyReel } from "@/lib/reels-store";
+import { posterPathFor } from "@/lib/video-poster";
 
 type Profile = ReturnType<typeof useStore.getState>["profile"];
 
@@ -52,7 +53,10 @@ function toTalentCard(userId: string, p: Profile, photo?: string, reels: MyReel[
     submissions: 0,
     reels: reels
       .filter((r) => r.cloud)
-      .map((r) => ({ id: r.id, url: mediaPublicUrl(`tapes/${r.blobKey}`) || "", caption: r.caption, createdAt: r.createdAt }))
+      .map((r) => ({
+        id: r.id, url: mediaPublicUrl(`tapes/${r.blobKey}`) || "", caption: r.caption, createdAt: r.createdAt,
+        ...(r.poster ? { poster: mediaPublicUrl(posterPathFor(r.blobKey)) || undefined } : {}),
+      }))
       .filter((r) => r.url),
     typecast: {
       heightCm: tc.heightCm ?? 170,

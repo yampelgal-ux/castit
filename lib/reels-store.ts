@@ -5,6 +5,7 @@ import { saveTapeVideo, deleteTapeVideo, newTapeKey, loadTapeVideo } from "@/lib
 import { uploadMedia, removeMedia } from "@/lib/cloud/media";
 import { deleteReelSocial } from "@/lib/cloud/social";
 import { DEMO_MODE } from "@/lib/cloud/config";
+import { capturePoster, posterPathFor } from "@/lib/video-poster";
 
 // The talent's own showreels / portfolio videos.
 // Metadata lives in a castit_* key (synced to the account); the video itself
@@ -19,7 +20,17 @@ export type MyReel = {
   sizeBytes: number;
   /** True once the video is in cloud Storage (visible to others). */
   cloud?: boolean;
+  /** True once its cover image is in cloud Storage (posters/{blobKey}.jpg). */
+  poster?: boolean;
 };
+
+async function uploadPoster(r: MyReel, blob?: Blob | null): Promise<boolean> {
+  const video = blob ?? (await loadTapeVideo(r.blobKey));
+  if (!video) return false;
+  const jpg = await capturePoster(video);
+  if (!jpg) return false;
+  return !!(await uploadMedia(posterPathFor(r.blobKey), jpg));
+}
 
 type ReelsState = {
   reels: MyReel[];
@@ -45,6 +56,11 @@ export const useMyReels = create<ReelsState>()(
         const where = await saveTapeVideo(blobKey, file);
         const reel: MyReel = { id, blobKey, caption, createdAt: Date.now(), sizeBytes: file.size, cloud: where === "cloud" };
         set({ reels: [reel, ...get().reels] });
+        if (reel.cloud) {
+          void uploadPoster(reel, file).then((ok) => {
+            if (ok) set({ reels: get().reels.map((x) => (x.id === id ? { ...x, poster: true } : x)) });
+          });
+        }
         return reel;
       },
       remove: async (id) => {
@@ -52,7 +68,11 @@ export const useMyReels = create<ReelsState>()(
         set({ reels: get().reels.filter((x) => x.id !== id) });
         if (!r) return;
         try { await deleteTapeVideo(r.blobKey); } catch {}
-        if (r.cloud) { void removeMedia(`tapes/${r.blobKey}`); void deleteReelSocial(r.id); }
+        if (r.cloud) {
+          void removeMedia(`tapes/${r.blobKey}`);
+          if (r.poster) void removeMedia(posterPathFor(r.blobKey));
+          void deleteReelSocial(r.id);
+        }
       },
       retry: async (id) => {
         const r = get().reels.find((x) => x.id === id);
@@ -62,11 +82,18 @@ export const useMyReels = create<ReelsState>()(
         const url = await uploadMedia(`tapes/${r.blobKey}`, blob);
         if (!url) return false;
         set({ reels: get().reels.map((x) => (x.id === id ? { ...x, cloud: true } : x)) });
+        if (await uploadPoster(r, blob)) set({ reels: get().reels.map((x) => (x.id === id ? { ...x, poster: true } : x)) });
         return true;
       },
       retryAll: async () => {
         for (const r of get().reels.filter((x) => !x.cloud)) {
           try { await get().retry(r.id); } catch {}
+        }
+        // Videos uploaded before covers existed get one now.
+        for (const r of get().reels.filter((x) => x.cloud && !x.poster)) {
+          try {
+            if (await uploadPoster(r)) set({ reels: get().reels.map((x) => (x.id === r.id ? { ...x, poster: true } : x)) });
+          } catch {}
         }
       },
       rename: (id, caption) => set({ reels: get().reels.map((r) => (r.id === id ? { ...r, caption } : r)) }),

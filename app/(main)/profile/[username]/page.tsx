@@ -13,6 +13,8 @@ import { REELS, type Talent } from "@/lib/mock-data";
 import { useAllTalents } from "@/lib/cloud/talents";
 import { DEMO_MODE } from "@/lib/cloud/config";
 import { useMyReels, type MyReel } from "@/lib/reels-store";
+import { usePoster, posterPathFor } from "@/lib/video-poster";
+import { mediaPublicUrl } from "@/lib/cloud/media";
 import { getTapePlaybackUrl } from "@/lib/tape-storage";
 import { useT } from "@/lib/i18n";
 import { Plus, UserX, MoreHorizontal, Heart } from "lucide-react";
@@ -541,6 +543,7 @@ function OwnReelTile({ reel }: { reel: MyReel }) {
   const [sheet, setSheet] = useState<null | "manage" | "comments">(null);
   const stats = useReelStats(reel.id);
   const myId = useStore((s) => s.userId) || "";
+  const poster = usePoster(url, reel.cloud && reel.poster ? mediaPublicUrl(posterPathFor(reel.blobKey)) : null);
   const { lang } = useT();
   const he = lang === "he";
   useEffect(() => {
@@ -554,7 +557,7 @@ function OwnReelTile({ reel }: { reel: MyReel }) {
   return (
     <div className="relative">
       {url ? (
-        <video src={url} controls playsInline preload="metadata" aria-label={reel.caption || "video"}
+        <video src={url} poster={poster} controls playsInline preload="metadata" aria-label={reel.caption || "video"}
           className="aspect-[3/4] w-full rounded-md bg-black object-cover" />
       ) : (
         <div className="aspect-[3/4] rounded-md bg-bg-muted animate-pulse" />
@@ -574,14 +577,15 @@ function OwnReelTile({ reel }: { reel: MyReel }) {
   );
 }
 
-function TheirReelTile({ reel, ownerId, label }: { reel: { id: string; url: string }; ownerId: string; label: string }) {
+function TheirReelTile({ reel, ownerId, label }: { reel: { id: string; url: string; poster?: string }; ownerId: string; label: string }) {
   const stats = useReelStats(reel.id);
+  const poster = usePoster(reel.url, reel.poster || null);
   const [comments, setComments] = useState(false);
   const { lang } = useT();
   const he = lang === "he";
   return (
     <div className="relative">
-      <video src={reel.url} controls playsInline preload="metadata" aria-label={label}
+      <video src={reel.url} poster={poster} controls playsInline preload="metadata" aria-label={label}
         onPlay={() => void recordReelView(reel.id, ownerId)}
         className="aspect-[3/4] w-full rounded-md bg-black object-cover" />
       <div className="absolute top-1 start-1 end-1 flex justify-between">

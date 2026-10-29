@@ -20,6 +20,7 @@ import { useT } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
 import { cn, formatNumber } from "@/lib/utils";
 import { optLabel } from "@/lib/typecast-options";
+import { usePoster } from "@/lib/video-poster";
 import type { ReelPost, Talent } from "@/lib/mock-data";
 
 // Sound is a feed-wide preference, like in both apps.
@@ -50,6 +51,7 @@ export function ReelCard({
   const { lang, t } = useT();
   const he = lang === "he";
   const videoRef = useRef<HTMLVideoElement>(null);
+  const poster = usePoster(reel.videoUrl, reel.poster || null);
   const [inView, setInView] = useState(false);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(feedMuted);
@@ -143,7 +145,7 @@ export function ReelCard({
     <div className="relative h-dvh w-full overflow-hidden bg-black select-none">
       <video
         ref={videoRef}
-        poster={reel.poster || undefined}
+        poster={poster}
         muted={muted}
         loop
         playsInline

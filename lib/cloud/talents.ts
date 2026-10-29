@@ -1,4 +1,5 @@
 "use client";
+import { posterPathFor } from "@/lib/video-poster";
 
 // Real registered talents (Supabase `profiles.talent_card`) — merged into the
 // Pro search / talent pages next to the curated demo roster, and the signed-in
@@ -63,7 +64,7 @@ export function useTalentById(id: string | undefined): Talent | undefined {
 export function reelsFromTalents(talents: Talent[]): ReelPost[] {
   const real: ReelPost[] = talents
     .flatMap((t) => (t.reels ?? []).map((r) => ({
-      id: r.id, talentId: t.id, videoUrl: r.url, poster: "", caption: r.caption,
+      id: r.id, talentId: t.id, videoUrl: r.url, poster: r.poster || "", caption: r.caption,
       likes: 0, comments: 0, shares: 0, createdAt: r.createdAt,
     })))
     .sort((a, b) => b.createdAt - a.createdAt);
@@ -85,7 +86,10 @@ export function useAllReels(): { reels: ReelPost[]; talents: Talent[] } {
       photo: profile.photoUrl || "", cover: "", bio: profile.bio || "", followers: 0, likes: 0, submissions: 0,
       typecast: { heightCm: 170, weightKg: 65, ageRange: [20, 30], gender: "Female", ethnicity: "", skinTone: "", eyeColor: "", hairColor: "", hairLength: "Medium", languages: [], skills: [], genres: [] },
     }),
-    reels: myCloud.map((r) => ({ id: r.id, url: mediaPublicUrl(`tapes/${r.blobKey}`) || "", caption: r.caption, createdAt: r.createdAt })),
+    reels: myCloud.map((r) => ({
+      id: r.id, url: mediaPublicUrl(`tapes/${r.blobKey}`) || "", caption: r.caption, createdAt: r.createdAt,
+      poster: r.poster ? mediaPublicUrl(posterPathFor(r.blobKey)) || undefined : undefined,
+    })),
   };
   const merged = [me, ...talents.filter((t) => t.id !== userId)];
   return { reels: reelsFromTalents(merged), talents: merged };

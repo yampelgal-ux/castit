@@ -16,7 +16,7 @@ export type Talent = {
   likes: number;
   submissions: number;
   /** Showreels a real (signed-up) talent published from their profile. */
-  reels?: { id: string; url: string; caption: string; createdAt: number }[];
+  reels?: { id: string; url: string; caption: string; createdAt: number; poster?: string }[];
   typecast: {
     // Physical
     heightCm: number;

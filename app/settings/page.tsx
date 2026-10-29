@@ -16,7 +16,8 @@ import { useReelStats } from "@/lib/cloud/social";
 import { useMyReels, type MyReel } from "@/lib/reels-store";
 import { getTapePlaybackUrl } from "@/lib/tape-storage";
 import { lastPublishStatus, type PublishStatus } from "@/lib/cloud/profile";
-import { lastUploadError } from "@/lib/cloud/media";
+import { lastUploadError, mediaPublicUrl } from "@/lib/cloud/media";
+import { usePoster, posterPathFor } from "@/lib/video-poster";
 import { photoToDataUrl } from "@/lib/image";
 import { isCloudConfigured, isRealUserId } from "@/lib/cloud/config";
 import { signOutEverywhere } from "@/lib/cloud/auth";
@@ -222,10 +223,11 @@ function ReelRow({ reel, L }: { reel: MyReel; L: LFn }) {
     getTapePlaybackUrl({ blobKey: reel.blobKey }).then((r) => { setUrl(r.url); revoke = r.revoke; });
     return () => revoke?.();
   }, [reel.blobKey]);
+  const poster = usePoster(url, reel.cloud && reel.poster ? mediaPublicUrl(posterPathFor(reel.blobKey)) : null);
   return (
     <div className="flex items-center gap-3 px-4 py-3">
       <div className="w-16 h-24 rounded-md bg-black overflow-hidden shrink-0">
-        {url && <video src={url} className="w-full h-full object-cover" controls preload="metadata" aria-label={reel.caption || L("סרטון", "Video")} />}
+        {url && <video src={url} poster={poster} className="w-full h-full object-cover" controls preload="metadata" aria-label={reel.caption || L("סרטון", "Video")} />}
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold truncate">{reel.caption || L("ללא כותרת", "Untitled")}</div>
