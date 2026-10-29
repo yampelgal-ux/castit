@@ -2,22 +2,29 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Sparkles, MessageSquare, Calendar, Mail, ChevronRight, Bot } from "lucide-react";
+import { Plus, Sparkles, ChevronRight, Bot } from "lucide-react";
 import { SCENES, NEGOTIATIONS } from "@/lib/mock-data";
 import { DEMO_MODE } from "@/lib/cloud/config";
 import { Header } from "@/components/Header";
 import { Avatar } from "@/components/Avatar";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+
+function useL() {
+  const { lang } = useT();
+  return (h: string, e: string) => (lang === "he" ? h : e);
+}
 
 const TABS = ["Scene Practice", "AI Agent"] as const;
 
 export default function StudioPage() {
   const [tab, setTab] = useState<typeof TABS[number]>("Scene Practice");
+  const L = useL();
 
   return (
     <div>
-      <Header title="Studio" right={<span className="text-[0.6875rem] text-text-muted">Beta</span>} />
+      <Header title={L("סטודיו", "Studio")} right={<span className="text-[0.6875rem] text-text-muted">{L("בטא", "Beta")}</span>} />
       <div className="px-4">
         <div className="flex gap-1 p-1 rounded-2xl bg-bg-elevated border border-border">
           {TABS.map((t) => (
@@ -29,7 +36,7 @@ export default function StudioPage() {
                 tab === t ? "bg-gold text-on-accent" : "text-text-muted"
               )}
             >
-              {t}
+              {t === "Scene Practice" ? L("תרגול סצנות", t) : L("הסוכנת אריה", t)}
             </button>
           ))}
         </div>
@@ -52,6 +59,7 @@ export default function StudioPage() {
 }
 
 function Scenes() {
+  const L = useL();
   return (
     <>
       <Link
@@ -62,10 +70,10 @@ function Scenes() {
           <Sparkles className="w-5 h-5 text-gold" />
         </div>
         <div className="flex-1">
-          <div className="text-sm font-semibold">Practice with AI Coach</div>
-          <div className="text-[0.6875rem] text-text-muted">Upload your sides — Aria plays the scene with you.</div>
+          <div className="text-sm font-semibold">{L("תרגול עם מאמן AI", "Practice with AI Coach")}</div>
+          <div className="text-[0.6875rem] text-text-muted">{L("מעלים את הטקסט, ואריה משחקת איתך את הסצנה.", "Upload your sides — Aria plays the scene with you.")}</div>
         </div>
-        <ChevronRight className="w-4 h-4 text-text-muted" />
+        <ChevronRight className="w-4 h-4 text-text-muted rtl:rotate-180" />
       </Link>
 
       <Link
@@ -76,16 +84,16 @@ function Scenes() {
           <Plus className="w-5 h-5 text-text-muted" />
         </div>
         <div className="flex-1">
-          <div className="text-sm font-semibold">Upload a reel</div>
-          <div className="text-[0.6875rem] text-text-muted">Share your latest take with the world.</div>
+          <div className="text-sm font-semibold">{L("העלאת סרטון", "Upload a reel")}</div>
+          <div className="text-[0.6875rem] text-text-muted">{L("שתפו את הטייק האחרון שלכם.", "Share your latest take with the world.")}</div>
         </div>
         <ChevronRight className="w-4 h-4 text-text-muted" />
       </Link>
 
-      <div className="text-xs uppercase tracking-wider text-text-muted px-1 mt-6 mb-3">Recommended for you</div>
+      <div className="text-xs uppercase tracking-wider text-text-muted px-1 mt-6 mb-3">{L("מומלץ בשבילך", "Recommended for you")}</div>
 
       <div className="space-y-3">
-        {SCENES.map((s) => (
+        {SCENES.length > 0 && SCENES.map((s) => (
           <Link
             key={s.id}
             href={`/studio/scene/${s.id}`}
@@ -115,7 +123,7 @@ function Scenes() {
                     {s.difficulty}
                   </span>
                   <span className="text-[0.6875rem] text-text-muted tnum">{s.duration}</span>
-                  <span className="text-[0.6875rem] text-text-muted">· {s.characters.length} chars</span>
+                  <span className="text-[0.6875rem] text-text-muted">· {s.characters.length} {L("דמויות", "chars")}</span>
                 </div>
               </div>
             </div>
@@ -128,6 +136,7 @@ function Scenes() {
 
 function Agent() {
   const seed = useStore((s) => s.profile.avatarSeed) || "Aria";
+  const L = useL();
   return (
     <>
       {/* Agent hero */}
@@ -142,10 +151,10 @@ function Agent() {
           </div>
           <div className="flex-1">
             <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-violet/15 text-violet text-[0.6875rem] font-semibold">
-              <Bot className="w-3 h-3" /> AI Agent · Active
+              <Bot className="w-3 h-3" /> {L("סוכנת AI · פעילה", "AI Agent · Active")}
             </div>
-            <div className="font-display text-2xl leading-tight mt-1">Aria</div>
-            <div className="text-[0.6875rem] text-text-muted">Your personal casting agent</div>
+            <div className="font-display text-2xl leading-tight mt-1">{L("אריה", "Aria")}</div>
+            <div className="text-[0.6875rem] text-text-muted">{L("סוכנת הליהוק האישית שלך", "Your personal casting agent")}</div>
           </div>
         </div>
         {DEMO_MODE && (
@@ -154,11 +163,11 @@ function Agent() {
           </p>
         )}
         <div className="mt-4 inline-flex items-center gap-1.5 text-xs text-gold font-semibold">
-          Open chat <ChevronRight className="w-3.5 h-3.5" />
+          {L("לשיחה", "Open chat")} <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
         </div>
       </Link>
 
-      {NEGOTIATIONS.length > 0 && <div className="text-xs uppercase tracking-wider text-text-muted px-1 mt-6 mb-3">Active negotiations</div>}
+      {NEGOTIATIONS.length > 0 && <div className="text-xs uppercase tracking-wider text-text-muted px-1 mt-6 mb-3">{L("מו״מ פעיל", "Active negotiations")}</div>}
 
       <div className="space-y-2">
         {NEGOTIATIONS.map((n) => (
@@ -186,20 +195,6 @@ function Agent() {
         ))}
       </div>
 
-      <div className="text-xs uppercase tracking-wider text-text-muted px-1 mt-6 mb-3">Integrations</div>
-      <div className="grid grid-cols-2 gap-3">
-        <IntegrationButton icon={Mail} label="Connect Gmail" />
-        <IntegrationButton icon={Calendar} label="Connect Calendar" />
-      </div>
     </>
-  );
-}
-
-function IntegrationButton({ icon: Icon, label }: { icon: any; label: string }) {
-  return (
-    <button className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-bg-elevated border border-border hover:border-border-strong">
-      <Icon className="w-4 h-4 text-text-muted" />
-      <span className="text-xs font-medium">{label}</span>
-    </button>
   );
 }

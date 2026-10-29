@@ -11,6 +11,7 @@ import {
   type Project, type Role, type Submission,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 type Event = {
   date: Date;
@@ -26,6 +27,9 @@ export default function ProCalendarPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [subs, setSubs] = useState<Submission[]>([]);
+  const { lang } = useT();
+  const he = lang === "he";
+  const L = (h: string, e: string) => (he ? h : e);
 
   useEffect(() => {
     setProjects(loadProjects());
@@ -48,7 +52,7 @@ export default function ProCalendarPage() {
           out.push({
             date: d,
             kind: "deadline",
-            title: `Tape due — ${r.name}`,
+            title: `${L("הגשת טייפ", "Tape due")} — ${r.name}`,
             subtitle: p.title,
             href: `/pro/projects/${p.id}/role/${r.id}`,
             urgent: d.getTime() - Date.now() < 86400000 * 3,
@@ -63,7 +67,7 @@ export default function ProCalendarPage() {
           out.push({
             date: d,
             kind: "shoot",
-            title: `Shoot — ${r.name}`,
+            title: `${L("צילומים", "Shoot")} — ${r.name}`,
             subtitle: `${p.title} · ${r.shootDates}`,
             href: `/pro/projects/${p.id}/role/${r.id}`,
           });
@@ -80,7 +84,7 @@ export default function ProCalendarPage() {
         out.push({
           date: new Date(s.decidedAt),
           kind: "callback",
-          title: `Callback — ${s.talentName}`,
+          title: `${L("קולבק", "Callback")} — ${s.talentName}`,
           subtitle: `${r.name} · ${p.title}`,
           href: `/pro/projects/${p.id}/role/${r.id}/submission/${s.id}`,
         });
@@ -89,7 +93,7 @@ export default function ProCalendarPage() {
         out.push({
           date: new Date(s.decidedAt),
           kind: "booked",
-          title: `Booked — ${s.talentName}`,
+          title: `${L("נבחר/ה", "Booked")} — ${s.talentName}`,
           subtitle: `${r.name} · ${p.title}`,
           href: `/pro/projects/${p.id}/role/${r.id}/submission/${s.id}`,
         });
@@ -115,27 +119,27 @@ export default function ProCalendarPage() {
 
   return (
     <div className="min-h-dvh bg-bg pb-24">
-      <Header back title="Calendar" />
+      <Header back title={L("יומן", "Calendar")} />
 
       <div className="px-5 pt-3 space-y-4">
         <div>
-          <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Optional</div>
-          <h1 className="font-display text-3xl tracking-editorial">Your schedule</h1>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{L("אופציונלי", "Optional")}</div>
+          <h1 className="font-display text-3xl tracking-editorial">{L("הלו״ז שלך", "Your schedule")}</h1>
           <p className="text-text-muted text-sm mt-1">
-            Deadlines, shoots, callbacks and bookings — auto-pulled from your projects.
+            {L("דדליינים, צילומים, קולבקים ובחירות. נמשכים אוטומטית מהפרויקטים שלך.", "Deadlines, shoots, callbacks and bookings — auto-pulled from your projects.")}
           </p>
         </div>
 
         {events.length === 0 ? (
           <EmptyState
             icon={CalIcon}
-            title="Nothing scheduled"
-            description="Add tape deadlines or shoot dates to your roles — they'll appear here automatically."
+            title={L("אין כלום ביומן", "Nothing scheduled")}
+            description={L("הוסיפו דדליין לטייפ או תאריכי צילום לתפקידים, והם יופיעו כאן אוטומטית.", "Add tape deadlines or shoot dates to your roles — they'll appear here automatically.")}
           />
         ) : (
           <>
             <div className="rounded-2xl bg-gold/8 border border-gold/20 p-3 text-[0.6875rem] text-gold">
-              <strong className="tnum">{upcoming}</strong> upcoming · {events.length} total
+              <strong className="tnum">{upcoming}</strong> {L("קרובים", "upcoming")} · {events.length} {L("סה״כ", "total")}
             </div>
             <div className="space-y-4">
               {grouped.map(([day, evs]) => (

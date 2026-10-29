@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, AlertCircle, Settings2 } from "lucide-react";
@@ -34,6 +35,8 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
   const [parsed, setParsed] = useState<ParsedFilters | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [demo, setDemo] = useState(false);
+  const { lang } = useT();
+  const L = (h: string, e: string) => (lang === "he" ? h : e);
 
   async function parse() {
     if (!brief.trim()) return;
@@ -54,7 +57,7 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
         setDemo(!!data.demo);
       }
     } catch {
-      setError("Network error. Try again.");
+      setError(L("בעיית חיבור. נסו שוב.", "Network error. Try again."));
     } finally {
       setLoading(false);
     }
@@ -73,12 +76,12 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
     <div className="rounded-2xl bg-gradient-to-br from-gold/8 via-bg-elevated to-plum/8 border border-gold/30 overflow-hidden">
       <div className="px-4 pt-3 pb-2 flex items-center gap-2">
         <Sparkles className="w-4 h-4 text-gold" />
-        <span className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">Describe the role</span>
+        <span className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">{L("תארו את התפקיד", "Describe the role")}</span>
         <button
           onClick={onOpenManual}
           className="ml-auto text-[0.6875rem] text-text-muted inline-flex items-center gap-1 hover:text-text"
         >
-          <Settings2 className="w-3 h-3" /> Manual filters
+          <Settings2 className="w-3 h-3" /> {L("פילטרים ידניים", "Manual filters")}
         </button>
       </div>
 
@@ -87,8 +90,9 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
           value={brief}
           onChange={(e) => setBrief(e.target.value)}
           rows={3}
-          aria-label="Casting brief"
-          placeholder='e.g. "Female lead, 30s, Mediterranean, fluent Hebrew + Arabic, stage combat background, Tel Aviv based"'
+          aria-label={L("תיאור התפקיד", "Casting brief")}
+          placeholder={L("למשל: שחקנית ראשית, שנות ה-30, עברית וערבית שוטפות, ניסיון בקרב במה, מאזור תל אביב", 'e.g. "Female lead, 30s, Mediterranean, fluent Hebrew + Arabic, stage combat background, Tel Aviv based"')}
+          dir="auto"
           className="w-full px-3 py-2.5 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60 resize-none"
           disabled={loading}
         />
@@ -105,9 +109,9 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
             )}
           >
             {loading ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Parsing…</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> {L("מנתחת…", "Parsing…")}</>
             ) : (
-              <><Sparkles className="w-4 h-4" /> Parse with Aria</>
+              <><Sparkles className="w-4 h-4" /> {L("אריה, תמצאי לי", "Parse with Aria")}</>
             )}
           </button>
         </div>
@@ -132,11 +136,11 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
               className="mt-3 rounded-2xl bg-bg border border-border p-3"
             >
               <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1.5">
-                Aria understood {demo && <span className="text-text-subtle">· demo</span>}
+                {L("אריה הבינה", "Aria understood")} {demo && <span className="text-text-subtle">· {L("דמו", "demo")}</span>}
               </div>
               {chips.length === 0 ? (
                 <p className="text-xs text-text-muted">
-                  Aria couldn't pull structured filters out — try mentioning gender, age, language, or skills.
+                  {L("אריה לא הצליחה להוציא פילטרים. נסו לציין מגדר, גיל, שפה או כישורים.", "Aria couldn't pull structured filters out — try mentioning gender, age, language, or skills.")}
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
@@ -161,19 +165,19 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
                     chips.length === 0 ? "bg-bg-muted text-text-subtle" : "bg-gold text-on-accent",
                   )}
                 >
-                  Apply filters
+                  {L("להחיל פילטרים", "Apply filters")}
                 </button>
                 <button
                   onClick={onOpenManual}
                   className="h-9 px-3 rounded-full bg-bg-elevated border border-border text-[0.6875rem] text-text-muted"
                 >
-                  Edit manually
+                  {L("עריכה ידנית", "Edit manually")}
                 </button>
                 <button
                   onClick={() => setParsed(null)}
                   className="h-9 px-3 rounded-full bg-bg-elevated border border-border text-[0.6875rem] text-text-muted"
                 >
-                  Discard
+                  {L("ביטול", "Discard")}
                 </button>
               </div>
             </motion.div>

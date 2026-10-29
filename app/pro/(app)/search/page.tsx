@@ -132,7 +132,7 @@ export default function ProSearchPage() {
                 selectMode ? "text-gold" : "text-text-muted"
               )}
             >
-              {selectMode ? "Cancel" : "Select"}
+              {selectMode ? (he ? "ביטול" : "Cancel") : (he ? "בחירה" : "Select")}
             </button>
             {activeCount > 0 && (
               <button onClick={() => setF(EMPTY)} className="text-[0.6875rem] text-text-muted underline">
@@ -275,7 +275,7 @@ export default function ProSearchPage() {
             <Users className="w-10 h-10 text-text-subtle mx-auto opacity-50" />
             <p className="font-display text-xl mt-4">{t("srch.noMatches")}</p>
             <p className="text-sm text-text-muted mt-1.5 max-w-xs mx-auto">
-              Your filters are very specific. Relax one to widen the pool.
+              {he ? "הפילטרים מאוד ספציפיים. נסו להוריד אחד כדי לקבל יותר תוצאות." : "Your filters are very specific. Relax one to widen the pool."}
             </p>
           </div>
         ) : (

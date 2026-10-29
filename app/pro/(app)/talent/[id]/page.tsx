@@ -12,6 +12,8 @@ import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { TalentNotes } from "@/components/TalentNotes";
+import { SendAuditionSheet } from "@/components/SendAuditionSheet";
+import { useT } from "@/lib/i18n";
 import { StageBadge } from "@/components/StageBadge";
 import { TALENTS } from "@/lib/mock-data";
 import {
@@ -30,6 +32,9 @@ export default function TalentDossierPage() {
   const { id } = useParams<{ id: string }>();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const { lang } = useT();
+  const L = (h: string, e: string) => (lang === "he" ? h : e);
 
   const allTalents = useAllTalents();
   const talent = useMemo(() => allTalents.find((t) => t.id === id), [id, allTalents]);
@@ -127,14 +132,16 @@ export default function TalentDossierPage() {
           href={`/messages?with=${talent.id}&name=${encodeURIComponent(talent.name)}`}
           className="h-10 rounded-full bg-bg-elevated border border-border text-xs font-semibold inline-flex items-center justify-center gap-1.5"
         >
-          <MessageCircle className="w-3.5 h-3.5" /> Message
+          <MessageCircle className="w-3.5 h-3.5" /> {L("הודעה", "Message")}
         </Link>
-        <Link
-          href="/pro/audition/new"
+        <button
+          type="button"
+          onClick={() => setInviteOpen(true)}
           className="h-10 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5"
         >
-          <Megaphone className="w-3.5 h-3.5" /> Invite
-        </Link>
+          <Megaphone className="w-3.5 h-3.5" /> {L("הזמנה לאודישן", "Invite")}
+        </button>
+        <SendAuditionSheet open={inviteOpen} onClose={() => setInviteOpen(false)} talent={{ id: talent.id, name: talent.name, photo: talent.photo }} />
       </div>
 
       {/* Notes (cross-project private notes) */}

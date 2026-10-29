@@ -8,6 +8,8 @@ import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { CreateShareLinkSheet } from "@/components/CreateShareLinkSheet";
+import { SendAuditionSheet } from "@/components/SendAuditionSheet";
+import { useT } from "@/lib/i18n";
 import { TALENTS } from "@/lib/mock-data";
 import { useStore } from "@/lib/store";
 import { haptic } from "@/lib/haptics";
@@ -18,12 +20,15 @@ export default function ShortlistPage() {
   const allTalents = useAllTalents();
   const saved = allTalents.filter((t) => shortlist.has(t.id));
   const [shareOpen, setShareOpen] = useState(false);
+  const [inviteFor, setInviteFor] = useState<{ id: string; name: string; photo: string } | null>(null);
+  const { lang } = useT();
+  const L = (h: string, e: string) => (lang === "he" ? h : e);
 
   return (
     <div className="min-h-dvh bg-bg pb-8">
       <Header
         back
-        title={`Shortlist (${saved.length})`}
+        title={`${L("רשימה קצרה", "Shortlist")} (${saved.length})`}
         right={saved.length > 0 && (
           <button
             onClick={() => { setShareOpen(true); haptic("light"); }}
@@ -38,9 +43,9 @@ export default function ShortlistPage() {
         <EmptyState
           icon={Bookmark}
           tone="gold"
-          title="No talent shortlisted yet"
-          description="Tap the bookmark icon on a reel or profile to save talent here."
-          ctaLabel="Discover reels"
+          title={L("עוד אין שחקנים ברשימה הקצרה", "No talent shortlisted yet")}
+          description={L("לחצו על סימן השמירה בסרטון או בפרופיל כדי לשמור שחקנים כאן.", "Tap the bookmark icon on a reel or profile to save talent here.")}
+          ctaLabel={L("לרילס", "Discover reels")}
           ctaHref="/pro/reels"
         />
       ) : (
@@ -72,7 +77,7 @@ export default function ShortlistPage() {
                 <button
                   onClick={() => { toggleShortlist(t.id); haptic("light"); }}
                   className="w-8 h-8 rounded-full hover:bg-bg-muted grid place-items-center text-text-muted"
-                  aria-label="Remove from shortlist"
+                  aria-label={L("הסרה מהרשימה", "Remove from shortlist")}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -82,14 +87,15 @@ export default function ShortlistPage() {
                   href={`/messages?with=${t.id}&name=${encodeURIComponent(t.name)}`}
                   className="h-9 rounded-full bg-bg-elevated border border-border text-xs font-semibold inline-flex items-center justify-center gap-1.5"
                 >
-                  <MessageCircle className="w-3.5 h-3.5" /> Message
+                  <MessageCircle className="w-3.5 h-3.5" /> {L("הודעה", "Message")}
                 </Link>
-                <Link
-                  href="/pro/audition/new"
+                <button
+                  type="button"
+                  onClick={() => setInviteFor({ id: t.id, name: t.name, photo: t.photo })}
                   className="h-9 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5"
                 >
-                  <Megaphone className="w-3.5 h-3.5" /> Invite
-                </Link>
+                  <Megaphone className="w-3.5 h-3.5" /> {L("הזמנה לאודישן", "Invite")}
+                </button>
               </div>
             </motion.div>
           ))}
@@ -100,6 +106,11 @@ export default function ShortlistPage() {
         open={shareOpen}
         onClose={() => setShareOpen(false)}
         talentIds={saved.map((t) => t.id)}
+      />
+      <SendAuditionSheet
+        open={!!inviteFor}
+        onClose={() => setInviteFor(null)}
+        talent={inviteFor ?? { id: "", name: "", photo: "" }}
       />
     </div>
   );

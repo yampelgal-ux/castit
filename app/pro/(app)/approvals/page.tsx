@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 type Step = "list" | "build";
 
 export default function ProApprovalsPage() {
-  const { t, dir } = useT();
+  const { t, dir, lang } = useT();
   const [step, setStep] = useState<Step>("list");
   const [sessions, setSessions] = useState<ApprovalSession[]>([]);
 
@@ -35,7 +35,7 @@ export default function ProApprovalsPage() {
     <div className="min-h-dvh bg-bg pb-24" dir={dir}>
       <Header
         back
-        title="Director Reviews"
+        title={lang === "he" ? "אישורי במאי" : "Director Reviews"}
         right={
           step === "list" ? (
             <button
@@ -86,7 +86,7 @@ function SessionsList({ sessions, onChange }: { sessions: ApprovalSession[]; onC
 }
 
 function SessionRow({ session, i, onChange }: { session: ApprovalSession; i: number; onChange: () => void }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [copied, setCopied] = useState(false);
   const url = typeof window !== "undefined" ? `${window.location.origin}/approve/${session.slug}` : `/approve/${session.slug}`;
 
@@ -121,7 +121,7 @@ function SessionRow({ session, i, onChange }: { session: ApprovalSession; i: num
       <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">Review</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">{lang === "he" ? "סבב אישור" : "Review"}</div>
             <h3 className="font-display text-base leading-tight mt-0.5 truncate">{session.projectTitle}</h3>
             {session.roleName && (
               <p className="text-[0.6875rem] text-text-muted truncate">{session.roleName}</p>
@@ -175,7 +175,7 @@ function Stat({ label, value, tone }: { label: string; value: number; tone: "gol
 
 // ─── Build session ─────────────────────────────────────
 function BuildSession({ onCreated }: { onCreated: () => void }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const { profile } = useStore();
   const [project, setProject] = useState<Project | null>(null);
   const [role, setRole] = useState<Role | null>(null);
@@ -227,7 +227,7 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
   return (
     <div className="px-4 pt-4 space-y-4">
       <div>
-        <Label>Project</Label>
+        <Label>{lang === "he" ? "פרויקט" : "Project"}</Label>
         <div className="flex flex-wrap gap-1.5 mt-1.5">
           {projects.map((p) => (
             <button
