@@ -52,6 +52,18 @@ export default function ProDashboardPage() {
     };
   }, [projects, submissions]);
 
+  // "Your week" — progress the casting director made in the last 7 days.
+  const week = useMemo(() => {
+    const since = Date.now() - 7 * 86400_000;
+    const recent = (iso?: string) => !!iso && +new Date(iso) >= since;
+    return {
+      tapes: submissions.reduce((n, s) => n + s.tapes.filter((tp) => recent(tp.submittedAt)).length, 0),
+      decided: submissions.filter((s) => recent(s.decidedAt) && s.stage !== "submitted" && s.stage !== "invited").length,
+      booked: submissions.filter((s) => s.stage === "booked" && recent(s.decidedAt)).length,
+      invited: submissions.filter((s) => recent(s.createdAt)).length,
+    };
+  }, [submissions]);
+
   const todo = submissions
     .filter((s) => s.stage === "submitted")
     .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
@@ -126,7 +138,7 @@ export default function ProDashboardPage() {
         )}
 
         {/* Triage CTA — when ≥3 tapes to review */}
-        {inboxCounts.toReview >= 3 && (
+        {inboxCounts.toReview >= 1 && (
           <Link
             href="/pro/triage"
             className="block rounded-2xl p-3 bg-bg-elevated border border-gold/30 hover:border-gold/50 transition"
@@ -142,6 +154,35 @@ export default function ProDashboardPage() {
               <span className="text-[0.6875rem] font-bold text-gold tnum">{inboxCounts.toReview}</span>
             </div>
           </Link>
+        )}
+
+        {/* Your week */}
+        {(week.tapes + week.decided + week.booked + week.invited) > 0 && (
+          <div className="rounded-2xl p-4 bg-gold text-on-accent">
+            <div className="text-[0.6875rem] uppercase tracking-widest font-semibold opacity-80">
+              {dir === "rtl" ? "השבוע שלך" : "Your week"}
+            </div>
+            <div className="grid grid-cols-4 gap-2 mt-2 text-center">
+              {[
+                [week.invited, dir === "rtl" ? "הזמנות" : "Invites"],
+                [week.tapes, dir === "rtl" ? "טייפים" : "Tapes"],
+                [week.decided, dir === "rtl" ? "החלטות" : "Decisions"],
+                [week.booked, dir === "rtl" ? "לוהקו" : "Booked"],
+              ].map(([n, l]) => (
+                <div key={String(l)}>
+                  <div className="font-display text-2xl tnum leading-none">{n}</div>
+                  <div className="text-[0.6875rem] mt-1 opacity-80">{l}</div>
+                </div>
+              ))}
+            </div>
+            {week.decided > 0 && (
+              <p className="text-xs mt-3 opacity-90">
+                {dir === "rtl"
+                  ? `קיבלת ${week.decided} החלטות השבוע, חסכת בערך ${Math.max(1, Math.round(week.decided * 4 / 60))} שעות עבודה.`
+                  : `${week.decided} decisions this week, about ${Math.max(1, Math.round(week.decided * 4 / 60))}h of work saved.`}
+              </p>
+            )}
+          </div>
         )}
 
         {/* KPI grid */}

@@ -13,6 +13,7 @@ import {
   type Submission, type Role, type Project,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { notifyTalentStageChange } from "@/lib/notifications-store";
 import { useT } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
 
@@ -51,6 +52,11 @@ export default function ProTriagePage() {
     if (decision === "callback") moveToCallback(sub.id);
     else if (decision === "hold") moveToHold(sub.id, undefined, 48);
     else rejectSubmission(sub.id);
+    // Let the talent know right away (a pass goes out with the polite default note).
+    notifyTalentStageChange(
+      decision === "callback" ? "callback" : decision === "hold" ? "hold" : "rejected",
+      sub.talentName, current.project.title, current.role.name, sub.id,
+    );
 
     setHistory((h) => [...h, { id: sub.id, decision, prev: sub }]);
     setIdx((i) => i + 1);

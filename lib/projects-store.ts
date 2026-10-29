@@ -378,7 +378,12 @@ export function confirmBooked(id: string, message?: string) {
   const sub = getSubmission(id);
   patchSubmission(id, { stage: "booked", proMessage: message, prevStage: sub?.stage });
 }
+/** Sent automatically when a casting director passes without writing a note. */
+export const DEFAULT_REJECT_MESSAGE =
+  "תודה רבה על ההגשה והזמן שהשקעת. הפעם הלכנו לכיוון אחר בתפקיד הזה, ונשמח לראות אותך בהזדמנויות הבאות.";
+
 export function rejectSubmission(id: string, message?: string) {
+  if (!message) message = DEFAULT_REJECT_MESSAGE;
   const sub = getSubmission(id);
   // Remember where they were so Reopen can restore it (unless already tracked)
   const prev = sub && sub.stage !== "rejected" ? sub.stage : sub?.prevStage;
