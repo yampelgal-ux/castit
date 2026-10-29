@@ -29,7 +29,7 @@ export function BottomNav() {
   const pathname = usePathname();
   const storedRole = useStore((s) => s.profile.role);
   // Inside /pro always show the casting nav, whatever role this device remembers.
-  const role = pathname?.startsWith("/pro") ? "Casting Pro" : storedRole;
+  const role = pathname === "/pro" || pathname?.startsWith("/pro/") ? "Casting Pro" : storedRole;
   const items = role === "Casting Pro" ? proItems : talentItems;
   const unreadTalent = useUnreadCount("talent");
   const unreadPro = useUnreadCount("pro");

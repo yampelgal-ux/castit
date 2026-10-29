@@ -21,6 +21,9 @@ import {
   type Submission, type Role, type Project, type Stage, STAGE_META,
 } from "@/lib/projects-store";
 import { formatNumber } from "@/lib/utils";
+import { optLabel } from "@/lib/typecast-options";
+import { DEMO_MODE } from "@/lib/cloud/config";
+import { HeadshotGrid } from "@/components/Headshots";
 
 type Entry = {
   sub: Submission;
@@ -99,31 +102,41 @@ export default function TalentDossierPage() {
               {talent.verified && <VerifiedBadge />}
             </div>
             <p className="text-[0.6875rem] text-text-muted truncate">
-              {talent.typecast.gender} · {talent.typecast.ageRange[0]}–{talent.typecast.ageRange[1]} · {talent.typecast.heightCm}cm · {talent.typecast.location}
+              {[optLabel(talent.typecast.gender, lang === "he"), `${talent.typecast.ageRange[0]}–${talent.typecast.ageRange[1]}`, `${talent.typecast.heightCm} ${L("ס״מ", "cm")}`, talent.typecast.location ? optLabel(talent.typecast.location, lang === "he") : ""].filter(Boolean).join(" · ")}
             </p>
-            <div className="text-[0.6875rem] text-text-subtle mt-1 tnum">
-              {formatNumber(talent.followers)} {L("עוקבים", "followers")}
-            </div>
+            {DEMO_MODE && (
+              <div className="text-[0.6875rem] text-text-subtle mt-1 tnum">
+                {formatNumber(talent.followers)} {L("עוקבים", "followers")}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Headshots */}
+      {(talent.headshots?.length ?? 0) > 0 && (
+        <div className="px-5 mt-3">
+          <h2 className="text-xs font-semibold text-text-muted mb-2">{L("תמונות", "Photos")}</h2>
+          <HeadshotGrid photos={talent.headshots!} name={talent.name} />
+        </div>
+      )}
+
       {/* Skills + languages chips */}
       <div className="px-5 mt-3 flex flex-wrap gap-1.5">
         {talent.typecast.languages.map((l) => (
-          <span key={l} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">{l}</span>
+          <span key={l} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">{optLabel(l, lang === "he")}</span>
         ))}
         {talent.typecast.skills.slice(0, 6).map((s) => (
-          <span key={s} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-gold">{s}</span>
+          <span key={s} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-gold">{optLabel(s, lang === "he")}</span>
         ))}
       </div>
 
       {/* Quick stats */}
       <div className="px-5 mt-4 grid grid-cols-4 gap-2">
-        <KPI label="Auditions" value={stats.total} tone="muted" />
-        <KPI label="Pipeline"  value={stats.inPipeline} tone="gold" />
-        <KPI label="Booked"    value={stats.booked} tone="success" />
-        <KPI label="Win rate"  value={`${stats.conv}%`} tone="success" />
+        <KPI label={L("אודישנים", "Auditions")} value={stats.total} tone="muted" />
+        <KPI label={L("בתהליך", "Pipeline")} value={stats.inPipeline} tone="gold" />
+        <KPI label={L("לוהקו", "Booked")} value={stats.booked} tone="success" />
+        <KPI label={L("הצלחה", "Win rate")} value={`${stats.conv}%`} tone="success" />
       </div>
 
       {/* Quick actions */}

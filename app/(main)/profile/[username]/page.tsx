@@ -13,6 +13,7 @@ import { REELS, type Talent } from "@/lib/mock-data";
 import { useAllTalents } from "@/lib/cloud/talents";
 import { DEMO_MODE, isRealUserId } from "@/lib/cloud/config";
 import { UserActionsSheet } from "@/components/UserActionsSheet";
+import { MyHeadshots, HeadshotGrid } from "@/components/Headshots";
 import { shareReel } from "@/components/reels/share";
 import { useMyReels, type MyReel } from "@/lib/reels-store";
 import { usePoster, posterPathFor } from "@/lib/video-poster";
@@ -35,6 +36,7 @@ import { useRouter } from "next/navigation";
 import { nameOf, SKIN_TONES, EYE_COLORS, HAIR_COLORS } from "@/lib/typecast-palette";
 
 const TABS = ["Reels", "Headshots", "Typecast"] as const;
+const TAB_HE: Record<typeof TABS[number], string> = { Reels: "סרטונים", Headshots: "תמונות", Typecast: "מאפיינים" };
 
 // Mock profile viewers for "Who viewed you" feature
 const MOCK_VIEWERS = [
@@ -306,7 +308,7 @@ export default function ProfilePage() {
                 tab === t ? "border-gold text-gold" : "border-transparent text-text-muted"
               )}
             >
-              {t}
+              {he ? TAB_HE[t] : t}
             </button>
           ))}
         </div>
@@ -350,13 +352,10 @@ export default function ProfilePage() {
             </>
           )}
           {tab === "Headshots" && (
-            <div className="grid grid-cols-2 gap-2">
-              {[talent.photo, talent.cover].filter(Boolean).map((src, i) => (
-                <div key={i} className="aspect-[3/4] rounded-2xl overflow-hidden bg-bg-elevated">
-                  <img src={src} alt="" className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
+            isMe ? <MyHeadshots /> : (
+              <HeadshotGrid name={talent.name}
+                photos={talent.headshots?.length ? talent.headshots : DEMO_MODE ? [talent.photo, talent.cover].filter(Boolean) : []} />
+            )
           )}
           {tab === "Typecast" && <TypecastCard talent={talent} />}
         </motion.div>

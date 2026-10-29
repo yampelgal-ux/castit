@@ -13,7 +13,7 @@ export function TypecastGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isAuthed) return;
     if (profile.role !== "Talent") return;
-    if (pathname.startsWith("/pro")) return;
+    if (/^\/pro(\/|$)/.test(pathname)) return;
 
     const tc = profile.typecast;
     const hasCore = !!(tc.skinTone && tc.eyeColor && tc.hairColor && tc.heightCm);

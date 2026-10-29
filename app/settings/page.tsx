@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import { deleteMyAccount, refreshHidden, unblockUser, useHidden } from "@/lib/cloud/safety";
 import { Header } from "@/components/Header";
 import { PhotoPicker } from "@/components/PhotoPicker";
+import { MyHeadshots } from "@/components/Headshots";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useInstallPrompt } from "@/components/InstallPrompt";
 import { useStore } from "@/lib/store";
@@ -144,6 +145,12 @@ function ProfileSection({ L }: { L: LFn }) {
       <Field id="set-name" label={L("שם מלא", "Full name")} value={profile.name} onSave={(v) => { setProfile({ name: v }); flash(); }} />
       <Field id="set-username" label={L("שם משתמש", "Username")} value={profile.username} ltr onSave={(v) => { setProfile({ username: v.replace(/[^a-zA-Z0-9_.]/g, "").toLowerCase() }); flash(); }} />
       <Field id="set-bio" label={L("כמה מילים עליי", "Bio")} value={profile.bio ?? ""} multiline onSave={(v) => { setProfile({ bio: v }); flash(); }} />
+      {profile.role !== "Casting Pro" && (
+        <div className="px-4 py-4">
+          <div className="text-sm font-semibold mb-2">{L("תמונות נוספות", "More photos")}</div>
+          <MyHeadshots />
+        </div>
+      )}
       {profile.role !== "Casting Pro" && (
         <Link href="/typecast" className="flex items-center justify-between px-4 py-3 min-h-[56px] text-sm font-semibold">
           {L("נתונים פיזיים ומראה (Typecast)", "Physical details (Typecast)")}

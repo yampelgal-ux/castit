@@ -36,7 +36,7 @@ async function resolvePhoto(userId: string, photo?: string): Promise<string | un
   return undefined;
 }
 
-function toTalentCard(userId: string, p: Profile, photo?: string, reels: MyReel[] = []): Talent {
+function toTalentCard(userId: string, p: Profile, photo?: string, reels: MyReel[] = [], headshots: string[] = []): Talent {
   const tc = p.typecast || {};
   const min = tc.ageRangeMin ?? 20;
   const max = tc.ageRangeMax ?? Math.max(min + 10, 30);
@@ -51,6 +51,7 @@ function toTalentCard(userId: string, p: Profile, photo?: string, reels: MyReel[
     followers: 0,
     likes: 0,
     submissions: 0,
+    headshots,
     reels: reels
       .filter((r) => r.cloud)
       .map((r) => ({
@@ -97,6 +98,9 @@ export async function publishMyProfile(userId: string, p: Profile, reels: MyReel
   if (hash === lastHash) return;
 
   const photo = await resolvePhoto(userId, p.photoUrl);
+  // Photos added while offline are still data URLs; upload them now.
+  const headshots = (await Promise.all((p.headshots ?? []).map((h) => resolvePhoto(userId, h))))
+    .filter((u): u is string => !!u && /^https?:/.test(u));
   const isTalent = p.role !== "Casting Pro";
   const baseUsername = (p.username || p.name).toLowerCase().replace(/[^a-z0-9_]/g, "") || `user${userId.slice(0, 6)}`;
 
@@ -107,7 +111,7 @@ export async function publishMyProfile(userId: string, p: Profile, reels: MyReel
     bio: p.bio ?? null,
     photo_url: photo ?? null,
     role: toDbRole(p.role),
-    talent_card: isTalent ? toTalentCard(userId, p, photo, reels) : null,
+    talent_card: isTalent ? toTalentCard(userId, p, photo, reels, headshots) : null,
     updated_at: new Date().toISOString(),
   };
 

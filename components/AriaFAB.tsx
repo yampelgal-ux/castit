@@ -19,7 +19,7 @@ export function AriaFAB() {
   const { t } = useT();
 
   if (HIDDEN.some((p) => pathname.startsWith(p))) return null;
-  if (pathname.startsWith("/pro")) return null;
+  if (/^\/pro(\/|$)/.test(pathname)) return null;
   // Aria is a talent-only assistant — don't show it to Casting Pros
   if (role === "Casting Pro") return null;
 

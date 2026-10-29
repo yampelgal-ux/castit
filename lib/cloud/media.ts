@@ -14,6 +14,11 @@ export function mediaPublicUrl(path: string): string | null {
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path.split("/").map(encodeURIComponent).join("/")}`;
 }
 
+/** Start of every public media URL; what follows is the object path. */
+export function SUPABASE_PUBLIC_PREFIX(): string {
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
+}
+
 let lastError = "";
 /** Why the most recent upload didn't reach the cloud ("" when it did). */
 export function lastUploadError(): string { return lastError; }

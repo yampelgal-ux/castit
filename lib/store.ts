@@ -17,6 +17,8 @@ type Profile = {
   role: "Talent" | "Casting Pro";
   username: string;
   photoUrl?: string;
+  /** Extra photos (headshots, full body…): public URLs, or data URLs on a device without the cloud. */
+  headshots?: string[];
   bio?: string;
   typecast: Partial<{
     heightCm: number;

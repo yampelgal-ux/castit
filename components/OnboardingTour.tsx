@@ -91,7 +91,7 @@ export function OnboardingTour() {
   const [step, setStep] = useState(0);
 
   // Detect mode (pro vs talent) from URL
-  const isPro = pathname?.startsWith("/pro") ?? false;
+  const isPro = /^\/pro(\/|$)/.test(pathname ?? "");
   const steps = isPro ? PRO_STEPS : TALENT_STEPS;
 
   useEffect(() => {
