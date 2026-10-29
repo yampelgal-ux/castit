@@ -152,13 +152,13 @@ export default function TypecastPage() {
               </PhotoPicker>
               <div className="flex-1 min-w-0">
                 <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-1">
-                  Your profile photo
+                  {L("תמונת הפרופיל שלך", "Your profile photo")}
                 </div>
                 <div className="text-sm font-medium leading-snug">
-                  {profile.photoUrl ? "This is what casting pros will see." : "Tap to upload — needed for verification."}
+                  {profile.photoUrl ? L("זו התמונה שמלהקים יראו.", "This is what casting pros will see.") : L("לחצו כדי להעלות תמונה.", "Tap to upload a photo.")}
                 </div>
                 <div className="text-[0.6875rem] text-text-muted mt-1">
-                  Use a clear, recent headshot.
+                  {L("תמונת פנים ברורה ועדכנית.", "Use a clear, recent headshot.")}
                 </div>
               </div>
             </motion.div>

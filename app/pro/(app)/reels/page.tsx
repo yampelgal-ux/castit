@@ -16,11 +16,20 @@ import { ReelCard } from "@/components/reels/ReelCard";
 import { SendAuditionSheet } from "@/components/SendAuditionSheet";
 import { haptic } from "@/lib/haptics";
 import { cn, formatNumber } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+import { optLabel } from "@/lib/typecast-options";
+function useL() {
+  const { lang } = useT();
+  const he = lang === "he";
+  return { he, L: (h: string, e: string) => (he ? h : e) };
+}
+
 
 type Tab = "All" | "Matches";
 
 export default function ProReelsPage() {
   const { profile } = useStore();
+  const { he, L } = useL();
   const [tab, setTab] = useState<Tab>("All");
   const [auditionId, setAuditionId] = useState<string | null>(null);
   const { reels: REELS, talents: TALENTS } = useAllReels();
@@ -58,7 +67,7 @@ export default function ProReelsPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-plum/30 text-plum-light font-semibold tracking-wider">PRO</span>
-            <span className="font-display text-base text-white">Discover</span>
+            <span className="font-display text-base text-white">{L("גילוי", "Discover")}</span>
           </div>
           <div className="flex items-center gap-3 text-xs">
             <button
@@ -68,7 +77,7 @@ export default function ProReelsPage() {
                 tab === "All" ? "text-white font-semibold" : "text-white/60"
               )}
             >
-              All
+              {L("הכל", "All")}
               {tab === "All" && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gold rounded-full" />}
             </button>
             <button
@@ -78,7 +87,7 @@ export default function ProReelsPage() {
                 tab === "Matches" ? "text-white font-semibold" : "text-white/60"
               )}
             >
-              <Sparkles className="w-3 h-3" /> Matches
+              <Sparkles className="w-3 h-3" /> {L("התאמות", "Matches")}
               {tab === "Matches" && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gold rounded-full" />}
             </button>
           </div>
@@ -110,8 +119,8 @@ export default function ProReelsPage() {
         {feed.length === 0 ? (
           <div className="h-dvh flex flex-col items-center justify-center text-center px-6 text-white/70">
             <Sparkles className="w-10 h-10 text-gold mb-3" />
-            <p className="font-display text-xl text-white">No matches for this audition</p>
-            <p className="text-sm mt-1.5 max-w-xs">Try a less restrictive brief — or switch to <span className="text-gold">All</span>.</p>
+            <p className="font-display text-xl text-white">{L("אין התאמות לאודישן הזה", "No matches for this audition")}</p>
+            <p className="text-sm mt-1.5 max-w-xs">{L("נסו בריף פחות מגביל, או עברו ל", "Try a less restrictive brief — or switch to ")}<span className="text-gold">{L("הכל", "All")}</span>.</p>
           </div>
         ) : (
           feed.map(({ reel, talent, match }) => (
@@ -142,6 +151,7 @@ function ProReelView({
   const { shortlist, toggleShortlist } = useStore();
   const [showInfo, setShowInfo] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const { L } = useL();
   const isShortlisted = shortlist.has(talent.id);
 
   const Extra = ({ label, onClick, children, gold }: { label: string; onClick: () => void; children: React.ReactNode; gold?: boolean }) => (
@@ -166,11 +176,11 @@ function ProReelView({
         ) : undefined}
         railExtra={
           <>
-            <Extra label={isShortlisted ? "Saved" : "Shortlist"} gold={isShortlisted}
+            <Extra label={isShortlisted ? L("נשמר", "Saved") : L("לרשימה", "Shortlist")} gold={isShortlisted}
               onClick={() => { toggleShortlist(talent.id); haptic(isShortlisted ? "light" : "success"); }}>
               <Star className={cn("w-5 h-5", isShortlisted && "fill-current")} />
             </Extra>
-            <Extra label="Typecast" onClick={() => setShowInfo(true)}>
+            <Extra label={L("טייפקאסט", "Typecast")} onClick={() => setShowInfo(true)}>
               <Info className="w-5 h-5" />
             </Extra>
           </>
@@ -179,11 +189,11 @@ function ProReelView({
           <div className="flex gap-2">
             <button onClick={() => { setShowInvite(true); haptic("medium"); }}
               className="h-11 px-5 rounded-full bg-hi text-on-hi text-sm font-bold inline-flex items-center gap-2 shadow-lg">
-              <Megaphone className="w-4 h-4" /> Invite to audition
+              <Megaphone className="w-4 h-4" /> {L("הזמנה לאודישן", "Invite to audition")}
             </button>
             <Link href={`/messages?with=${talent.id}&name=${encodeURIComponent(talent.name)}`}
               className="h-11 px-4 rounded-full bg-white/15 backdrop-blur border border-white/25 text-white text-sm font-semibold inline-flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" /> Message
+              <MessageCircle className="w-4 h-4" /> {L("הודעה", "Message")}
             </Link>
           </div>
         }
@@ -198,6 +208,8 @@ function ProReelView({
 
 function TypecastSheet({ talent, onClose }: { talent: Talent; onClose: () => void }) {
   const tc = talent.typecast;
+  const { he, L } = useL();
+  const o = (v?: string) => (v ? optLabel(v, he) : v);
   return (
     <>
       <motion.div
@@ -224,33 +236,33 @@ function TypecastSheet({ talent, onClose }: { talent: Talent; onClose: () => voi
           </div>
 
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-5">
-            <Stat label="Gender" value={tc.gender} />
-            <Stat label="Age range" value={`${tc.ageRange[0]}–${tc.ageRange[1]}`} />
-            <Stat label="Height" value={`${tc.heightCm} cm`} />
-            <Stat label="Weight" value={`${tc.weightKg} kg`} />
-            {tc.bodyType && <Stat label="Body" value={tc.bodyType} />}
-            {tc.ethnicity && <Stat label="Ethnicity" value={tc.ethnicity} />}
-            {tc.voiceType && <Stat label="Voice" value={tc.voiceType} />}
-            {tc.experienceLevel && <Stat label="Experience" value={tc.experienceLevel} />}
-            {tc.unionStatus && <Stat label="Union" value={tc.unionStatus} />}
-            {tc.location && <Stat label="Based in" value={tc.location} />}
-            <ColorStat label="Skin" color={tc.skinTone} />
-            <ColorStat label="Eyes" color={tc.eyeColor} />
-            <ColorStat label="Hair" color={tc.hairColor} />
-            <Stat label="Hair length" value={tc.hairLength} />
+            <Stat label={L("מגדר", "Gender")} value={o(tc.gender)} />
+            <Stat label={L("טווח גילאים", "Age range")} value={`${tc.ageRange[0]}–${tc.ageRange[1]}`} />
+            <Stat label={L("גובה", "Height")} value={`${tc.heightCm} ${L("ס״מ", "cm")}`} />
+            <Stat label={L("משקל", "Weight")} value={`${tc.weightKg} ${L("ק״ג", "kg")}`} />
+            {tc.bodyType && <Stat label={L("מבנה גוף", "Body")} value={o(tc.bodyType)} />}
+            {tc.ethnicity && <Stat label={L("מוצא", "Ethnicity")} value={o(tc.ethnicity)} />}
+            {tc.voiceType && <Stat label={L("קול", "Voice")} value={o(tc.voiceType)} />}
+            {tc.experienceLevel && <Stat label={L("ניסיון", "Experience")} value={o(tc.experienceLevel)} />}
+            {tc.unionStatus && <Stat label={L("איגוד", "Union")} value={o(tc.unionStatus)} />}
+            {tc.location && <Stat label={L("גר/ה ב", "Based in")} value={o(tc.location)} />}
+            <ColorStat label={L("עור", "Skin")} color={tc.skinTone} />
+            <ColorStat label={L("עיניים", "Eyes")} color={tc.eyeColor} />
+            <ColorStat label={L("שיער", "Hair")} color={tc.hairColor} />
+            <Stat label={L("אורך שיער", "Hair length")} value={o(tc.hairLength)} />
           </div>
 
-          <Group label="Languages">
-            {tc.languages.map((l) => <TypecastBadge key={l}>{l}</TypecastBadge>)}
+          <Group label={L("שפות", "Languages")}>
+            {tc.languages.map((l) => <TypecastBadge key={l}>{o(l)}</TypecastBadge>)}
           </Group>
           {tc.accents?.length ? (
-            <Group label="Accents">{tc.accents.map((a) => <TypecastBadge key={a}>{a}</TypecastBadge>)}</Group>
+            <Group label={L("מבטאים", "Accents")}>{tc.accents.map((a) => <TypecastBadge key={a}>{o(a)}</TypecastBadge>)}</Group>
           ) : null}
           {tc.skills.length ? (
-            <Group label="Skills">{tc.skills.map((s) => <TypecastBadge key={s}>{s}</TypecastBadge>)}</Group>
+            <Group label={L("כישורים", "Skills")}>{tc.skills.map((s) => <TypecastBadge key={s}>{o(s)}</TypecastBadge>)}</Group>
           ) : null}
           {tc.features?.length ? (
-            <Group label="Features">{tc.features.map((f) => <TypecastBadge key={f}>{f}</TypecastBadge>)}</Group>
+            <Group label={L("סימנים מיוחדים", "Features")}>{tc.features.map((f) => <TypecastBadge key={f}>{o(f)}</TypecastBadge>)}</Group>
           ) : null}
 
           <div className="grid grid-cols-2 gap-2 mt-5">
@@ -258,13 +270,13 @@ function TypecastSheet({ talent, onClose }: { talent: Talent; onClose: () => voi
               href={`/profile/${talent.username}`}
               className="h-11 rounded-xl bg-bg-elevated border border-border text-sm font-semibold inline-flex items-center justify-center"
             >
-              Full profile
+              {L("לפרופיל המלא", "Full profile")}
             </Link>
             <Link
               href={`/messages?with=${talent.id}&name=${encodeURIComponent(talent.name)}`}
               className="h-11 rounded-xl bg-gold text-on-accent text-sm font-semibold inline-flex items-center justify-center gap-1.5"
             >
-              <MessageCircle className="w-4 h-4" /> Message
+              <MessageCircle className="w-4 h-4" /> {L("הודעה", "Message")}
             </Link>
           </div>
         </div>

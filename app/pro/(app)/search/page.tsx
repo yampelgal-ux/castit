@@ -324,7 +324,7 @@ export default function ProSearchPage() {
                 {!selectMode && (
                   <div className="flex items-center justify-between px-3 py-2.5 border-t border-border bg-bg/40 text-[0.6875rem] gap-2">
                     <span className="text-text-muted truncate">
-                      <span className="text-text font-semibold tnum">{formatNumber(talent.followers)}</span> followers
+                      <span className="text-text font-semibold tnum">{formatNumber(talent.followers)}</span> {he ? "עוקבים" : "followers"}
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <Link

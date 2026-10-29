@@ -85,7 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${assistant.variable} ${secularOne.variable}`}>
       <body className="font-sans">
-        <a href="#main-content" className="skip-link">Skip to content</a>
+        <a href="#main-content" className="skip-link">דילוג לתוכן</a>
         <div className="device-frame">
           <div className="device-screen">
             <main id="main-content">

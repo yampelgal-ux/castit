@@ -71,7 +71,7 @@ export default function ShortlistPage() {
                     {t.typecast.gender} · {t.typecast.ageRange[0]}–{t.typecast.ageRange[1]} · {t.typecast.heightCm}cm · {t.typecast.location}
                   </p>
                   <div className="text-[0.6875rem] text-text-subtle mt-1 tnum">
-                    {formatNumber(t.followers)} followers
+                    {formatNumber(t.followers)} {L("עוקבים", "followers")}
                   </div>
                 </Link>
                 <button

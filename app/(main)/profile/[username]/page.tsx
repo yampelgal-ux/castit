@@ -14,6 +14,7 @@ import { useAllTalents } from "@/lib/cloud/talents";
 import { DEMO_MODE } from "@/lib/cloud/config";
 import { useMyReels, type MyReel } from "@/lib/reels-store";
 import { usePoster, posterPathFor } from "@/lib/video-poster";
+import { optLabel } from "@/lib/typecast-options";
 import { mediaPublicUrl } from "@/lib/cloud/media";
 import { getTapePlaybackUrl } from "@/lib/tape-storage";
 import { useT } from "@/lib/i18n";
@@ -152,10 +153,16 @@ export default function ProfilePage() {
           <p className="text-sm text-text-muted mt-1 leading-relaxed">{talent.bio}</p>
 
           <div className="flex items-center gap-6 mt-4">
-            <Stat label="Followers" value={formatNumber(talent.followers)} />
-            <Stat label="Likes" value={formatNumber(talent.likes)} />
-            <Stat label="Submissions" value={String(talent.submissions)} />
-            {isMe && <Stat label="Day Streak" value={`${streak} 🔥`} />}
+            {DEMO_MODE ? (
+              <>
+                <Stat label={he ? "עוקבים" : "Followers"} value={formatNumber(talent.followers)} />
+                <Stat label={he ? "לייקים" : "Likes"} value={formatNumber(talent.likes)} />
+                <Stat label={he ? "הגשות" : "Submissions"} value={String(talent.submissions)} />
+              </>
+            ) : (
+              <Stat label={he ? "סרטונים" : "Videos"} value={String(isMe ? ownReels.filter((r) => r.cloud).length : theirReels.length)} />
+            )}
+            {isMe && streak > 0 && <Stat label={he ? "ימים ברצף" : "Day Streak"} value={`${streak} 🔥`} />}
           </div>
 
           {isMe && (
@@ -170,7 +177,7 @@ export default function ProfilePage() {
                 }}
                 action={
                   <button onClick={() => setShowEdit(true)} className="text-[0.6875rem] text-gold font-semibold">
-                    Complete →
+                    {he ? "להשלמה ←" : "Complete →"}
                   </button>
                 }
               />
@@ -232,19 +239,19 @@ export default function ProfilePage() {
                   onClick={() => setShowEdit(true)}
                   className="flex-1 h-11 rounded-full bg-bg-elevated border border-border text-sm font-semibold"
                 >
-                  Edit profile
+                  {he ? "עריכת פרופיל" : "Edit profile"}
                 </button>
                 <button
                   onClick={() => router.push("/saved")}
                   className="h-11 px-4 rounded-full bg-bg-elevated border border-border text-sm font-semibold"
                 >
-                  Saved
+                  {he ? "שמורים" : "Saved"}
                 </button>
                 <button
                   onClick={() => router.push("/calendar")}
                   className="h-11 px-4 rounded-full bg-bg-elevated border border-border text-sm font-semibold"
                 >
-                  Calendar
+                  {he ? "יומן" : "Calendar"}
                 </button>
               </>
             ) : isPro ? (
@@ -253,7 +260,7 @@ export default function ProfilePage() {
                   onClick={() => setShowInvite(true)}
                   className="flex-1 h-11 rounded-full bg-gold text-on-accent text-sm font-semibold inline-flex items-center justify-center gap-1.5"
                 >
-                  <Send className="w-4 h-4" /> Send audition
+                  <Send className="w-4 h-4" /> {he ? "הזמנה לאודישן" : "Send audition"}
                 </button>
                 <button
                   onClick={handleMessage}
@@ -264,12 +271,11 @@ export default function ProfilePage() {
               </>
             ) : (
               <>
-                <button className="flex-1 h-11 rounded-full bg-gold text-on-accent text-sm font-semibold">Follow</button>
                 <button
                   onClick={handleMessage}
-                  className="h-11 px-4 rounded-full bg-bg-elevated border border-border text-sm font-semibold inline-flex items-center gap-1.5"
+                  className="flex-1 h-11 px-4 rounded-full bg-gold text-on-accent text-sm font-semibold inline-flex items-center justify-center gap-1.5"
                 >
-                  <MessageCircle className="w-4 h-4" /> Message
+                  <MessageCircle className="w-4 h-4" /> {he ? "הודעה" : "Message"}
                 </button>
               </>
             )}
@@ -383,6 +389,8 @@ function EditProfileModal({
   const [bio, setBio] = useState(talent.bio);
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const { lang } = useT();
+  const he = lang === "he";
 
   async function save() {
     if (loading) return;
@@ -404,12 +412,12 @@ function EditProfileModal({
             <div className="w-14 h-14 rounded-full bg-success/15 grid place-items-center">
               <Check className="w-7 h-7 text-success" strokeWidth={2.5} />
             </div>
-            <p className="font-display text-xl">Profile updated!</p>
+            <p className="font-display text-xl">{he ? "הפרופיל עודכן!" : "Profile updated!"}</p>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-xl">Edit profile</h2>
+              <h2 className="font-display text-xl">{he ? "עריכת פרופיל" : "Edit profile"}</h2>
               <button onClick={onClose} className="w-8 h-8 rounded-full bg-bg grid place-items-center">
                 <X className="w-4 h-4" />
               </button>
@@ -418,16 +426,13 @@ function EditProfileModal({
             <div className="flex flex-col items-center gap-3">
               <div className="relative">
                 <img src={talent.photo} alt="" className="w-20 h-20 rounded-full object-cover" />
-                <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-gold text-on-accent grid place-items-center shadow">
-                  <Camera className="w-3.5 h-3.5" />
-                </button>
               </div>
-              <p className="text-xs text-text-muted">Tap to change photo</p>
+              <Link href="/settings" className="text-xs text-gold font-semibold">{he ? "להחלפת התמונה בהגדרות" : "Change photo in settings"}</Link>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-text-muted uppercase tracking-wider">Name</label>
+                <label className="text-xs text-text-muted uppercase tracking-wider">{he ? "שם" : "Name"}</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -435,7 +440,7 @@ function EditProfileModal({
                 />
               </div>
               <div>
-                <label className="text-xs text-text-muted uppercase tracking-wider">Bio</label>
+                <label className="text-xs text-text-muted uppercase tracking-wider">{he ? "כמה מילים עליי" : "Bio"}</label>
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
@@ -450,7 +455,7 @@ function EditProfileModal({
               disabled={loading}
               className="w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold disabled:opacity-60"
             >
-              {loading ? "Saving…" : "Save changes"}
+              {loading ? (he ? "שומרים…" : "Saving…") : (he ? "שמירה" : "Save changes")}
             </button>
           </>
         )}
@@ -470,41 +475,44 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function TypecastCard({ talent }: { talent: any }) {
   const tc = talent.typecast;
+  const { lang } = useT();
+  const he = lang === "he";
+  const L = (h: string, e: string) => (he ? h : e);
   return (
     <div className="rounded-3xl p-6 bg-gradient-to-br from-bg-elevated to-bg border border-border">
       <div className="flex items-center justify-between mb-5">
-        <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Typecast Card</div>
+        <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{L("כרטיס טייפקאסט", "Typecast Card")}</div>
         <div className="text-[0.6875rem] text-text-muted tnum">@{talent.username}</div>
       </div>
       <div className="grid grid-cols-2 gap-y-5">
-        <Field icon={Ruler} label="Height" value={`${tc.heightCm} cm`} />
-        <Field icon={Ruler} label="Weight" value={`${tc.weightKg} kg`} />
-        <Field icon={Globe} label="Gender" value={tc.gender} />
-        <Field icon={Globe} label="Age range" value={`${tc.ageRange[0]}–${tc.ageRange[1]}`} />
-        <ColorField label="Skin" color={tc.skinTone} paletteName={nameOf(SKIN_TONES, tc.skinTone)} />
-        <ColorField label="Eyes" color={tc.eyeColor} paletteName={nameOf(EYE_COLORS, tc.eyeColor)} />
-        <ColorField label="Hair" color={tc.hairColor} paletteName={nameOf(HAIR_COLORS, tc.hairColor)} />
-        <Field icon={Languages} label="Hair length" value={tc.hairLength} />
+        <Field icon={Ruler} label={L("גובה", "Height")} value={`${tc.heightCm} ${L("ס״מ", "cm")}`} />
+        <Field icon={Ruler} label={L("משקל", "Weight")} value={`${tc.weightKg} ${L("ק״ג", "kg")}`} />
+        <Field icon={Globe} label={L("מגדר", "Gender")} value={optLabel(tc.gender, he)} />
+        <Field icon={Globe} label={L("טווח גילאים", "Age range")} value={`${tc.ageRange[0]}–${tc.ageRange[1]}`} />
+        <ColorField label={L("עור", "Skin")} color={tc.skinTone} paletteName={nameOf(SKIN_TONES, tc.skinTone)} />
+        <ColorField label={L("עיניים", "Eyes")} color={tc.eyeColor} paletteName={nameOf(EYE_COLORS, tc.eyeColor)} />
+        <ColorField label={L("שיער", "Hair")} color={tc.hairColor} paletteName={nameOf(HAIR_COLORS, tc.hairColor)} />
+        <Field icon={Languages} label={L("אורך שיער", "Hair length")} value={optLabel(tc.hairLength, he)} />
       </div>
       <div className="mt-6 pt-5 border-t border-border">
-        <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">Languages</div>
+        <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">{L("שפות", "Languages")}</div>
         <div className="flex flex-wrap gap-1.5">
-          {tc.languages.map((l: string) => <TypecastBadge key={l}>{l}</TypecastBadge>)}
+          {tc.languages.map((l: string) => <TypecastBadge key={l}>{optLabel(l, he)}</TypecastBadge>)}
         </div>
       </div>
       {tc.skills?.length > 0 && (
         <div className="mt-5">
-          <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">Skills</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">{L("כישורים", "Skills")}</div>
           <div className="flex flex-wrap gap-1.5">
-            {tc.skills.map((s: string) => <TypecastBadge key={s}>{s}</TypecastBadge>)}
+            {tc.skills.map((s: string) => <TypecastBadge key={s}>{optLabel(s, he)}</TypecastBadge>)}
           </div>
         </div>
       )}
       {tc.genres?.length > 0 && (
         <div className="mt-5">
-          <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">Genres</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">{L("ז׳אנרים", "Genres")}</div>
           <div className="flex flex-wrap gap-1.5">
-            {tc.genres.map((g: string) => <TypecastBadge key={g}>{g}</TypecastBadge>)}
+            {tc.genres.map((g: string) => <TypecastBadge key={g}>{optLabel(g, he)}</TypecastBadge>)}
           </div>
         </div>
       )}

@@ -102,7 +102,7 @@ export default function TalentDossierPage() {
               {talent.typecast.gender} · {talent.typecast.ageRange[0]}–{talent.typecast.ageRange[1]} · {talent.typecast.heightCm}cm · {talent.typecast.location}
             </p>
             <div className="text-[0.6875rem] text-text-subtle mt-1 tnum">
-              {formatNumber(talent.followers)} followers
+              {formatNumber(talent.followers)} {L("עוקבים", "followers")}
             </div>
           </div>
         </div>
