@@ -50,7 +50,7 @@ export default function InstallPage() {
       </div>
 
       <div className="text-center mb-8">
-        <img src="/icons/icon-192.png" alt="" className="w-20 h-20 rounded-3xl mx-auto shadow-xl" />
+        <img src="/brand/icon-192.png" alt="" className="w-20 h-20 rounded-3xl mx-auto shadow-xl" />
         <h1 className="font-display text-3xl mt-4">{L("הורדת CastIt לטלפון", "Get CastIt on your phone")}</h1>
         <p className="text-sm text-text-muted mt-2">
           {L("האפליקציה תופיע במסך הבית עם אייקון, תיפתח במסך מלא ותשלח התראות, בדיוק כמו אפליקציה מהחנות.",

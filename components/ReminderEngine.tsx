@@ -29,11 +29,11 @@ function writeSet(key: string, set: Set<string>) {
 function systemNotify(title: string, body: string, href?: string) {
   if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
   try {
-    const n = new Notification(title, { body, icon: "/icons/icon-192.png", tag: href });
+    const n = new Notification(title, { body, icon: "/brand/icon-192.png", tag: href });
     n.onclick = () => { window.focus(); if (href) window.location.href = href; };
   } catch {
     // Some mobile browsers only allow notifications from a service worker.
-    navigator.serviceWorker?.ready.then((reg) => reg.showNotification(title, { body, icon: "/icons/icon-192.png", data: { href } })).catch(() => {});
+    navigator.serviceWorker?.ready.then((reg) => reg.showNotification(title, { body, icon: "/brand/icon-192.png", data: { href } })).catch(() => {});
   }
 }
 

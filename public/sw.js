@@ -4,11 +4,11 @@
  *  • Images (Unsplash / Dicebear / own icons): stale-while-revalidate
  *  • Never touches /api/*, auth, Supabase or video streams.
  */
-const VERSION = "castit-v2";
+const VERSION = "castit-v3";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const IMAGES = `${VERSION}-images`;
-const PRECACHE = ["/offline", "/welcome", "/icons/icon-192.png", "/icons/icon-512.png", "/manifest.webmanifest"];
+const PRECACHE = ["/offline", "/welcome", "/brand/icon-192.png", "/brand/icon-512.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

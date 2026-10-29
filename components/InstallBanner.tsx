@@ -27,7 +27,7 @@ export function InstallBanner() {
   return (
     <div className="fixed top-[env(safe-area-inset-top)] inset-x-0 z-[55] max-w-[440px] mx-auto px-3 pt-2" dir={he ? "rtl" : "ltr"}>
       <div className="flex items-center gap-3 rounded-2xl bg-bg-elevated border border-border shadow-2xl p-2.5">
-        <img src="/icons/icon-192.png" alt="" className="w-10 h-10 rounded-xl" />
+        <img src="/brand/icon-192.png" alt="" className="w-10 h-10 rounded-xl" />
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold">{he ? "CastIt בטלפון" : "CastIt on your phone"}</div>
           <div className="text-[0.6875rem] text-text-muted truncate">{he ? "מסך מלא, אייקון והתראות" : "Full screen, icon and alerts"}</div>
