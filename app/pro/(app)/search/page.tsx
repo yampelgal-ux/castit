@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Filter, X, Search, Users, Sparkles, ChevronDown, MessageCircle, Send, CheckSquare, Square,
+  Filter, X, Search, Bookmark, Users, Sparkles, ChevronDown, MessageCircle, Send, CheckSquare, Square,
 } from "lucide-react";
 import { SendAuditionSheet } from "@/components/SendAuditionSheet";
 import { BulkInviteSheet } from "@/components/BulkInviteSheet";
@@ -12,7 +12,7 @@ import { AriaBriefBuilder, type ParsedFilters } from "@/components/AriaBriefBuil
 import { Header } from "@/components/Header";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { TALENTS, type BodyType, type VoiceType, type UnionStatus, type ExperienceLevel } from "@/lib/mock-data";
-import { matchTalent } from "@/lib/matching";
+import { EMPTY_FILTERS, runSearch, autoSearchName, useProSavedSearches, useSavedSearchAlerts, type Filters } from "@/lib/pro-search";
 import { ColorSwatchPicker } from "@/components/ColorSwatchPicker";
 import { SKIN_TONES, EYE_COLORS, HAIR_COLORS, BODY_TYPES } from "@/lib/typecast-palette";
 import { cn, formatNumber } from "@/lib/utils";
@@ -22,45 +22,7 @@ import {
 } from "@/lib/typecast-options";
 import { useT } from "@/lib/i18n";
 
-type Filters = {
-  gender: string[];
-  ageRange?: [number, number];
-  heightRange?: [number, number];
-  ethnicities: string[];
-  bodyTypes: BodyType[];
-  hairColors: string[];
-  hairLengths: ("Short" | "Medium" | "Long")[];
-  eyeColors: string[];
-  skinTones: string[];
-  languages: string[];
-  accents: string[];
-  voiceTypes: VoiceType[];
-  skills: string[];
-  unionStatus: UnionStatus[];
-  experienceLevels: ExperienceLevel[];
-  locations: string[];
-  mustTravel: boolean;
-  weightRange?: [number, number];
-  hairTypes: string[];
-  facialHair: string[];
-  features: string[];
-  genres: string[];
-  clothingSizes: string[];
-  shoeRange?: [number, number];
-  needsLicense: boolean;
-  needsAgent: boolean;
-  workPermits: string[];
-  hasVideo: boolean;
-  verifiedOnly: boolean;
-};
-
-const EMPTY: Filters = {
-  gender: [], ethnicities: [], bodyTypes: [], hairColors: [], hairLengths: [],
-  eyeColors: [], skinTones: [], languages: [], accents: [], voiceTypes: [],
-  skills: [], unionStatus: [], experienceLevels: [], locations: [], mustTravel: false,
-  hairTypes: [], facialHair: [], features: [], genres: [], clothingSizes: [],
-  needsLicense: false, needsAgent: false, workPermits: [], hasVideo: false, verifiedOnly: false,
-};
+const EMPTY = EMPTY_FILTERS;
 
 type Sort = "match" | "newest" | "followers" | "name";
 
@@ -79,6 +41,10 @@ export default function ProSearchPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkOpen, setBulkOpen] = useState(false);
+  const { save: saveSearch, remove: removeSearch, markSeen } = useProSavedSearches();
+  const savedAlerts = useSavedSearchAlerts();
+  const [activeSaved, setActiveSaved] = useState<string | null>(null);
+  const [savedFlash, setSavedFlash] = useState(false);
 
   function applyAriaFilters(p: ParsedFilters) {
     // Merge into current filters — Aria's output is authoritative for the fields it set.
@@ -110,61 +76,13 @@ export default function ProSearchPage() {
   }
 
   const allTalents = useAllTalents();
-  const ranked = useMemo(() => {
-    const anySoft =
-      !!f.ageRange || !!f.heightRange ||
-      f.ethnicities.length || f.bodyTypes.length ||
-      f.hairColors.length || f.hairLengths.length ||
-      f.eyeColors.length || f.skinTones.length ||
-      f.languages.length || f.accents.length || f.voiceTypes.length ||
-      f.skills.length || f.experienceLevels.length || f.locations.length ||
-      !!f.weightRange || !!f.shoeRange || f.hairTypes.length || f.facialHair.length ||
-      f.features.length || f.genres.length || f.clothingSizes.length;
-    const threshold = anySoft ? 30 : 0;
-    const needle = q.trim().toLowerCase();
-    return allTalents
-      .filter((t) => !needle || [t.name, t.username, t.bio, ...(t.typecast.skills || [])].some((x) => (x || "").toLowerCase().includes(needle)))
-      .filter((t) => !f.hasVideo || (t.reels?.length ?? 0) > 0)
-      .filter((t) => !f.verifiedOnly || t.verified)
-      .map((t) => ({
-      talent: t,
-      match: matchTalent(t, {
-        gender: f.gender,
-        ageRange: f.ageRange,
-        heightRange: f.heightRange,
-        ethnicities: f.ethnicities,
-        bodyTypes: f.bodyTypes,
-        hairColors: f.hairColors,
-        hairLengths: f.hairLengths,
-        eyeColors: f.eyeColors,
-        skinTones: f.skinTones,
-        languages: f.languages,
-        accents: f.accents,
-        voiceTypes: f.voiceTypes,
-        skills: f.skills,
-        unionStatus: f.unionStatus,
-        experienceLevels: f.experienceLevels,
-        locations: f.locations,
-        mustTravel: f.mustTravel || undefined,
-        weightRange: f.weightRange,
-        hairTypes: f.hairTypes,
-        facialHair: f.facialHair,
-        features: f.features,
-        genres: f.genres,
-        clothingSizes: f.clothingSizes,
-        shoeRange: f.shoeRange,
-        needsLicense: f.needsLicense || undefined,
-        needsAgent: f.needsAgent || undefined,
-        workPermits: f.workPermits,
-      }),
-    }))
-      .filter((r) => r.match.passes && r.match.score >= threshold)
-      .sort((a, b) =>
-        sort === "followers" ? b.talent.followers - a.talent.followers
-        : sort === "name" ? a.talent.name.localeCompare(b.talent.name)
-        : sort === "newest" ? 0
-        : b.match.score - a.match.score);
-  }, [f, allTalents, q, sort]);
+  const ranked = useMemo(() =>
+    runSearch(allTalents, f, q).sort((a, b) =>
+      sort === "followers" ? b.talent.followers - a.talent.followers
+      : sort === "name" ? a.talent.name.localeCompare(b.talent.name)
+      : sort === "newest" ? 0
+      : b.match.score - a.match.score),
+  [f, allTalents, q, sort]);
 
   const activeCount = useMemo(() => {
     let n = 0;
@@ -294,6 +212,61 @@ export default function ProSearchPage() {
           </div>
         )}
       </div>
+
+      {/* Saved searches: new matching talents show as a yellow "N new" badge */}
+      {(savedAlerts.length > 0 || activeCount > 0 || q.trim()) && (
+        <div className="px-4 pt-3 flex gap-2 overflow-x-auto no-scrollbar">
+          {(activeCount > 0 || q.trim()) && !savedAlerts.some(({ search }) => search.q === q && JSON.stringify({ ...EMPTY, ...search.filters }) === JSON.stringify(f)) && (
+            <button
+              type="button"
+              onClick={() => {
+                saveSearch(autoSearchName(f, q, (v) => optLabel(v, he), he), f, q, ranked.map((r) => r.talent.id));
+                setSavedFlash(true);
+                setTimeout(() => setSavedFlash(false), 1800);
+              }}
+              className="shrink-0 h-9 px-3 rounded-full bg-hi text-on-hi text-xs font-bold flex items-center gap-1.5"
+            >
+              <Bookmark className="w-3.5 h-3.5" aria-hidden />
+              {savedFlash ? (he ? "נשמר! נעדכן על חדשים" : "Saved! We'll flag new ones") : (he ? "שמירת החיפוש" : "Save search")}
+            </button>
+          )}
+          {savedAlerts.map(({ search, newIds }) => (
+            <div
+              key={search.id}
+              className={cn(
+                "shrink-0 h-9 ps-3 pe-1 rounded-full border flex items-center gap-1.5 text-xs",
+                activeSaved === search.id ? "border-gold bg-gold/10" : "border-border bg-bg-elevated"
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setF({ ...EMPTY, ...search.filters });
+                  setQ(search.q);
+                  setActiveSaved(search.id);
+                  markSeen(search.id, newIds);
+                }}
+                className="flex items-center gap-1.5 font-semibold"
+              >
+                {search.name}
+                {newIds.length > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-hi text-on-hi text-[0.625rem] font-bold">
+                    {he ? `${newIds.length} חדשים` : `${newIds.length} new`}
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => { removeSearch(search.id); if (activeSaved === search.id) setActiveSaved(null); }}
+                aria-label={he ? "מחיקת חיפוש שמור" : "Delete saved search"}
+                className="w-7 h-7 grid place-items-center rounded-full text-text-muted hover:text-text"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Results */}
       <div className="px-4 pt-4 space-y-2.5">

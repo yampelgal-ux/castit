@@ -16,6 +16,7 @@ import {
   type Project, type Submission, type InboxItem,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useSavedSearchAlerts } from "@/lib/pro-search";
 
 export default function ProDashboardPage() {
   const { profile } = useStore();
@@ -23,6 +24,7 @@ export default function ProDashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [inbox, setInbox] = useState<InboxItem[]>([]);
+  const savedAlerts = useSavedSearchAlerts().filter((a) => a.newIds.length > 0);
 
   useEffect(() => {
     setProjects(loadProjects());
@@ -152,6 +154,31 @@ export default function ProDashboardPage() {
                 <div className="text-[0.6875rem] text-text-muted">{t("pd.triageSub", { n: inboxCounts.toReview })}</div>
               </div>
               <span className="text-[0.6875rem] font-bold text-gold tnum">{inboxCounts.toReview}</span>
+            </div>
+          </Link>
+        )}
+
+        {/* Saved searches with new matching talents */}
+        {savedAlerts.length > 0 && (
+          <Link
+            href="/pro/search"
+            className="block rounded-2xl p-3 bg-bg-elevated border border-gold/30 hover:border-gold/50 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gold/15 text-gold grid place-items-center shrink-0">
+                <Bell className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold">
+                  {dir === "rtl" ? "שחקנים חדשים שמתאימים לחיפושים שלך" : "New talent matching your saved searches"}
+                </div>
+                <div className="text-[0.6875rem] text-text-muted truncate">
+                  {savedAlerts.map((a) => `${a.search.name} (${a.newIds.length})`).join(" · ")}
+                </div>
+              </div>
+              <span className="text-[0.6875rem] font-bold text-gold tnum">
+                {savedAlerts.reduce((n, a) => n + a.newIds.length, 0)}
+              </span>
             </div>
           </Link>
         )}
