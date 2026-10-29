@@ -154,6 +154,7 @@ export default function ProCalendarPage() {
 }
 
 function DayGroup({ day, events }: { day: string; events: Event[] }) {
+  const { lang } = useT();
   const d = new Date(day);
   const isToday = d.toDateString() === new Date().toDateString();
   const isPast = +d < Date.now() - 86400000;
@@ -164,8 +165,8 @@ function DayGroup({ day, events }: { day: string; events: Event[] }) {
           "text-xs font-semibold uppercase tracking-wider",
           isToday ? "text-gold" : isPast ? "text-text-subtle" : "text-text-muted"
         )}>
-          {d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
-          {isToday && " · Today"}
+          {d.toLocaleDateString(lang === "he" ? "he-IL" : "en-US", { weekday: "short", month: "short", day: "numeric" })}
+          {isToday && (lang === "he" ? " · היום" : " · Today")}
         </div>
       </div>
       <div className="space-y-1.5">
