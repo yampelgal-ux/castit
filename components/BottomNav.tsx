@@ -27,7 +27,9 @@ const proItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const role = useStore((s) => s.profile.role);
+  const storedRole = useStore((s) => s.profile.role);
+  // Inside /pro always show the casting nav, whatever role this device remembers.
+  const role = pathname?.startsWith("/pro") ? "Casting Pro" : storedRole;
   const items = role === "Casting Pro" ? proItems : talentItems;
   const unreadTalent = useUnreadCount("talent");
   const unreadPro = useUnreadCount("pro");
@@ -42,7 +44,7 @@ export function BottomNav() {
             const { href, icon: Icon, tkey } = item;
             const label = t(tkey);
             const showBadge = !!item.badgeFor;
-            const active = pathname?.startsWith(href.split("/").slice(0, 2).join("/"));
+            const active = !!pathname && (pathname === href || pathname.startsWith(href + "/") || (href === "/profile/me" && pathname.startsWith("/profile/")));
             return (
               <Link
                 key={href}

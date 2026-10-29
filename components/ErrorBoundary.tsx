@@ -14,9 +14,24 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: { componentStack?: string | null }) {
     console.error("[ErrorBoundary]", error, info.componentStack);
+    // After a new version is deployed, an app left open still asks for the old
+    // code files, which no longer exist. Reload once to pick up the new version.
+    if (/ChunkLoadError|Loading chunk|Failed to fetch dynamically imported module/i.test(`${error?.name} ${error?.message}`)) {
+      try {
+        const last = Number(sessionStorage.getItem("castit_chunk_reload") || 0);
+        if (Date.now() - last > 30000) {
+          sessionStorage.setItem("castit_chunk_reload", String(Date.now()));
+          window.location.reload();
+        }
+      } catch {}
+    }
   }
 
-  reset = () => this.setState({ error: null });
+  reset = () => {
+    // A plain re-render rarely fixes anything; a reload loads fresh code.
+    if (typeof window !== "undefined") window.location.reload();
+    else this.setState({ error: null });
+  };
 
   render() {
     if (!this.state.error) return this.props.children;
@@ -27,15 +42,15 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="w-14 h-14 rounded-full bg-terra/15 grid place-items-center mb-4">
           <AlertTriangle className="w-6 h-6 text-terra" />
         </div>
-        <h2 className="font-display text-2xl tracking-editorial mb-2">Something went off-script</h2>
-        <p className="text-sm text-text-muted max-w-xs mb-6">
-          A scene failed to render. Try again — usually it works on the second take.
+        <h2 className="font-display text-2xl tracking-editorial mb-2" dir="auto">משהו השתבש</h2>
+        <p className="text-sm text-text-muted max-w-xs mb-6" dir="auto">
+          המסך לא נטען כמו שצריך. נסו שוב, בדרך כלל זה מסתדר בטייק השני.
         </p>
         <button
           onClick={this.reset}
           className="inline-flex items-center gap-2 px-4 h-11 rounded-full bg-gold text-on-accent font-semibold text-sm"
         >
-          <RefreshCw className="w-4 h-4" /> Retake
+          <RefreshCw className="w-4 h-4" /> לנסות שוב
         </button>
       </div>
     );

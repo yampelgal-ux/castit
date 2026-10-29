@@ -12,6 +12,7 @@ import { TALENTS } from "@/lib/mock-data";
 import { loadSubmissions, loadRoles, loadProjects, type Submission, type Role, type Project } from "@/lib/projects-store";
 import { ShieldCheck, FolderOpen } from "lucide-react";
 import Link from "next/link";
+import { isRealUserId } from "@/lib/cloud/config";
 
 type Convo = {
   id: string;
@@ -194,7 +195,10 @@ function MessagesContent() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              onClick={() => router.push(`/messages/${c.id}`)}
+              onClick={() =>
+                // In casting mode the list is keyed by talent; open (or start) the real chat with them.
+                router.push(isPro && userId && isRealUserId(c.id) ? `/messages?with=${c.id}` : `/messages/${c.id}`)
+              }
               className="w-full flex items-center gap-3 p-3 rounded-2xl bg-bg-elevated border border-border text-left"
             >
               {c.photo ? (
