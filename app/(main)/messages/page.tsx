@@ -13,6 +13,7 @@ import { loadSubmissions, loadRoles, loadProjects, type Submission, type Role, t
 import { ShieldCheck, FolderOpen } from "lucide-react";
 import Link from "next/link";
 import { isRealUserId } from "@/lib/cloud/config";
+import { useHiddenUsers } from "@/lib/cloud/safety";
 
 type Convo = {
   id: string;
@@ -20,6 +21,8 @@ type Convo = {
   photo: string;
   lastMessage: string;
   lastAt: string;
+  /** The other person's account id, when known. */
+  otherId?: string;
   // Pro-mode metadata: which project/role the conversation is tied to
   projectTitle?: string;
   roleName?: string;
@@ -56,8 +59,11 @@ function MessagesContent() {
   const router = useRouter();
   const params = useSearchParams();
   const { userId, profile } = useStore();
-  const { t, dir } = useT();
-  const [convos, setConvos] = useState<Convo[]>([]);
+  const { t, dir, lang } = useT();
+  const he = lang === "he";
+  const hidden = useHiddenUsers();
+  const [allConvos, setConvos] = useState<Convo[]>([]);
+  const convos = hidden.size ? allConvos.filter((c) => !c.otherId || !hidden.has(c.otherId)) : allConvos;
   const [loading, setLoading] = useState(true);
 
   const isPro = profile.role === "Casting Pro";
@@ -99,9 +105,10 @@ function MessagesContent() {
 
         const list: Convo[] = [...byTalent.values()].map(({ s, role, proj }) => ({
           id: s.talentId,
+          otherId: s.talentId,
           name: s.talentName,
           photo: s.talentPhoto,
-          lastMessage: s.proMessage || s.inviteMessage || `Active on ${role?.name ?? "your role"}`,
+          lastMessage: s.proMessage || s.inviteMessage || (he ? `פעיל/ה בתפקיד ${role?.name ?? ""}` : `Active on ${role?.name ?? "your role"}`),
           lastAt: timeShort(s.decidedAt ?? s.createdAt),
           projectTitle: proj?.title,
           roleName: role?.name,
@@ -122,7 +129,8 @@ function MessagesContent() {
                   : c.participant_a_profile;
               return {
                 id: c.id,
-                name: other?.name || "Unknown",
+                otherId: c.participant_a === userId ? c.participant_b : c.participant_a,
+                name: other?.name || other?.username || (he ? "משתמש/ת" : "Unknown"),
                 photo: other?.photo_url || "",
                 lastMessage: c.last_message || "",
                 lastAt: c.last_at
@@ -150,7 +158,7 @@ function MessagesContent() {
         <div className="mx-4 mt-3 p-2.5 rounded-xl bg-bg-elevated border border-border flex items-start gap-2">
           <ShieldCheck className="w-4 h-4 text-gold shrink-0 mt-0.5" />
           <p className="text-[0.6875rem] text-text-muted leading-relaxed">
-            Only talents tied to your active projects can message you. Cold DMs are blocked.
+            {he ? "רק שחקנים שקשורים לפרויקטים הפעילים שלך יכולים לשלוח לך הודעות. אין פניות מזדמנות." : "Only talents tied to your active projects can message you. Cold DMs are blocked."}
           </p>
         </div>
       )}

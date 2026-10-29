@@ -12,6 +12,7 @@ import { mediaPublicUrl } from "./media";
 import { useMyReels } from "@/lib/reels-store";
 import { useStore } from "@/lib/store";
 import { TALENTS, REELS, type Talent, type ReelPost } from "@/lib/mock-data";
+import { useHiddenUsers } from "./safety";
 
 let cache: Talent[] = [];
 let inflight: Promise<Talent[]> | null = null;
@@ -52,7 +53,9 @@ export function useAllTalents(): Talent[] {
     fetchRealTalents().then((t) => { if (alive) setReal(t); });
     return () => { alive = false; };
   }, []);
-  return real.length ? [...real, ...TALENTS.filter((t) => !real.some((r) => r.id === t.id))] : TALENTS;
+  const hidden = useHiddenUsers();
+  const visible = hidden.size ? real.filter((t) => !hidden.has(t.id)) : real;
+  return visible.length ? [...visible, ...TALENTS.filter((t) => !visible.some((r) => r.id === t.id))] : TALENTS;
 }
 
 export function useTalentById(id: string | undefined): Talent | undefined {

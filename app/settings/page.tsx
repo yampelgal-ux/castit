@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Camera, Upload, Trash2, Bell, Accessibility, Globe, User, Film, Cloud, CloudOff,
-  LogOut, LogIn, Smartphone, Check, Type,
+  LogOut, LogIn, Smartphone, Check, Type, Shield, Ban, FileText, AlertTriangle,
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { deleteMyAccount, refreshHidden, unblockUser, useHidden } from "@/lib/cloud/safety";
 import { Header } from "@/components/Header";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -42,6 +44,7 @@ export default function SettingsPage() {
             <LanguageToggle />
           </Row>
         </Section>
+        <PrivacySection L={L} />
         <AccountSection L={L} />
       </div>
     </div>
@@ -392,6 +395,104 @@ function AccountSection({ L }: { L: LFn }) {
           </Link>
         )}
       </div>
+      {cloud && <DeleteAccount L={L} />}
+    </Section>
+  );
+}
+
+function DeleteAccount({ L }: { L: LFn }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [state, setState] = useState<"idle" | "busy" | "failed">("idle");
+  const word = L("מחיקה", "DELETE");
+
+  async function run() {
+    setState("busy");
+    const r = await deleteMyAccount();
+    if (r === "ok") { router.replace("/welcome"); return; }
+    setState("failed");
+  }
+
+  if (!open) {
+    return (
+      <div className="px-4 pb-4">
+        <button onClick={() => setOpen(true)} className="w-full h-11 text-sm text-text-muted underline underline-offset-2">
+          {L("מחיקת החשבון", "Delete account")}
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="m-4 p-4 rounded-xl border border-danger/40 bg-danger/5" role="region" aria-label={L("מחיקת החשבון", "Delete account")}>
+      <p className="font-semibold flex items-center gap-2 text-danger"><AlertTriangle className="w-4 h-4" aria-hidden /> {L("מחיקת החשבון לצמיתות", "Delete your account for good")}</p>
+      <p className="text-sm text-text-muted mt-2 leading-relaxed">
+        {L(
+          "הפרופיל, הסרטונים, התמונות, ההודעות, הלייקים והתגובות שלך יימחקו, ואי אפשר יהיה לשחזר אותם. מלהקים לא יראו אותך יותר.",
+          "Your profile, videos, photos, messages, likes and comments will be deleted and can't be restored. Casting directors won't see you anymore."
+        )}
+      </p>
+      <label className="block text-sm mt-3" htmlFor="del-confirm">{L(`כדי לאשר, הקלידו "${word}"`, `To confirm, type "${word}"`)}</label>
+      <input id="del-confirm" value={typed} onChange={(e) => setTyped(e.target.value)} dir="auto"
+        className="mt-1 w-full h-11 px-3 rounded-lg bg-bg border border-border outline-none focus:border-danger" />
+      {state === "failed" && (
+        <p className="text-xs text-terra mt-2" role="alert">
+          {L("המחיקה לא הצליחה. נסו שוב, ואם זה חוזר פנו אלינו.", "Couldn't delete. Try again, and contact us if it keeps failing.")}
+        </p>
+      )}
+      <div className="flex gap-2 mt-4">
+        <button onClick={() => { setOpen(false); setTyped(""); }} className="flex-1 h-11 rounded-lg border border-border font-semibold">{L("ביטול", "Cancel")}</button>
+        <button onClick={run} disabled={typed.trim() !== word || state === "busy"}
+          className="flex-1 h-11 rounded-lg bg-danger text-white font-semibold disabled:opacity-40">
+          {state === "busy" ? L("מוחק…", "Deleting…") : L("מחיקה לצמיתות", "Delete for good")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Privacy & safety ─────────────────────────────────────
+function PrivacySection({ L }: { L: LFn }) {
+  const userId = useStore((s) => s.userId);
+  const mine = useHidden((s) => s.mine);
+  const [names, setNames] = useState<Record<string, string>>({});
+  const live = isCloudConfigured() && isRealUserId(userId);
+
+  useEffect(() => { if (live) void refreshHidden(); }, [live]);
+  useEffect(() => {
+    const ids = [...mine].filter((id) => !names[id]);
+    if (!ids.length) return;
+    supabase.from("profiles").select("id,name,username").in("id", ids).then(({ data }) => {
+      if (!data) return;
+      setNames((n) => ({ ...n, ...Object.fromEntries(data.map((p: any) => [p.id, p.name || `@${p.username}`])) }));
+    });
+  }, [mine, names]);
+
+  return (
+    <Section icon={Shield} title={L("פרטיות ובטיחות", "Privacy & safety")}>
+      {live && (
+        <div className="px-4 py-3">
+          <div className="text-sm font-semibold flex items-center gap-2"><Ban className="w-4 h-4" aria-hidden /> {L("משתמשים חסומים", "Blocked users")}</div>
+          {mine.size === 0 ? (
+            <p className="text-xs text-text-muted mt-1">{L("לא חסמת אף אחד. אפשר לחסום מתוך הפרופיל או השיחה של מישהו.", "You haven't blocked anyone. You can block from someone's profile or chat.")}</p>
+          ) : (
+            <ul className="mt-2 space-y-2">
+              {[...mine].map((id) => (
+                <li key={id} className="flex items-center justify-between gap-2 text-sm">
+                  <span className="truncate">{names[id] || L("משתמש/ת", "User")}</span>
+                  <button onClick={() => void unblockUser(id)} className="h-9 px-3 rounded-full border border-border text-xs font-semibold">{L("ביטול חסימה", "Unblock")}</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      <Link href="/terms" className="flex items-center gap-2 px-4 py-3 min-h-[52px] text-sm font-semibold">
+        <FileText className="w-4 h-4" aria-hidden /> {L("תנאי שימוש", "Terms of use")}
+      </Link>
+      <Link href="/privacy" className="flex items-center gap-2 px-4 py-3 min-h-[52px] text-sm font-semibold">
+        <Shield className="w-4 h-4" aria-hidden /> {L("מדיניות פרטיות", "Privacy policy")}
+      </Link>
     </Section>
   );
 }

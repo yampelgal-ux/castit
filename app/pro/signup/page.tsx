@@ -140,6 +140,13 @@ export default function ProSignupPage() {
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
 
+        <p className="text-center text-[0.6875rem] text-text-subtle leading-relaxed">
+          {L("בפתיחת חשבון את/ה מסכים/ה ל", "By creating an account you agree to the ")}
+          <Link href="/terms" className="underline">{L("תנאי השימוש", "Terms of Use")}</Link>
+          {L(" ול", " and ")}
+          <Link href="/privacy" className="underline">{L("מדיניות הפרטיות", "Privacy Policy")}</Link>.
+        </p>
+
         <p className="text-center text-[0.6875rem] text-text-subtle">
           {L("כבר יש לך חשבון?", "Already a Pro?")} <Link href="/pro/login" className="text-gold font-semibold">{L("כניסה", "Sign in")}</Link>
         </p>

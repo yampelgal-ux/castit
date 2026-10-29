@@ -11,7 +11,9 @@ import { TalentHistory } from "@/components/TalentHistory";
 import { ProProfileView } from "@/components/ProProfileView";
 import { REELS, type Talent } from "@/lib/mock-data";
 import { useAllTalents } from "@/lib/cloud/talents";
-import { DEMO_MODE } from "@/lib/cloud/config";
+import { DEMO_MODE, isRealUserId } from "@/lib/cloud/config";
+import { UserActionsSheet } from "@/components/UserActionsSheet";
+import { shareReel } from "@/components/reels/share";
 import { useMyReels, type MyReel } from "@/lib/reels-store";
 import { usePoster, posterPathFor } from "@/lib/video-poster";
 import { optLabel } from "@/lib/typecast-options";
@@ -53,6 +55,7 @@ export default function ProfilePage() {
   const [tab, setTab] = useState<typeof TABS[number]>("Reels");
   const [showEdit, setShowEdit] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [showActions, setShowActions] = useState(false);
 
   // Pro looking at their own profile (or another pro) → distinct industry-focused view
   if (isMe && myProfile.role === "Casting Pro") {
@@ -119,7 +122,15 @@ export default function ProfilePage() {
       <Header
         back={!isMe}
         title={`@${talent.username}`}
-        right={isMe ? <AccountButton /> : <Share2 className="w-5 h-5 text-text-muted" />}
+        right={isMe ? <AccountButton /> : (
+          <button
+            onClick={() => (isRealUserId(talent.id) ? setShowActions(true) : void shareReel(talent.username, talent.name, he))}
+            aria-label={he ? "אפשרויות" : "Options"}
+            className="w-10 h-10 rounded-full grid place-items-center text-text-muted hover:text-text"
+          >
+            {isRealUserId(talent.id) ? <MoreHorizontal className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+          </button>
+        )}
         transparent
       />
 
@@ -368,6 +379,15 @@ export default function ProfilePage() {
         onClose={() => setShowInvite(false)}
         talent={{ id: talent.id, name: talent.name, photo: talent.photo }}
       />
+
+      {showActions && (
+        <UserActionsSheet
+          userId={talent.id} name={talent.name || `@${talent.username}`}
+          onShare={() => void shareReel(talent.username, talent.name, he)}
+          onBlocked={() => router.back()}
+          onClose={() => setShowActions(false)}
+        />
+      )}
 
       {/* Optional pro-only panels — appear on talent profile when viewed by a pro */}
       {isPro && !isMe && (

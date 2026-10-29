@@ -12,6 +12,8 @@ import { Avatar } from "@/components/Avatar";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { ReelCommentsSheet } from "./ReelCommentsSheet";
 import { ReelManageSheet } from "./ReelManageSheet";
+import { ReportSheet } from "@/components/ReportSheet";
+import { isRealUserId } from "@/lib/cloud/config";
 import { shareReel } from "./share";
 import { useReelStats, toggleReelLike, recordReelView } from "@/lib/cloud/social";
 import { useMyReels } from "@/lib/reels-store";
@@ -58,7 +60,7 @@ export function ReelCard({
   const [progress, setProgress] = useState(0);
   const [burst, setBurst] = useState(0);
   const [expanded, setExpanded] = useState(false);
-  const [sheet, setSheet] = useState<null | "comments" | "manage">(null);
+  const [sheet, setSheet] = useState<null | "comments" | "manage" | "report">(null);
   const [toast, setToast] = useState("");
   const lastTap = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -213,6 +215,11 @@ export function ReelCard({
             <MoreHorizontal className="w-6 h-6" />
           </RailBtn>
         )}
+        {!isMine && isRealUserId(talent.id) && (
+          <RailBtn label={he ? "דיווח על הסרטון" : "Report video"} onClick={() => setSheet("report")}>
+            <MoreHorizontal className="w-6 h-6" />
+          </RailBtn>
+        )}
       </div>
 
       {/* Caption block */}
@@ -266,6 +273,7 @@ export function ReelCard({
 
       <AnimatePresence>
         {sheet === "comments" && <ReelCommentsSheet reelId={reel.id} ownerId={talent.id} onClose={() => setSheet(null)} />}
+        {sheet === "report" && <ReportSheet kind="reel" targetUser={talent.id} targetId={reel.id} onClose={() => setSheet(null)} />}
         {sheet === "manage" && myReel && (
           <ReelManageSheet reel={myReel} onClose={() => setSheet(null)} onComments={() => setSheet("comments")} />
         )}

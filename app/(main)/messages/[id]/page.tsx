@@ -1,9 +1,11 @@
 "use client";
-import { DEMO_MODE } from "@/lib/cloud/config";
+import { DEMO_MODE, isRealUserId } from "@/lib/cloud/config";
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Send } from "lucide-react";
+import { Send, MoreHorizontal, Ban } from "lucide-react";
+import { UserActionsSheet } from "@/components/UserActionsSheet";
+import { useHiddenUsers } from "@/lib/cloud/safety";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
@@ -28,12 +30,36 @@ const MOCK_MSGS: Msg[] = [
 export default function ConversationPage() {
   const { id } = useParams<{ id: string }>();
   const { userId, profile } = useStore();
-  const { t } = useT();
+  const { t, lang } = useT();
+  const he = lang === "he";
+  const router = useRouter();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [otherName, setOtherName] = useState("Chat");
+  const [otherName, setOtherName] = useState(he ? "שיחה" : "Chat");
+  const [otherId, setOtherId] = useState<string | null>(null);
+  const [showActions, setShowActions] = useState(false);
+  const [sendFailed, setSendFailed] = useState(false);
+  const hidden = useHiddenUsers();
+  const blocked = !!otherId && hidden.has(otherId);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Who the other person is, even before they've written anything.
+  useEffect(() => {
+    if (!userId || !isRealUserId(id)) return;
+    supabase
+      .from("conversations")
+      .select("participant_a,participant_b,a:profiles!conversations_participant_a_fkey(name,username),b:profiles!conversations_participant_b_fkey(name,username)")
+      .eq("id", id)
+      .maybeSingle()
+      .then(({ data }: { data: any }) => {
+        if (!data) return;
+        const mineIsA = data.participant_a === userId;
+        setOtherId(mineIsA ? data.participant_b : data.participant_a);
+        const p = mineIsA ? data.b : data.a;
+        if (p?.name || p?.username) setOtherName(p.name || `@${p.username}`);
+      });
+  }, [id, userId]);
 
   useEffect(() => {
     async function load() {
@@ -54,7 +80,14 @@ export default function ConversationPage() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
         (payload) => {
-          setMsgs((prev) => [...prev, payload.new as Msg]);
+          const m = payload.new as Msg;
+          setMsgs((prev) => {
+            if (prev.some((x) => x.id === m.id)) return prev;
+            // My own message comes back from the server: replace its optimistic copy.
+            const opt = prev.findIndex((x) => x.id.startsWith("opt-") && x.sender_id === m.sender_id && x.text === m.text);
+            if (opt >= 0) { const next = [...prev]; next[opt] = m; return next; }
+            return [...prev, m];
+          });
         }
       )
       .subscribe();
@@ -67,7 +100,8 @@ export default function ConversationPage() {
   }, [msgs]);
 
   async function send() {
-    if (!text.trim() || loading) return;
+    if (!text.trim() || loading || blocked) return;
+    setSendFailed(false);
     const t = text.trim();
     setText("");
     setLoading(true);
@@ -81,7 +115,12 @@ export default function ConversationPage() {
     setMsgs((prev) => [...prev, optimistic]);
 
     if (userId) {
-      await sendMessage(id, userId, t);
+      const { error } = await sendMessage(id, userId, t);
+      if (error) {
+        setMsgs((prev) => prev.filter((m) => m.id !== optimistic.id));
+        setText(t);
+        setSendFailed(true);
+      }
     }
     setLoading(false);
   }
@@ -92,7 +131,16 @@ export default function ConversationPage() {
 
   return (
     <div className="flex flex-col min-h-dvh">
-      <Header back title={otherName} />
+      <Header back title={otherName} right={otherId ? (
+        <button onClick={() => setShowActions(true)} aria-label={he ? "אפשרויות" : "Options"}
+          className="w-10 h-10 rounded-full grid place-items-center text-text-muted hover:text-text">
+          <MoreHorizontal className="w-5 h-5" />
+        </button>
+      ) : undefined} />
+      {showActions && otherId && (
+        <UserActionsSheet userId={otherId} name={otherName} reportKind="message" targetId={id}
+          onBlocked={() => router.replace("/messages")} onClose={() => setShowActions(false)} />
+      )}
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
         {msgs.map((m) => {
@@ -123,7 +171,15 @@ export default function ConversationPage() {
         <div ref={bottomRef} />
       </div>
 
+      {blocked ? (
+        <div className="p-4 border-t border-border glass text-center text-sm text-text-muted flex items-center justify-center gap-2">
+          <Ban className="w-4 h-4" aria-hidden /> {he ? "אי אפשר לשלוח הודעות בשיחה הזו." : "You can't send messages in this conversation."}
+        </div>
+      ) : (
       <div className="p-3 border-t border-border glass">
+        {sendFailed && (
+          <p className="text-xs text-terra px-2 pb-2" role="alert">{he ? "ההודעה לא נשלחה. נסו שוב." : "Message not sent. Try again."}</p>
+        )}
         <form
           onSubmit={(e) => { e.preventDefault(); send(); }}
           className="flex items-center gap-2"
@@ -143,6 +199,7 @@ export default function ConversationPage() {
           </button>
         </form>
       </div>
+      )}
     </div>
   );
 }

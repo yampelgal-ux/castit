@@ -123,7 +123,11 @@ export default function WelcomePage() {
           </Link>
 
           <p className="mt-3 text-center text-[0.6875rem] text-text-subtle leading-relaxed">
-            {lang === "he" ? "בהמשך השימוש את/ה מסכים/ה לתנאי השימוש ולמדיניות הפרטיות." : "By continuing you agree to our Terms of Service & Privacy Policy."}
+            {lang === "he" ? (
+              <>בהמשך השימוש את/ה מסכים/ה ל<Link href="/terms" className="underline">תנאי השימוש</Link> ול<Link href="/privacy" className="underline">מדיניות הפרטיות</Link>.</>
+            ) : (
+              <>By continuing you agree to our <Link href="/terms" className="underline">Terms of Use</Link> & <Link href="/privacy" className="underline">Privacy Policy</Link>.</>
+            )}
           </p>
         </div>
       </div>

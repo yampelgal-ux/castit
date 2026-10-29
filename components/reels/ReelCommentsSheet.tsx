@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { X, Send, Trash2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { X, Send, Trash2, Flag } from "lucide-react";
+import { ReportSheet } from "@/components/ReportSheet";
+import { useHiddenUsers } from "@/lib/cloud/safety";
 import { Avatar } from "@/components/Avatar";
 import {
   addReelComment, deleteReelComment, fetchReelComments, currentSocialUser, type ReelComment,
@@ -30,6 +32,9 @@ export function ReelCommentsSheet({ reelId, ownerId, onClose }: { reelId: string
   const [err, setErr] = useState<"" | "signed-out" | "failed">("");
   const me = currentSocialUser();
   const listRef = useRef<HTMLDivElement>(null);
+  const hidden = useHiddenUsers();
+  const [reporting, setReporting] = useState<ReelComment | null>(null);
+  const shown = items?.filter((c) => !hidden.has(c.user_id)) ?? null;
 
   useEffect(() => {
     let alive = true;
@@ -67,18 +72,18 @@ export function ReelCommentsSheet({ reelId, ownerId, onClose }: { reelId: string
         dir={he ? "rtl" : "ltr"}
       >
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border">
-          <h3 className="font-display text-lg">{he ? "תגובות" : "Comments"}{items ? ` · ${items.length}` : ""}</h3>
+          <h3 className="font-display text-lg">{he ? "תגובות" : "Comments"}{shown ? ` · ${shown.length}` : ""}</h3>
           <button onClick={onClose} aria-label={he ? "סגירה" : "Close"} className="w-10 h-10 rounded-full hover:bg-bg-muted grid place-items-center">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div ref={listRef} className="flex-1 overflow-y-auto px-5 py-3 space-y-4">
-          {items === null && <p className="text-sm text-text-muted text-center py-8">{he ? "טוען…" : "Loading…"}</p>}
-          {items?.length === 0 && (
+          {shown === null && <p className="text-sm text-text-muted text-center py-8">{he ? "טוען…" : "Loading…"}</p>}
+          {shown?.length === 0 && (
             <p className="text-sm text-text-muted text-center py-8">{he ? "עוד אין תגובות. תהיו הראשונים!" : "No comments yet. Be the first!"}</p>
           )}
-          {items?.map((c) => (
+          {shown?.map((c) => (
             <div key={c.id} className="flex items-start gap-3">
               <Avatar src={c.author_photo} size={36} />
               <div className="flex-1 min-w-0">
@@ -89,6 +94,12 @@ export function ReelCommentsSheet({ reelId, ownerId, onClose }: { reelId: string
                 </div>
                 <p className="text-sm mt-0.5 whitespace-pre-wrap break-words" dir="auto">{c.body}</p>
               </div>
+              {me && me !== c.user_id && (
+                <button onClick={() => setReporting(c)} aria-label={he ? "דיווח על תגובה" : "Report comment"}
+                  className="w-9 h-9 grid place-items-center rounded-full text-text-subtle hover:text-terra">
+                  <Flag className="w-4 h-4" />
+                </button>
+              )}
               {me && (me === c.user_id || me === ownerId) && (
                 <button onClick={() => remove(c)} aria-label={he ? "מחיקת תגובה" : "Delete comment"}
                   className="w-9 h-9 grid place-items-center rounded-full text-text-muted hover:text-terra">
@@ -121,6 +132,11 @@ export function ReelCommentsSheet({ reelId, ownerId, onClose }: { reelId: string
           </button>
         </form>
       </motion.div>
+      <AnimatePresence>
+        {reporting && (
+          <ReportSheet kind="comment" targetUser={reporting.user_id} targetId={reporting.id} onClose={() => setReporting(null)} />
+        )}
+      </AnimatePresence>
     </>
   );
 }
