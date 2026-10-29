@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { isCloudConfigured } from "@/lib/cloud/config";
 import { loadAccountIntoStore, sendPasswordReset, signInWithEmail } from "@/lib/cloud/auth";
 import { startSync } from "@/lib/cloud/sync";
+import { useT } from "@/lib/i18n";
 
 // Shared sign-in for talents and casting pros. The account's role (stored in
 // Supabase) decides where you land — not which door you came in through.
@@ -20,6 +21,8 @@ export function LoginForm({ variant = "any" }: { variant?: "any" | "pro" }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
+  const { lang } = useT();
+  const L = (he: string, en: string) => (lang === "he" ? he : en);
 
   const valid = email.includes("@") && password.length >= 6;
 
@@ -50,17 +53,22 @@ export function LoginForm({ variant = "any" }: { variant?: "any" | "pro" }) {
       else router.push(st.onboarded ? "/feed" : "/onboarding");
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      setError(/confirm/i.test(msg) ? "צריך לאשר את המייל קודם — בדוק/י את תיבת הדואר." : msg);
+      setError(
+        /confirm/i.test(msg) ? L("צריך לאשר את המייל קודם. בדקו את תיבת הדואר.", "Please confirm your email first. Check your inbox.")
+        : /invalid login|credentials/i.test(msg) ? L("המייל או הסיסמה לא נכונים.", "Wrong email or password.")
+        : /network|fetch/i.test(msg) ? L("אין חיבור לאינטרנט. נסו שוב.", "No connection. Try again.")
+        : msg
+      );
       setLoading(false);
     }
   }
 
   async function forgot() {
     setError("");
-    if (!email.includes("@")) { setError("הקלד/י קודם את כתובת המייל"); return; }
+    if (!email.includes("@")) { setError(L("הקלידו קודם את כתובת המייל", "Type your email first")); return; }
     try {
       await sendPasswordReset(email.trim());
-      setInfo("שלחנו קישור לאיפוס סיסמה למייל.");
+      setInfo(L("שלחנו קישור לאיפוס סיסמה למייל.", "We sent a password reset link to your email."));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -68,10 +76,10 @@ export function LoginForm({ variant = "any" }: { variant?: "any" | "pro" }) {
 
   return (
     <div className="min-h-dvh bg-bg">
-      <Header back title={variant === "pro" ? "Pro sign in" : "Sign in"} />
+      <Header back title={variant === "pro" ? L("כניסת מלהקים", "Pro sign in") : L("כניסה", "Sign in")} />
       <form onSubmit={submit} className="px-6 pt-6 space-y-5">
-        <h2 className="font-display text-3xl leading-tight">Welcome back.</h2>
-        <p className="text-text-muted text-sm -mt-3">Pick up where you left off — on any device.</p>
+        <h2 className="font-display text-3xl leading-tight">{L("טוב שחזרת.", "Welcome back.")}</h2>
+        <p className="text-text-muted text-sm -mt-3">{L("ממשיכים מאיפה שעצרת, מכל מכשיר.", "Pick up where you left off, on any device.")}</p>
 
         <div className="space-y-3 pt-2">
           <label className="flex items-center gap-3 h-14 px-4 rounded-2xl bg-bg-elevated border border-border focus-within:border-gold/50">
@@ -79,7 +87,8 @@ export function LoginForm({ variant = "any" }: { variant?: "any" | "pro" }) {
             <input
               type="email"
               autoComplete="email"
-              placeholder={variant === "pro" ? "Work email" : "Email"}
+              placeholder={variant === "pro" ? L("מייל עבודה", "Work email") : L("מייל", "Email")}
+              dir="ltr"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="flex-1 bg-transparent outline-none text-sm"
@@ -90,7 +99,8 @@ export function LoginForm({ variant = "any" }: { variant?: "any" | "pro" }) {
             <input
               type="password"
               autoComplete="current-password"
-              placeholder="Password"
+              placeholder={L("סיסמה", "Password")}
+              dir="ltr"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="flex-1 bg-transparent outline-none text-sm"
@@ -117,20 +127,20 @@ export function LoginForm({ variant = "any" }: { variant?: "any" | "pro" }) {
             valid && !loading ? "bg-gold text-on-accent" : "bg-bg-elevated text-text-subtle"
           )}
         >
-          {loading ? "Signing in…" : "Sign in"}
-          {!loading && <ArrowRight className="w-4 h-4" />}
+          {loading ? L("נכנסים…", "Signing in…") : L("כניסה", "Sign in")}
+          {!loading && <ArrowRight className="w-4 h-4 rtl:rotate-180" />}
         </button>
 
         {isCloudConfigured() && (
           <button type="button" onClick={forgot} className="block mx-auto text-[0.6875rem] text-text-muted underline underline-offset-2">
-            Forgot password?
+            {L("שכחתי סיסמה", "Forgot password?")}
           </button>
         )}
 
         <p className="text-center text-[0.6875rem] text-text-subtle">
-          New here?{" "}
+          {L("חדשים כאן?", "New here?")}{" "}
           <Link href={variant === "pro" ? "/pro/signup" : "/signup"} className="text-gold font-semibold">
-            Open an account
+            {L("פתיחת חשבון", "Open an account")}
           </Link>
         </p>
       </form>

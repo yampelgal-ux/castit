@@ -10,6 +10,10 @@ import { TALENTS, type Audition, type Talent } from "@/lib/mock-data";
 import { matchTalent } from "@/lib/matching";
 import { loadAuditions } from "@/lib/auditions-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+import { optLabel } from "@/lib/typecast-options";
+
+const FILTER_HE: Record<string, string> = { "For You": "בשבילך", All: "הכל", Paid: "בתשלום", Local: "קרוב אליי" };
 
 const FILTERS = ["For You", "All", "Paid", "Local"] as const;
 
@@ -17,6 +21,9 @@ export default function AuditionsPage() {
   const { profile, userId } = useStore();
   const [auditions, setAuditions] = useState<Audition[]>([]);
   const [filter, setFilter] = useState<typeof FILTERS[number]>("For You");
+  const { lang } = useT();
+  const he = lang === "he";
+  const L = (h: string, e: string) => (he ? h : e);
 
   useEffect(() => { setAuditions(loadAuditions()); }, []);
 
@@ -68,7 +75,7 @@ export default function AuditionsPage() {
   return (
     <div className="min-h-dvh pb-8">
       <Header
-        title={<span>Open <em className="text-gold-gradient not-italic">auditions</em></span>}
+        title={he ? <span>אודישנים <em className="text-gold-gradient not-italic">פתוחים</em></span> : <span>Open <em className="text-gold-gradient not-italic">auditions</em></span>}
       />
 
       <div className="px-4 pt-2">
@@ -82,7 +89,7 @@ export default function AuditionsPage() {
                 filter === f ? "bg-gold text-on-accent" : "text-text-muted"
               )}
             >
-              {f}
+              {L(FILTER_HE[f], f)}
             </button>
           ))}
         </div>
@@ -93,12 +100,12 @@ export default function AuditionsPage() {
           <EmptyState
             icon={Megaphone}
             tone="gold"
-            title="Nothing matches you — yet"
+            title={L("עוד אין אודישן שמתאים לך", "Nothing matches you — yet")}
             description={filter === "For You"
-              ? "Complete your typecast so casting pros can find you when they post new auditions."
-              : "Check back soon — new auditions drop daily."}
-            ctaLabel="Edit my typecast"
-            ctaHref="/profile/me"
+              ? L("השלימו את הטייפקאסט כדי שמלהקים ימצאו אתכם כשהם מפרסמים אודישנים חדשים.", "Complete your typecast so casting pros can find you when they post new auditions.")
+              : L("אודישנים חדשים עולים כל הזמן. כדאי לבדוק שוב בקרוב.", "Check back soon — new auditions drop daily.")}
+            ctaLabel={L("עריכת הטייפקאסט", "Edit my typecast")}
+            ctaHref="/typecast"
           />
         ) : (
           ranked.map(({ a, m }, i) => (
@@ -112,7 +119,7 @@ export default function AuditionsPage() {
               <Link href={`/auditions/${a.id}`} className="block p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{a.type}</div>
+                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{optLabel(a.type, he)}</div>
                     <h3 className="font-display text-lg leading-tight mt-0.5">{a.title}</h3>
                     <p className="text-[0.6875rem] text-text-muted mt-0.5">{a.studio}</p>
                   </div>
@@ -123,17 +130,17 @@ export default function AuditionsPage() {
                         : m.score >= 65 ? "bg-gold/15 text-gold border-gold/30"
                         : "bg-bg text-text-muted border-border"
                     )}>
-                      <Sparkles className="w-2.5 h-2.5 inline mr-0.5" /> {m.score}%
+                      <Sparkles className="w-2.5 h-2.5 inline me-0.5" /> {m.score}%
                     </span>
                   )}
                 </div>
 
                 <div className="flex flex-wrap gap-3 text-[0.6875rem] text-text-muted mt-3">
                   <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {a.location}</span>
-                  <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> by {a.deadline}</span>
+                  <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" /> {L("עד", "by")} {a.deadline}</span>
                   {a.paid && (
                     <span className="inline-flex items-center gap-1 text-success font-semibold">
-                      <DollarSign className="w-3 h-3" /> {a.fee || "Paid"}
+                      <DollarSign className="w-3 h-3" /> {a.fee || L("בתשלום", "Paid")}
                     </span>
                   )}
                 </div>
@@ -141,12 +148,12 @@ export default function AuditionsPage() {
                 <p className="text-xs text-text mt-3 leading-relaxed line-clamp-2">{a.description}</p>
               </Link>
               <div className="flex items-center justify-between px-4 py-2.5 border-t border-border bg-bg/40">
-                <span className="text-[0.6875rem] text-text-muted tnum">{a.applicants} applied</span>
+                <span className="text-[0.6875rem] text-text-muted tnum">{he ? `${a.applicants} הגישו` : `${a.applicants} applied`}</span>
                 <Link
                   href={`/auditions/${a.id}`}
                   className="h-8 px-4 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center"
                 >
-                  View
+                  {L("לפרטים", "View")}
                 </Link>
               </div>
             </motion.div>

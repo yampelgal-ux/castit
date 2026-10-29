@@ -17,6 +17,14 @@ import { notifyProOfferResponse, notifyProAvailResponse } from "@/lib/notificati
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { isRealUserId } from "@/lib/cloud/config";
+import { useT } from "@/lib/i18n";
+import { optLabel } from "@/lib/typecast-options";
+
+function useL() {
+  const { lang } = useT();
+  const he = lang === "he";
+  return { he, L: (h: string, e: string) => (he ? h : e) };
+}
 
 // Demo-mode: in localStorage there's no real "me" talent matching pro invites.
 // So when ME_ID has no auditions, we surface ALL submissions across the device
@@ -32,6 +40,7 @@ export default function InboxPage() {
 
   const userId = useStore((st) => st.userId);
   const [rev, setRev] = useState(0);
+  const { he, L } = useL();
 
   // Re-read when invites / updates arrive from the casting pro's account.
   useEffect(() => {
@@ -76,11 +85,11 @@ export default function InboxPage() {
         title={
           <span className="flex items-center gap-2">
             <Inbox className="w-4 h-4 text-gold" />
-            <span className="font-display text-lg">Auditions</span>
+            <span className="font-display text-lg">{L("אודישנים", "Auditions")}</span>
           </span>
         }
         right={
-          <Link href="/calendar" aria-label="My calendar" className="w-11 h-11 -me-2 grid place-items-center">
+          <Link href="/calendar" aria-label={L("היומן שלי", "My calendar")} className="w-11 h-11 -me-2 grid place-items-center">
             <CalendarDays className="w-5 h-5" />
           </Link>
         }
@@ -89,10 +98,10 @@ export default function InboxPage() {
       <div className="px-5 pt-3 space-y-4">
         <div>
           <h1 className="font-display text-3xl tracking-editorial">
-            Your <em className="text-gold-gradient not-italic">audition inbox</em>.
+            {he ? <>תיבת ה<em className="text-gold-gradient not-italic">אודישנים</em> שלך.</> : <>Your <em className="text-gold-gradient not-italic">audition inbox</em>.</>}
           </h1>
           <p className="text-text-muted text-sm mt-1">
-            Every invite, every status, in one place.
+            {L("כל ההזמנות וכל הסטטוסים, במקום אחד.", "Every invite, every status, in one place.")}
           </p>
         </div>
 
@@ -102,16 +111,16 @@ export default function InboxPage() {
               <Video className="w-4 h-4" />
             </div>
             <div className="flex-1 text-sm">
-              <span className="font-semibold text-gold">{counts.needTape} tape{counts.needTape > 1 ? "s" : ""} to record.</span>
-              <span className="text-text-muted ml-1">Tap any invite below to start.</span>
+              <span className="font-semibold text-gold">{he ? (counts.needTape > 1 ? `${counts.needTape} טייפים לצלם.` : "טייפ אחד לצלם.") : `${counts.needTape} tape${counts.needTape > 1 ? "s" : ""} to record.`}</span>
+              <span className="text-text-muted ms-1">{L("לחצו על הזמנה כדי להתחיל.", "Tap any invite below to start.")}</span>
             </div>
           </div>
         )}
 
         <div className="flex gap-1 border-b border-border">
           {([
-            { id: "active",  label: "Active",  count: counts.active },
-            { id: "history", label: "History", count: counts.history },
+            { id: "active",  label: L("פעילים", "Active"),  count: counts.active },
+            { id: "history", label: L("היסטוריה", "History"), count: counts.history },
           ] as { id: TabId; label: string; count: number }[]).map((t) => (
             <button
               key={t.id}
@@ -130,11 +139,11 @@ export default function InboxPage() {
         {shown.length === 0 ? (
           <EmptyState
             icon={Inbox}
-            title={tab === "active" ? "No active auditions" : "No history yet"}
+            title={tab === "active" ? L("אין אודישנים פעילים", "No active auditions") : L("עוד אין היסטוריה", "No history yet")}
             description={
               tab === "active"
-                ? "When a casting pro invites you to read for a role, the invite shows up here."
-                : "Past auditions you've completed or that were closed appear here."
+                ? L("כשמלהק מזמין אותך לאודישן, ההזמנה תופיע כאן.", "When a casting pro invites you to read for a role, the invite shows up here.")
+                : L("אודישנים שהסתיימו או נסגרו יופיעו כאן.", "Past auditions you've completed or that were closed appear here.")
             }
           />
         ) : (
@@ -151,6 +160,7 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
   const { submission: s, role, project } = item;
   const [offerState, setOfferState] = useState<"idle" | "accepted" | "declined">("idle");
   const [availState, setAvailState] = useState<"idle" | "available" | "unavailable">("idle");
+  const { he, L } = useL();
   if (!role || !project) return null;
   const needsTape = s.stage === "invited";
   const callbackTape = s.stage === "callback";
@@ -185,7 +195,7 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{project.type}</div>
+            <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{optLabel(project.type, he)}</div>
             <h3 className="font-display text-lg leading-tight truncate">{project.title}</h3>
             <p className="text-[0.6875rem] text-text-muted truncate">{project.studio} · {role.name}</p>
           </div>
@@ -199,11 +209,11 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
             <span className={cn("inline-flex items-center gap-1", urgent ? "text-gold font-semibold" : "text-text-muted")}>
               <Clock className="w-3 h-3" />
               {needsTape
-                ? daysToDeadline! < 0 ? "Deadline passed" : daysToDeadline === 0 ? "Due today" : `Due in ${daysToDeadline}d`
-                : `Deadline ${deadline.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`}
+                ? daysToDeadline! < 0 ? L("הדדליין עבר", "Deadline passed") : daysToDeadline === 0 ? L("להגיש היום", "Due today") : he ? `להגיש בעוד ${daysToDeadline} ימים` : `Due in ${daysToDeadline}d`
+                : `${L("דדליין", "Deadline")} ${deadline.toLocaleDateString(he ? "he-IL" : undefined, { month: "short", day: "numeric" })}`}
             </span>
           )}
-          {role.shootDates && <span className="text-text-muted">Shoot: {role.shootDates}</span>}
+          {role.shootDates && <span className="text-text-muted">{L("צילומים:", "Shoot:")} {role.shootDates}</span>}
           {role.payRange && <span className="text-success font-semibold">{role.payRange}</span>}
         </div>
 
@@ -213,53 +223,53 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
       <div className="border-t border-border bg-bg/40 px-3 py-2.5">
         {availState === "available" ? (
           <div className="text-[0.6875rem] text-success font-semibold text-center px-2 w-full inline-flex items-center justify-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5" /> אישרת זמינות — המלהק/ת עודכן/ה.
+            <CheckCircle2 className="w-3.5 h-3.5" /> {L("אישרת זמינות. המלהק/ת עודכן/ה.", "You confirmed availability. Casting was notified.")}
           </div>
         ) : availState === "unavailable" ? (
-          <div className="text-[0.6875rem] text-text-muted text-center px-2 w-full">סימנת שאינך פנוי/ה. המלהק/ת עודכן/ה.</div>
+          <div className="text-[0.6875rem] text-text-muted text-center px-2 w-full">{L("סימנת שאינך פנוי/ה. המלהק/ת עודכן/ה.", "You marked yourself unavailable. Casting was notified.")}</div>
         ) : availPending ? (
           <div>
             <div className="text-[0.6875rem] uppercase tracking-widest text-plum-light font-semibold text-center mb-2">
-              בדיקת זמינות{s.shootDates ? ` · ${s.shootDates}` : ""}
+              {L("בדיקת זמינות", "Availability check")}{s.shootDates ? ` · ${s.shootDates}` : ""}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => respondAvail(false)}
                 className="h-10 rounded-xl bg-bg border border-border text-text-muted text-sm font-semibold"
               >
-                לא פנוי/ה
+                {L("לא פנוי/ה", "Not available")}
               </button>
               <button
                 onClick={() => respondAvail(true)}
                 className="h-10 rounded-xl bg-success text-on-accent text-sm font-semibold inline-flex items-center justify-center gap-1.5"
               >
-                <CheckCircle2 className="w-4 h-4" /> פנוי/ה
+                <CheckCircle2 className="w-4 h-4" /> {L("פנוי/ה", "Available")}
               </button>
             </div>
           </div>
         ) : offerState === "accepted" ? (
           <div className="text-[0.6875rem] text-success font-semibold text-center px-2 inline-flex items-center justify-center gap-1.5 w-full">
-            <CheckCircle2 className="w-3.5 h-3.5" /> קיבלת את ההצעה — מזל טוב! המלהק/ת יאשר/תאשר את הבוקינג.
+            <CheckCircle2 className="w-3.5 h-3.5" /> {L("קיבלת את ההצעה, מזל טוב! המלהק/ת יאשר/תאשר את הבוקינג.", "Offer accepted, congrats! Casting will confirm the booking.")}
           </div>
         ) : offerState === "declined" ? (
-          <div className="text-[0.6875rem] text-text-muted text-center px-2 w-full">דחית את ההצעה. המלהק/ת עודכן/ה.</div>
+          <div className="text-[0.6875rem] text-text-muted text-center px-2 w-full">{L("דחית את ההצעה. המלהק/ת עודכן/ה.", "You declined the offer. Casting was notified.")}</div>
         ) : offerPending ? (
           <div>
             <div className="text-[0.6875rem] uppercase tracking-widest text-violet font-semibold text-center mb-2">
-              קיבלת הצעה{s.payOffered ? ` · ${s.payOffered}` : ""}
+              {L("קיבלת הצעה", "You have an offer")}{s.payOffered ? ` · ${s.payOffered}` : ""}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => respondOffer(false)}
                 className="h-10 rounded-xl bg-bg border border-border text-text-muted text-sm font-semibold"
               >
-                דחה
+                {L("לדחות", "Decline")}
               </button>
               <button
                 onClick={() => respondOffer(true)}
                 className="h-10 rounded-xl bg-success text-on-accent text-sm font-semibold inline-flex items-center justify-center gap-1.5"
               >
-                <CheckCircle2 className="w-4 h-4" /> קבל הצעה
+                <CheckCircle2 className="w-4 h-4" /> {L("לקבל את ההצעה", "Accept offer")}
               </button>
             </div>
           </div>
@@ -272,11 +282,11 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
             )}
           >
             <Video className="w-4 h-4" />
-            {callbackTape ? "Record callback tape" : "Record self-tape"}
+            {callbackTape ? L("צילום טייפ לקולבק", "Record callback tape") : L("צילום סלף-טייפ", "Record self-tape")}
           </Link>
         ) : (
           <div className="text-[0.6875rem] text-text-muted text-center px-2">
-            {statusMessage(s.stage)}
+            {statusMessage(s.stage, he)}
           </div>
         )}
       </div>
@@ -285,13 +295,14 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
 }
 
 function Timeline({ stage }: { stage: Submission["stage"] }) {
+  const { L } = useL();
   const steps: { id: Submission["stage"]; label: string }[] = [
-    { id: "invited",     label: "Invited" },
-    { id: "submitted",   label: "Submitted" },
-    { id: "callback",    label: "Callback" },
-    { id: "avail_check", label: "Avail" },
-    { id: "offered",     label: "Offer" },
-    { id: "booked",      label: "Booked" },
+    { id: "invited",     label: L("הוזמנת", "Invited") },
+    { id: "submitted",   label: L("הוגש", "Submitted") },
+    { id: "callback",    label: L("קולבק", "Callback") },
+    { id: "avail_check", label: L("זמינות", "Avail") },
+    { id: "offered",     label: L("הצעה", "Offer") },
+    { id: "booked",      label: L("נבחרת", "Booked") },
   ];
   const order: Submission["stage"][] = ["invited", "submitted", "callback", "avail_check", "offered", "booked"];
   const currentIdx = stage === "rejected"
@@ -303,7 +314,7 @@ function Timeline({ stage }: { stage: Submission["stage"] }) {
   if (stage === "rejected") {
     return (
       <div className="mt-3 inline-flex items-center gap-1.5 text-[0.6875rem] text-text-muted">
-        <AlertCircle className="w-3 h-3" /> Casting moved in a different direction
+        <AlertCircle className="w-3 h-3" /> {L("הליהוק הלך לכיוון אחר", "Casting moved in a different direction")}
       </div>
     );
   }
@@ -340,14 +351,15 @@ function urgencyScore(s: Submission, role?: Role) {
   if (!role?.deadline) return 100;
   return +new Date(role.deadline) - Date.now();
 }
-function statusMessage(stage: Submission["stage"]) {
+function statusMessage(stage: Submission["stage"], he: boolean) {
+  const L = (h: string, e: string) => (he ? h : e);
   switch (stage) {
-    case "submitted":   return "Your tape was received — awaiting decision.";
-    case "hold":        return "Casting placed you on hold — they'll update you soon.";
-    case "avail_check": return "Confirm your availability — production will follow up.";
-    case "offered":     return "You have an offer — check your messages.";
-    case "booked":      return "🎉 Booked. Production will be in touch.";
-    case "rejected":    return "Casting passed on this role.";
+    case "submitted":   return L("הטייפ התקבל. מחכים להחלטה.", "Your tape was received — awaiting decision.");
+    case "hold":        return L("את/ה בהמתנה אצל הליהוק. יעדכנו בקרוב.", "Casting placed you on hold — they'll update you soon.");
+    case "avail_check": return L("אשר/י זמינות. ההפקה תחזור אליך.", "Confirm your availability — production will follow up.");
+    case "offered":     return L("יש לך הצעה. בדוק/י את ההודעות.", "You have an offer — check your messages.");
+    case "booked":      return L("🎉 נבחרת! ההפקה תיצור קשר.", "🎉 Booked. Production will be in touch.");
+    case "rejected":    return L("הליהוק החליט שלא להמשיך בתפקיד הזה.", "Casting passed on this role.");
     default:            return "";
   }
 }

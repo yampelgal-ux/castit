@@ -10,7 +10,7 @@ import { useT } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/LanguageToggle";
 
 export default function WelcomePage() {
-  const { t, dir } = useT();
+  const { t, dir, lang } = useT();
   const router = useRouter();
   const isAuthed = useStore((s) => s.isAuthed);
   const onboarded = useStore((s) => s.onboarded);
@@ -123,7 +123,7 @@ export default function WelcomePage() {
           </Link>
 
           <p className="mt-3 text-center text-[0.6875rem] text-text-subtle leading-relaxed">
-            By continuing you agree to our Terms of Service & Privacy Policy.
+            {lang === "he" ? "בהמשך השימוש את/ה מסכים/ה לתנאי השימוש ולמדיניות הפרטיות." : "By continuing you agree to our Terms of Service & Privacy Policy."}
           </p>
         </div>
       </div>

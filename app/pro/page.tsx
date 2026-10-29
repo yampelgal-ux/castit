@@ -2,8 +2,11 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Briefcase, Search, Megaphone, Users, ArrowRight, Sparkles } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 export default function ProLandingPage() {
+  const { lang } = useT();
+  const L = (he: string, en: string) => (lang === "he" ? he : en);
   return (
     <div className="relative min-h-dvh overflow-hidden bg-bg noise">
       {/* Backdrop */}
@@ -19,7 +22,7 @@ export default function ProLandingPage() {
           animate={{ opacity: 1, y: 0 }}
           className="inline-flex items-center gap-2 self-start px-3 py-1 rounded-full bg-bg-elevated/60 backdrop-blur border border-plum-light/30 text-[0.6875rem] text-plum-light"
         >
-          <Sparkles className="w-3 h-3" /> Industry Access
+          <Sparkles className="w-3 h-3" /> {L("כניסה לאנשי מקצוע", "Industry Access")}
         </motion.div>
 
         <div className="flex-1 flex flex-col justify-center mt-6">
@@ -29,11 +32,15 @@ export default function ProLandingPage() {
             transition={{ delay: 0.1 }}
           >
             <h1 className="font-display text-[42px] leading-[0.95] tracking-editorial">
-              Cast the right <em className="text-gold-gradient not-italic">face</em><br />
-              for the role.
+              {lang === "he" ? (
+                <><em className="text-gold-gradient not-italic">הפנים הנכונות</em><br />לכל תפקיד.</>
+              ) : (
+                <>Cast the right <em className="text-gold-gradient not-italic">face</em><br />for the role.</>
+              )}
             </h1>
             <p className="mt-4 text-text-muted text-[0.9375rem] leading-relaxed max-w-sm">
-              CastIt Pro gives directors, agents and casting professionals a precision search across thousands of verified talent profiles — and a direct line to post auditions.
+              {L("CastIt Pro נותן למלהקים, במאים וסוכנים חיפוש מדויק בין פרופילים של שחקנים, ניהול אודישנים מקצה לקצה, וקו ישיר לשחקנים.",
+                "CastIt Pro gives directors, agents and casting professionals a precision search across talent profiles, end-to-end audition management, and a direct line to talent.")}
             </p>
           </motion.div>
 
@@ -43,9 +50,9 @@ export default function ProLandingPage() {
             transition={{ delay: 0.2 }}
             className="mt-8 grid grid-cols-1 gap-2.5"
           >
-            <Feature icon={Search} title="Typecast search" desc="Filter by 15+ physical, performance and career attributes." />
-            <Feature icon={Megaphone} title="Post auditions" desc="Reach the whole talent pool — or just matching profiles." />
-            <Feature icon={Users} title="Manage applicants" desc="See match scores, sort, shortlist, and message." />
+            <Feature icon={Search} title={L("חיפוש לפי טייפקאסט", "Typecast search")} desc={L("סינון לפי יותר מ-30 מאפיינים: מראה, כישורים, שפות, ניסיון ועוד.", "Filter by 30+ look, skill, language and career attributes.")} />
+            <Feature icon={Megaphone} title={L("פרסום אודישנים", "Post auditions")} desc={L("לכל השחקנים, או רק למי שמתאים לתפקיד.", "Reach the whole talent pool, or just matching profiles.")} />
+            <Feature icon={Users} title={L("ניהול מגישים", "Manage applicants")} desc={L("ציוני התאמה, מיון, רשימה קצרה והודעות.", "See match scores, sort, shortlist, and message.")} />
           </motion.div>
         </div>
 
@@ -59,20 +66,20 @@ export default function ProLandingPage() {
             href="/pro/signup"
             className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl bg-gold text-on-accent font-semibold group"
           >
-            Open a Pro account
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            {L("פתיחת חשבון מלהקים", "Open a Pro account")}
+            <ArrowRight className="w-4 h-4 transition-transform rtl:rotate-180" />
           </Link>
           <Link
             href="/pro/login"
             className="flex items-center justify-center w-full h-14 rounded-2xl bg-bg-elevated/70 backdrop-blur border border-plum-light/20 text-text font-medium"
           >
-            I already have a Pro account
+            {L("כבר יש לי חשבון", "I already have a Pro account")}
           </Link>
           <Link
             href="/welcome"
             className="block text-center text-[0.6875rem] text-text-subtle pt-3 hover:text-text-muted"
           >
-            Not a casting pro? Switch to talent →
+            {L("לא מלהקים? למעבר לצד השחקנים ←", "Not a casting pro? Switch to talent →")}
           </Link>
         </motion.div>
       </div>

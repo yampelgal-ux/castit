@@ -10,8 +10,12 @@ import { supabase } from "@/lib/supabase";
 import { isCloudConfigured } from "@/lib/cloud/config";
 import { claimDeviceForNewAccount } from "@/lib/cloud/auth";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 const ROLES = ["Casting Director", "Casting Associate", "Agent", "Manager", "Producer", "Director"] as const;
+const ROLE_HE: Record<string, string> = {
+  "Casting Director": "מלהק/ת", "Casting Associate": "עוזר/ת ליהוק", Agent: "סוכן/ת", Manager: "מנהל/ת אישי/ת", Producer: "מפיק/ה", Director: "במאי/ת",
+};
 
 export default function ProSignupPage() {
   const router = useRouter();
@@ -23,6 +27,8 @@ export default function ProSignupPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { lang } = useT();
+  const L = (he: string, en: string) => (lang === "he" ? he : en);
 
   const valid = name.length >= 2 && company.length >= 2 && email.includes("@") && password.length >= 6;
 
@@ -32,7 +38,9 @@ export default function ProSignupPage() {
     setLoading(true);
     setError("");
 
-    const username = name.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+    // Hebrew names have no Latin letters, so they get a generated handle (editable later).
+    const latin = name.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+    const username = (latin.length >= 3 ? latin : `user${latin}`) + Math.random().toString(36).slice(2, 6);
     if (isCloudConfigured()) {
       const { data, error: signErr } = await supabase.auth.signUp({
         email,
@@ -42,10 +50,13 @@ export default function ProSignupPage() {
           emailRedirectTo: `${window.location.origin}/login`,
         },
       });
-      if (signErr) { setError(signErr.message); setLoading(false); return; }
+      if (signErr) {
+        setError(/already registered|already exists/i.test(signErr.message) ? L("כבר יש חשבון עם המייל הזה. אפשר להתחבר.", "An account with this email already exists. Sign in instead.") : signErr.message);
+        setLoading(false); return;
+      }
       if (data.user && !data.session) {
         // Email confirmation is on: the account isn't usable until confirmed.
-        setError("שלחנו לך מייל לאישור החשבון. אשרי אותו ואז התחברי. Check your email to confirm, then sign in.");
+        setError(L("שלחנו מייל לאישור החשבון. אשרו אותו ואז התחברו.", "Check your email to confirm, then sign in."));
         setLoading(false);
         return;
       }
@@ -73,21 +84,21 @@ export default function ProSignupPage() {
 
   return (
     <div className="min-h-dvh bg-bg">
-      <Header back title="Open Pro account" />
+      <Header back title={L("חשבון מלהקים", "Open Pro account")} />
       <form onSubmit={submit} className="px-6 pt-4 space-y-5">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           <h2 className="font-display text-3xl leading-tight">
-            Welcome to <em className="text-gold-gradient not-italic">CastIt Pro</em>.
+            {L("ברוכים הבאים ל-", "Welcome to ")}<em className="text-gold-gradient not-italic">CastIt Pro</em>.
           </h2>
-          <p className="text-text-muted text-sm mt-1.5">Tell us where you cast from.</p>
+          <p className="text-text-muted text-sm mt-1.5">{L("ספרו לנו איפה אתם מלהקים.", "Tell us where you cast from.")}</p>
         </motion.div>
 
         <div className="space-y-3">
-          <Field icon={UserIcon} placeholder="Your full name" value={name} onChange={setName} />
-          <Field icon={Building2} placeholder="Company or studio" value={company} onChange={setCompany} />
+          <Field icon={UserIcon} placeholder={L("שם מלא", "Your full name")} value={name} onChange={setName} />
+          <Field icon={Building2} placeholder={L("חברה או משרד ליהוק", "Company or studio")} value={company} onChange={setCompany} />
 
           <div>
-            <label className="text-[0.6875rem] uppercase tracking-wider text-text-muted px-1">Role</label>
+            <label className="text-[0.6875rem] uppercase tracking-wider text-text-muted px-1">{L("תפקיד", "Role")}</label>
             <div className="mt-1.5 grid grid-cols-2 gap-2">
               {ROLES.map((r) => (
                 <button
@@ -101,14 +112,14 @@ export default function ProSignupPage() {
                       : "border-border bg-bg-elevated text-text-muted"
                   )}
                 >
-                  {r}
+                  {L(ROLE_HE[r] ?? r, r)}
                 </button>
               ))}
             </div>
           </div>
 
-          <Field icon={Mail} placeholder="Work email" type="email" value={email} onChange={setEmail} />
-          <Field icon={Lock} placeholder="Password (min 6 chars)" type="password" value={password} onChange={setPassword} />
+          <Field icon={Mail} placeholder={L("מייל עבודה", "Work email")} type="email" value={email} onChange={setEmail} />
+          <Field icon={Lock} placeholder={L("סיסמה (לפחות 6 תווים)", "Password (min 6 chars)")} type="password" value={password} onChange={setPassword} />
         </div>
 
         {error && (
@@ -125,12 +136,12 @@ export default function ProSignupPage() {
             valid && !loading ? "bg-gold text-on-accent" : "bg-bg-elevated text-text-subtle"
           )}
         >
-          {loading ? "Creating account…" : "Continue"}
+          {loading ? L("פותחים חשבון…", "Creating account…") : L("המשך", "Continue")}
           {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
 
         <p className="text-center text-[0.6875rem] text-text-subtle">
-          Already a Pro? <Link href="/pro/login" className="text-gold font-semibold">Sign in</Link>
+          {L("כבר יש לך חשבון?", "Already a Pro?")} <Link href="/pro/login" className="text-gold font-semibold">{L("כניסה", "Sign in")}</Link>
         </p>
       </form>
     </div>

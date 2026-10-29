@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 const PIPELINE_STAGES: Stage[] = ["invited", "submitted", "callback", "hold", "avail_check", "offered", "booked"];
 
 export default function ProAnalyticsPage() {
-  const { t, dir } = useT();
+  const { t, dir, lang } = useT();
   const [loaded, setLoaded] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [subs, setSubs] = useState<Submission[]>([]);
@@ -206,7 +206,7 @@ export default function ProAnalyticsPage() {
               return (
                 <div key={stage}>
                   <div className="flex items-center justify-between text-[0.6875rem] mb-1">
-                    <span className="text-text">{STAGE_META[stage].label}</span>
+                    <span className="text-text">{lang === "he" ? STAGE_META[stage].he : STAGE_META[stage].label}</span>
                     <span className="text-text-muted tnum">{count} · {Math.round(pct)}%</span>
                   </div>
                   <div className="h-2 rounded-full bg-bg overflow-hidden">

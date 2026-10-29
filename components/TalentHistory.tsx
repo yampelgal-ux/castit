@@ -9,6 +9,7 @@ import {
   type Submission, type Role, type Project, type Stage,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 type Entry = {
   sub: Submission;
@@ -101,6 +102,8 @@ export function TalentHistory({ talentId, talentName }: Props) {
 function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
   const { sub, role, project } = entry;
   const meta = STAGE_META[sub.stage];
+  const { lang } = useT();
+  const he = lang === "he";
   const toneCls =
     meta.tone === "success" ? "text-success bg-success/15 border-success/30"
     : meta.tone === "gold" ? "text-gold bg-gold/15 border-gold/30"
@@ -132,14 +135,14 @@ function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <div className="text-sm font-semibold truncate">
-                {project?.title ?? "Project"}
+                {project?.title ?? (he ? "פרויקט" : "Project")}
               </div>
               <div className="text-[0.6875rem] text-text-muted truncate">
-                as {role?.name ?? "—"} · {date}
+                {he ? "בתפקיד" : "as"} {role?.name ?? "—"} · {date}
               </div>
             </div>
             <span className={cn("text-[0.6875rem] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap", toneCls)}>
-              {meta.label}
+              {he ? meta.he : meta.label}
             </span>
           </div>
 
@@ -151,7 +154,7 @@ function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
               return (
                 <span
                   key={s}
-                  title={STAGE_META[s].label}
+                  title={he ? STAGE_META[s].he : STAGE_META[s].label}
                   className={cn(
                     "h-1 flex-1 rounded-full transition-colors",
                     isCurrent ? "bg-gold"

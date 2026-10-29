@@ -62,6 +62,8 @@ const HE: Record<string, string> = {
   "Tel Aviv": "תל אביב", Jerusalem: "ירושלים", Haifa: "חיפה", "Be'er Sheva": "באר שבע", Center: "מרכז", North: "צפון",
   South: "דרום", Eilat: "אילת", Abroad: "חו״ל",
   Israel: "ישראל", EU: "אירופה", USA: "ארה״ב", UK: "בריטניה",
+  "Feature Film": "סרט קולנוע", "TV Series": "סדרת טלוויזיה", "Short Film": "סרט קצר", Theatre: "תיאטרון", "Voice-over": "דיבוב",
+  "Student Film": "סרט סטודנטים", Web: "רשת", "Web Series": "סדרת רשת", Modeling: "דוגמנות", Other: "אחר",
 };
 
 export function heLabel(v: string): string {

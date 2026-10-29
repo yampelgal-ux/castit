@@ -19,16 +19,21 @@ export type Stage =
   | "booked"
   | "rejected";
 
-export const STAGE_META: Record<Stage, { label: string; tone: "gold" | "plum" | "sage" | "success" | "muted" | "violet" | "danger" }> = {
-  invited:     { label: "Invited",          tone: "plum" },
-  submitted:   { label: "To review",        tone: "gold" },
-  callback:    { label: "Callback",         tone: "success" },
-  hold:        { label: "Hold",             tone: "sage" },
-  avail_check: { label: "Avail check",      tone: "plum" },
-  offered:     { label: "Offer out",        tone: "violet" },
-  booked:      { label: "Booked",           tone: "success" },
-  rejected:    { label: "Passed",           tone: "muted" },
+export const STAGE_META: Record<Stage, { label: string; he: string; tone: "gold" | "plum" | "sage" | "success" | "muted" | "violet" | "danger" }> = {
+  invited:     { label: "Invited",          he: "הוזמן/ה",        tone: "plum" },
+  submitted:   { label: "To review",        he: "לצפייה",         tone: "gold" },
+  callback:    { label: "Callback",         he: "קולבק",          tone: "success" },
+  hold:        { label: "Hold",             he: "בהמתנה",         tone: "sage" },
+  avail_check: { label: "Avail check",      he: "בדיקת זמינות",   tone: "plum" },
+  offered:     { label: "Offer out",        he: "הצעה נשלחה",     tone: "violet" },
+  booked:      { label: "Booked",           he: "נבחר/ה",         tone: "success" },
+  rejected:    { label: "Passed",           he: "לא נבחר/ה",      tone: "muted" },
 };
+
+export function stageLabel(stage: Stage, he: boolean): string {
+  const m = STAGE_META[stage];
+  return he ? m.he : m.label;
+}
 
 // Time-coded comment on a tape (e.g. "0:34 — great pause")
 export type TapeComment = {
