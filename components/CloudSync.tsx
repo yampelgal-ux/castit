@@ -16,8 +16,10 @@ import { refreshShared, startShared, stopShared } from "@/lib/cloud/shared";
 import { loadAccountIntoStore } from "@/lib/cloud/auth";
 import { publishMyProfile } from "@/lib/cloud/profile";
 import { useMyReels } from "@/lib/reels-store";
+import { useClaimPendingInvite } from "@/lib/cloud/invites";
 
 export function CloudSync() {
+  useClaimPendingInvite();
   const [remoteChange, setRemoteChange] = useState(false);
   const [offline, setOffline] = useState(false);
   const activeUser = useRef<string | null>(null);

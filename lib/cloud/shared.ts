@@ -21,7 +21,7 @@ import type { ApprovalSession } from "@/lib/approval-store";
 import type { Talent } from "@/lib/mock-data";
 import {
   notifyProTapeIn, notifyProAvailResponse, notifyProOfferResponse,
-  notifyTalentInvited, notifyTalentStageChange, notifyProDirectorVote,
+  notifyTalentInvited, notifyTalentStageChange, notifyProDirectorVote, notifyProJoinedViaLink,
 } from "@/lib/notifications-store";
 import { getCachedRealTalents } from "./talents";
 
@@ -202,7 +202,16 @@ async function pullSubmissions(rows?: Row[]) {
     const projectTitle = project?.title ?? "";
 
     if (own) {
-      if (!prev) { m[row.id] = { h, own, kind: "submission" }; continue; } // pro deleted it locally
+      if (!prev) {
+        // An actor joined through this pro's invite link: a new submission we haven't seen yet.
+        if (row.data.viaInvite && !m[row.id] && role && roles.some((r) => r.id === role.id)) {
+          subs.unshift({ ...incoming });
+          dirtyS = true;
+          notes.push(() => notifyProJoinedViaLink(incoming.talentName, roleName, incoming.id, role.projectId, role.id));
+        }
+        m[row.id] = { h, own, kind: "submission" }; // otherwise the pro deleted it locally
+        continue;
+      }
       if (JSON.stringify(strip(prev)) !== JSON.stringify(incoming)) {
         subs[idx] = { ...incoming };
         dirtyS = true;

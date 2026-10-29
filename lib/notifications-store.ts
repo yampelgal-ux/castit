@@ -151,6 +151,16 @@ export function notifyProTapeIn(talentName: string, roleName: string, submission
   });
 }
 
+export function notifyProJoinedViaLink(talentName: string, roleName: string, submissionId: string, projectId: string, roleId: string) {
+  addNotification({
+    audience: "pro",
+    kind: "invite",
+    title: `${talentName || "שחקן/ית"} הצטרף/ה דרך הקישור`,
+    body: `לתפקיד ${roleName} — מחכים לטייפ`,
+    href: `/pro/projects/${projectId}/role/${roleId}/submission/${submissionId}`,
+  });
+}
+
 export function notifyTalentStageChange(
   stage: NotifKind,
   talentName: string,
