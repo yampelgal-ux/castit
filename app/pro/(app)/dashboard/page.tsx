@@ -1,5 +1,6 @@
 "use client";
 import { ProApprovalBanner } from "@/components/TrustBanners";
+import { PushPrompt } from "@/components/PushPrompt";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -91,6 +92,7 @@ export default function ProDashboardPage() {
         }
       />
       <ProApprovalBanner />
+      <PushPrompt />
 
       <div className="px-5 pt-3 space-y-5" dir={dir}>
         {/* Greeting */}

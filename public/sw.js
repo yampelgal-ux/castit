@@ -122,3 +122,24 @@ self.addEventListener("notificationclick", (event) => {
     await self.clients.openWindow(href);
   })());
 });
+
+// Phone notifications sent by /api/push. Skipped while the app is open and in
+// front: the in-app notification already shows it there.
+self.addEventListener("push", (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch { d = { title: "CastIt", body: event.data ? event.data.text() : "" }; }
+  event.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    if (wins.some((w) => w.visibilityState === "visible" && w.focused)) return;
+    await self.registration.showNotification(d.title || "CastIt", {
+      body: d.body || "",
+      icon: "/brand/icon-192.png",
+      badge: "/brand/icon-192.png",
+      tag: d.tag,
+      renotify: !!d.tag,
+      lang: /[֐-׿]/.test((d.title || "") + (d.body || "")) ? "he" : "en",
+      dir: "auto",
+      data: { href: d.href || "/" },
+    });
+  })());
+});

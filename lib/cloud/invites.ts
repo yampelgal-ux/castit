@@ -11,6 +11,7 @@ import { useStore } from "@/lib/store";
 import type { Project, Role } from "@/lib/projects-store";
 import { isCloudConfigured, isRealUserId } from "./config";
 import { refreshShared } from "./shared";
+import { sendPush } from "./push";
 
 export type InviteLink = {
   code: string;
@@ -93,7 +94,14 @@ export async function fetchInvite(code: string): Promise<InviteLink | null> {
 export async function claimInvite(code: string): Promise<string | null> {
   const { data, error } = await supabase.rpc("claim_open_invite", { p_code: code });
   if (error) { console.warn("[invites] claim", error.message); return null; }
-  if (data) await refreshShared();
+  if (data) {
+    await refreshShared();
+    const { data: row } = await supabase.from("shared_records").select("owner_id,data").eq("id", data as string).maybeSingle();
+    const sub = (row?.data as any)?.submission, role = (row?.data as any)?.role;
+    if (row && sub && role) {
+      sendPush(row.owner_id, "joined", { role: role.name, href: `/pro/projects/${role.projectId}/role/${role.id}/submission/${sub.id}` });
+    }
+  }
   return (data as string) ?? null;
 }
 

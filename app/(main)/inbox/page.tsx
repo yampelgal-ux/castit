@@ -1,5 +1,6 @@
 "use client";
 import { GuardianBanner } from "@/components/TrustBanners";
+import { PushPrompt } from "@/components/PushPrompt";
 import { useTrust } from "@/lib/cloud/trust";
 import { ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -98,6 +99,7 @@ export default function InboxPage() {
         }
       />
       <GuardianBanner />
+      <PushPrompt />
 
       <div className="px-5 pt-3 space-y-4">
         <div>

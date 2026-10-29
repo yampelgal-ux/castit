@@ -26,6 +26,7 @@ import { usePoster, posterPathFor } from "@/lib/video-poster";
 import { photoToDataUrl } from "@/lib/image";
 import { isCloudConfigured, isRealUserId } from "@/lib/cloud/config";
 import { signOutEverywhere } from "@/lib/cloud/auth";
+import { disablePush, enablePush, pushStatus, type PushStatus } from "@/lib/cloud/push";
 import { useT } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
@@ -284,13 +285,27 @@ function ReelRow({ reel, L }: { reel: MyReel; L: LFn }) {
 function RemindersSection({ L }: { L: LFn }) {
   const s = useSettings();
   const [perm, setPerm] = useState<NotificationPermission | "unsupported">("default");
+  const [push, setPush] = useState<PushStatus | null>(null);
   useEffect(() => {
     setPerm(typeof Notification === "undefined" ? "unsupported" : Notification.permission);
+    pushStatus().then(setPush).catch(() => setPush("unsupported"));
   }, []);
 
   async function enableSystem(v: boolean) {
-    if (!v) { s.set({ systemNotifications: false }); return; }
+    if (!v) {
+      s.set({ systemNotifications: false });
+      if (push === "on") { await disablePush(); setPush("off"); }
+      return;
+    }
     if (typeof Notification === "undefined") return;
+    // With an account: phone notifications for messages and auditions, even when the app is closed.
+    if (push === "off") {
+      const r = await enablePush();
+      setPush(r);
+      setPerm(Notification.permission);
+      s.set({ systemNotifications: r === "on" });
+      return;
+    }
     const p = await Notification.requestPermission();
     setPerm(p);
     s.set({ systemNotifications: p === "granted" });
@@ -322,12 +337,15 @@ function RemindersSection({ L }: { L: LFn }) {
         </Row>
       )}
       <Row
-        label={L("התראות גם מחוץ לאפליקציה", "Notifications outside the app")}
-        hint={perm === "denied"
+        label={L("התראות לטלפון", "Phone notifications")}
+        hint={perm === "denied" || push === "denied"
           ? L("ההתראות חסומות בדפדפן. אפשר לאשר אותן בהגדרות האתר.", "Blocked in the browser. Allow them in site settings.")
-          : perm === "unsupported" ? L("המכשיר הזה לא תומך בהתראות מערכת.", "This device doesn't support system notifications.") : undefined}
+          : push === "needs-install"
+            ? L("באייפון צריך קודם להוסיף את CastIt למסך הבית (שיתוף ← הוספה למסך הבית), ולהפעיל מתוך האפליקציה.", "On iPhone, first add CastIt to the home screen (Share → Add to Home Screen), then turn this on from there.")
+            : perm === "unsupported" ? L("המכשיר הזה לא תומך בהתראות.", "This device doesn't support notifications.")
+            : push === "on" || push === "off" ? L("הודעות חדשות, הזמנות לאודישן, טייפים ותשובות, גם כשהאפליקציה סגורה.", "New messages, audition invites, tapes and answers, even when the app is closed.") : undefined}
       >
-        <Switch checked={s.systemNotifications && perm === "granted"} onChange={enableSystem} label={L("התראות מערכת", "System notifications")} />
+        <Switch checked={(s.systemNotifications && perm === "granted") || push === "on"} onChange={enableSystem} label={L("התראות לטלפון", "Phone notifications")} />
       </Row>
     </Section>
   );

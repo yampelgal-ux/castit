@@ -12,6 +12,7 @@ import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 import { getMessages, sendMessage } from "@/lib/db";
+import { sendPush } from "@/lib/cloud/push";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
@@ -123,6 +124,8 @@ export default function ConversationPage() {
         setMsgs((prev) => prev.filter((m) => m.id !== optimistic.id));
         setText(t);
         setSendFailed(true);
+      } else {
+        sendPush(otherId, "message", { text: t, href: `/messages/${id}` });
       }
     }
     setLoading(false);

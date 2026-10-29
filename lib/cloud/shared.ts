@@ -24,6 +24,34 @@ import {
   notifyTalentInvited, notifyTalentStageChange, notifyProDirectorVote, notifyProJoinedViaLink,
 } from "@/lib/notifications-store";
 import { getCachedRealTalents } from "./talents";
+import { sendPush } from "./push";
+
+// What a phone notification cares about in a submission.
+function subSig(s: Submission) {
+  return [s.stage, s.tapes?.length ?? 0, s.availResponse ?? "", s.offerResponse ?? ""].join("|");
+}
+
+/** Phone notification for the other side when this device changed a shared submission. */
+function pushSubmissionChange(s: Submission & SharedMarks, own: boolean, prevSig: string | undefined, role: Role | undefined) {
+  const roleName = role?.name;
+  if (own) {
+    const to = s.talentId;
+    if (prevSig === undefined) { sendPush(to, "invite", { role: roleName, href: "/inbox" }); return; }
+    const [stage, , avail] = prevSig.split("|");
+    if (s.stage !== stage && (s.stage === "callback" || s.stage === "offered" || s.stage === "booked")) {
+      sendPush(to, s.stage, { role: roleName, href: "/inbox" });
+    } else if ((s.stage === "avail_check" && stage !== "avail_check") || (s.availResponse === "pending" && avail !== "pending")) {
+      sendPush(to, "avail_check", { role: roleName, href: "/inbox" });
+    }
+    return;
+  }
+  if (!prevSig || !role) return;
+  const [, tapes, avail, offer] = prevSig.split("|");
+  const href = `/pro/projects/${role.projectId}/role/${role.id}/submission/${s.id}`;
+  if ((s.tapes?.length ?? 0) > Number(tapes)) sendPush(s._ownerId, "tape", { role: roleName, href });
+  else if (s.availResponse && s.availResponse !== "pending" && s.availResponse !== avail) sendPush(s._ownerId, "avail", { role: roleName, href });
+  else if (s.offerResponse && s.offerResponse !== "pending" && s.offerResponse !== offer) sendPush(s._ownerId, "offer", { role: roleName, href });
+}
 
 const KEY_P = "castit_projects_v2";
 const KEY_R = "castit_roles_v3";
@@ -35,7 +63,7 @@ const META = "castit_shared_meta_v1";
 // Fields we add to local objects to remember where shared copies came from.
 export type SharedMarks = { _ownerId?: string; _remote?: boolean };
 
-type MetaEntry = { h: string; own: boolean; kind: string };
+type MetaEntry = { h: string; own: boolean; kind: string; s?: string };
 type MetaMap = Record<string, MetaEntry>;
 
 let me: string | null = null;
@@ -117,7 +145,9 @@ async function publishSubmissions() {
         )
       : await supabase.from("shared_records").update({ data }).eq("id", id);
     if (error) { console.warn("[shared] submission push", error.message); continue; }
-    m[id] = { h, own, kind: "submission" };
+    const sig = subSig(s);
+    if (!m[id] || (m[id].s && m[id].s !== sig)) pushSubmissionChange(s, own, m[id]?.s, role);
+    m[id] = { h, own, kind: "submission", s: sig };
   }
 
   // Pro deleted an invite / role → remove the shared copy.
@@ -209,7 +239,7 @@ async function pullSubmissions(rows?: Row[]) {
           dirtyS = true;
           notes.push(() => notifyProJoinedViaLink(incoming.talentName, roleName, incoming.id, role.projectId, role.id));
         }
-        m[row.id] = { h, own, kind: "submission" }; // otherwise the pro deleted it locally
+        m[row.id] = { h, own, kind: "submission", s: subSig(incoming) }; // otherwise the pro deleted it locally
         continue;
       }
       if (JSON.stringify(strip(prev)) !== JSON.stringify(incoming)) {
@@ -250,7 +280,7 @@ async function pullSubmissions(rows?: Row[]) {
         notes.push(() => notifyTalentStageChange("avail_check" as never, incoming.talentName, projectTitle, roleName, incoming.id));
       }
     }
-    m[row.id] = { h, own, kind: "submission" };
+    m[row.id] = { h, own, kind: "submission", s: subSig(incoming) };
   }
 
   merging = true;

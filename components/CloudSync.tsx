@@ -17,6 +17,7 @@ import { loadAccountIntoStore } from "@/lib/cloud/auth";
 import { publishMyProfile } from "@/lib/cloud/profile";
 import { useMyReels } from "@/lib/reels-store";
 import { useClaimPendingInvite } from "@/lib/cloud/invites";
+import { refreshPushOwner } from "@/lib/cloud/push";
 
 export function CloudSync() {
   useClaimPendingInvite();
@@ -62,6 +63,7 @@ export function CloudSync() {
       const { data } = await supabase.auth.getUser();
       if (data.user) await loadAccountIntoStore(data.user);
       await startShared(userId);
+      void refreshPushOwner();
       if (changed) setRemoteChange(true);
       // Videos recorded while the upload couldn't reach the cloud: try again now.
       void useMyReels.getState().retryAll();
