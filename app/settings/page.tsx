@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Camera, Upload, Trash2, Bell, Accessibility, Globe, User, Film, Cloud, CloudOff,
-  LogOut, LogIn, Smartphone, Check, Type, Shield, Ban, FileText, AlertTriangle,
+  LogOut, LogIn, Smartphone, Check, Type, Shield, Ban, FileText, AlertTriangle, MessageSquareText,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { deleteMyAccount, refreshHidden, unblockUser, useHidden } from "@/lib/cloud/safety";
@@ -26,6 +26,7 @@ import { usePoster, posterPathFor } from "@/lib/video-poster";
 import { photoToDataUrl } from "@/lib/image";
 import { isCloudConfigured, isRealUserId } from "@/lib/cloud/config";
 import { signOutEverywhere } from "@/lib/cloud/auth";
+import { FeedbackSheet } from "@/components/FeedbackSheet";
 import { disablePush, enablePush, pushStatus, type PushStatus } from "@/lib/cloud/push";
 import { useT } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
@@ -49,6 +50,7 @@ export default function SettingsPage() {
             <LanguageToggle />
           </Row>
         </Section>
+        <FeedbackSection L={L} />
         <PrivacySection L={L} />
         <AccountSection L={L} />
       </div>
@@ -476,6 +478,23 @@ function DeleteAccount({ L }: { L: LFn }) {
         </button>
       </div>
     </div>
+  );
+}
+
+// ── Feedback ─────────────────────────────────────────────
+function FeedbackSection({ L }: { L: LFn }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Section icon={MessageSquareText} title={L("משוב", "Feedback")}>
+      <button onClick={() => setOpen(true)} className="w-full flex items-center justify-between gap-2 px-4 py-3 min-h-[52px] text-sm text-start">
+        <span>
+          <span className="font-semibold block">{L("משהו לא עובד? יש רעיון?", "Something broken? Have an idea?")}</span>
+          <span className="text-xs text-text-muted">{L("זה מגיע ישר אלינו, ונקרא כל הודעה.", "It comes straight to us, and we read every one.")}</span>
+        </span>
+        <span className="h-9 px-4 rounded-full bg-gold text-on-accent text-xs font-semibold grid place-items-center shrink-0">{L("שליחה", "Send")}</span>
+      </button>
+      {open && <FeedbackSheet onClose={() => setOpen(false)} />}
+    </Section>
   );
 }
 

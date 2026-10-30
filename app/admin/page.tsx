@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ShieldCheck, Flag, Check, X, Ban, Undo2, ExternalLink } from "lucide-react";
+import { ShieldCheck, Flag, Check, X, Ban, Undo2, ExternalLink, MessageSquareText } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useT } from "@/lib/i18n";
 import {
@@ -14,7 +14,8 @@ const REASON_HE: Record<string, string> = {
   harassment: "הטרדה", sexual: "תוכן מיני / פנייה לא הולמת", minor: "פגיעה בקטין/ה", fake: "פרופיל מזויף",
   scam: "הונאה / בקשת כסף", spam: "ספאם", hate: "שנאה / אלימות", other: "אחר",
 };
-const KIND_HE: Record<string, string> = { user: "משתמש", reel: "סרטון", comment: "תגובה", message: "שיחה" };
+const KIND_HE: Record<string, string> = { user: "משתמש", reel: "סרטון", comment: "תגובה", message: "שיחה", feedback: "משוב" };
+const FEEDBACK_HE: Record<string, string> = { bug: "משהו לא עובד", idea: "רעיון", other: "אחר" };
 const STATUS_HE: Record<ProStatus, string> = { none: "—", pending: "ממתין", approved: "מאושר", rejected: "נדחה" };
 
 export default function AdminPage() {
@@ -22,7 +23,7 @@ export default function AdminPage() {
   const he = lang === "he";
   const L = (h: string, e: string) => (he ? h : e);
   const trust = useTrust();
-  const [tab, setTab] = useState<"pros" | "reports">("pros");
+  const [tab, setTab] = useState<"pros" | "reports" | "feedback">("pros");
   const [pros, setPros] = useState<AdminPro[] | null>(null);
   const [reports, setReports] = useState<AdminReport[] | null>(null);
 
@@ -43,7 +44,10 @@ export default function AdminPage() {
   }
 
   const pending = pros?.filter((p) => p.pro_status === "pending").length ?? 0;
-  const open = reports?.filter((r) => r.status === "open").length ?? 0;
+  const abuse = reports?.filter((r) => r.target_kind !== "feedback") ?? null;
+  const feedback = reports?.filter((r) => r.target_kind === "feedback") ?? null;
+  const open = abuse?.filter((r) => r.status === "open").length ?? 0;
+  const openFb = feedback?.filter((r) => r.status === "open").length ?? 0;
 
   async function setPro(id: string, s: ProStatus) {
     if (await adminSetProStatus(id, s)) setPros((cur) => cur?.map((p) => (p.id === id ? { ...p, pro_status: s, verified: s === "approved" } : p)) ?? null);
@@ -61,7 +65,7 @@ export default function AdminPage() {
     <div className="min-h-dvh bg-bg pb-16" dir={dir}>
       <Header back title={L("ניהול", "Admin")} />
       <div className="px-4 pt-3 flex gap-2">
-        {([["pros", ShieldCheck, L("מלהקים", "Casting pros"), pending], ["reports", Flag, L("דיווחים", "Reports"), open]] as const).map(([id, Icon, label, n]) => (
+        {([["pros", ShieldCheck, L("מלהקים", "Casting pros"), pending], ["reports", Flag, L("דיווחים", "Reports"), open], ["feedback", MessageSquareText, L("משוב", "Feedback"), openFb]] as const).map(([id, Icon, label, n]) => (
           <button key={id} onClick={() => setTab(id)}
             className={cn("flex-1 h-11 rounded-full border text-sm font-semibold flex items-center justify-center gap-2", tab === id ? "bg-gold text-on-accent border-gold" : "border-border")}>
             <Icon className="w-4 h-4" aria-hidden /> {label}
@@ -116,9 +120,9 @@ export default function AdminPage() {
 
       {tab === "reports" && (
         <div className="px-4 pt-4 space-y-3">
-          {reports === null && <p className="text-sm text-text-muted text-center py-8">{L("טוען…", "Loading…")}</p>}
-          {reports?.length === 0 && <p className="text-sm text-text-muted text-center py-8">{L("אין דיווחים.", "No reports.")}</p>}
-          {reports?.map((r) => (
+          {abuse === null && <p className="text-sm text-text-muted text-center py-8">{L("טוען…", "Loading…")}</p>}
+          {abuse?.length === 0 && <p className="text-sm text-text-muted text-center py-8">{L("אין דיווחים.", "No reports.")}</p>}
+          {abuse?.map((r) => (
             <div key={r.id} className={cn("p-4 rounded-2xl border", r.status === "open" ? "bg-bg-elevated border-border-strong" : "border-border opacity-70")}>
               <div className="flex items-center justify-between gap-2 text-xs">
                 <span className="font-semibold">{he ? `${KIND_HE[r.target_kind] ?? r.target_kind} · ${REASON_HE[r.reason] ?? r.reason}` : `${r.target_kind} · ${r.reason}`}</span>
@@ -154,6 +158,28 @@ export default function AdminPage() {
           <p className="text-xs text-text-subtle px-1">
             {L("חסימה מסתירה את המשתמש מהחיפוש ומהפיד ומונעת ממנו לשלוח הודעות והזמנות.", "Banning hides the user from search and the feed and stops them from sending messages and invites.")}
           </p>
+        </div>
+      )}
+
+      {tab === "feedback" && (
+        <div className="px-4 pt-4 space-y-3">
+          {feedback === null && <p className="text-sm text-text-muted text-center py-8">{L("טוען…", "Loading…")}</p>}
+          {feedback?.length === 0 && <p className="text-sm text-text-muted text-center py-8">{L("עוד אין משוב.", "No feedback yet.")}</p>}
+          {feedback?.map((r) => (
+            <div key={r.id} className={cn("p-4 rounded-2xl border", r.status === "open" ? "bg-bg-elevated border-border-strong" : "border-border opacity-70")}>
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="font-semibold">{he ? FEEDBACK_HE[r.reason] ?? r.reason : r.reason} · {r.reporter_name || L("משתמש/ת", "user")}</span>
+                <span className="text-text-muted shrink-0">{new Date(r.created_at).toLocaleString(he ? "he-IL" : "en-US", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+              </div>
+              {r.target_id && <p className="text-[0.6875rem] text-text-muted mt-1" dir="ltr">{r.target_id}</p>}
+              {r.details && <p className="text-sm mt-2 whitespace-pre-wrap" dir="auto">{r.details}</p>}
+              <div className="flex gap-2 mt-3">
+                {r.status === "open"
+                  ? <button onClick={() => setReport(r.id, "handled")} className="h-9 px-3 rounded-full bg-gold text-on-accent text-xs font-semibold flex items-center gap-1"><Check className="w-3.5 h-3.5" aria-hidden /> {L("טופל", "Done")}</button>
+                  : <button onClick={() => setReport(r.id, "open")} className="h-9 px-3 rounded-full border border-border text-xs font-semibold flex items-center gap-1"><Undo2 className="w-3.5 h-3.5" aria-hidden /> {L("לפתוח מחדש", "Reopen")}</button>}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

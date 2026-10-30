@@ -10,6 +10,7 @@ import { ServiceWorker } from "@/components/ServiceWorker";
 import { NativeBridge } from "@/components/NativeBridge";
 import { A11yHydrator } from "@/components/A11yHydrator";
 import { ReminderEngine } from "@/components/ReminderEngine";
+import { Analytics } from "@vercel/analytics/next";
 
 // Fonts with full Hebrew + Latin coverage. next/font downloads them at build
 // time and serves them from our own domain, so they also work offline and
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <LanguageHydrator />
             <CloudSync />
             <ServiceWorker />
+            <Analytics />
             <NativeBridge />
             <A11yHydrator />
             <ReminderEngine />

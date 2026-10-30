@@ -22,6 +22,7 @@ const WHAT: Record<ReportKind, { he: string; en: string }> = {
   reel: { he: "דיווח על סרטון", en: "Report video" },
   comment: { he: "דיווח על תגובה", en: "Report comment" },
   message: { he: "דיווח על שיחה", en: "Report conversation" },
+  feedback: { he: "משוב", en: "Feedback" },
 };
 
 /** Bottom sheet: pick a reason, add details, optionally block the person too. */

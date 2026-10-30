@@ -1,4 +1,5 @@
 "use client";
+import { compressVideo, MAX_TAPE_SECONDS } from "@/lib/video-compress";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -49,6 +50,7 @@ export default function SelfTapeStudioPage() {
   const [dragOver, setDragOver] = useState(false);
   const [sendResult, setSendResult] = useState<"cloud" | "local" | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [shrink, setShrink] = useState<number | null>(null);
   const [showSides, setShowSides] = useState(true);
 
   const [coaching, setCoaching] = useState<string | null>(null);
@@ -129,7 +131,8 @@ export default function SelfTapeStudioPage() {
     if (!stream) return;
     chunksRef.current = [];
     const mime = ["video/mp4", "video/webm;codecs=vp9,opus", "video/webm"].find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
-    const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+    // 720p at ~2.5Mbps: plenty for a self-tape, and keeps uploads small.
+    const rec = new MediaRecorder(stream, { ...(mime ? { mimeType: mime } : {}), videoBitsPerSecond: 2_500_000 });
     rec.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
     rec.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: rec.mimeType || "video/webm" });
@@ -185,6 +188,10 @@ export default function SelfTapeStudioPage() {
     setReading(true);
     try {
       const duration = await getVideoDuration(file);
+      if (duration > MAX_TAPE_SECONDS) {
+        setFileError(L(`הסרטון ארוך מ-${MAX_TAPE_SECONDS / 60} דקות. כדאי לקצר אותו ולנסות שוב.`, `The video is longer than ${MAX_TAPE_SECONDS / 60} minutes. Trim it and try again.`));
+        return;
+      }
       addTake({ url: URL.createObjectURL(file), blob: file, duration, uploaded: true, filename: file.name });
     } finally {
       setReading(false);
@@ -198,7 +205,10 @@ export default function SelfTapeStudioPage() {
     setMode("sending");
     const blobKey = newTapeKey(sub.id);
     try {
-      const where = await saveTapeVideo(blobKey, take.blob);
+      // Files from the gallery are often 4K: shrink them first (recorded takes already are small).
+      const blob = take.uploaded ? await compressVideo(take.blob, { onProgress: (p) => setShrink(p) }) : take.blob;
+      setShrink(null);
+      const where = await saveTapeVideo(blobKey, blob);
       addTape(sub.id, {
         videoUrl: take.url,
         tapeBlobKey: blobKey,
@@ -430,7 +440,7 @@ export default function SelfTapeStudioPage() {
               <button onClick={send} disabled={mode === "sending"}
                 className="h-12 rounded-lg bg-gold text-on-accent font-semibold flex items-center justify-center gap-2 disabled:opacity-70">
                 {mode === "sending"
-                  ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden /> {L("שולח…", "Sending…")}</>
+                  ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden /> {shrink !== null ? L(`מכווץ… ${Math.round(shrink * 100)}%`, `Compressing… ${Math.round(shrink * 100)}%`) : L("שולח…", "Sending…")}</>
                   : <><Send className="w-4 h-4" aria-hidden /> {t("rec.sendTape")}</>}
               </button>
             </div>

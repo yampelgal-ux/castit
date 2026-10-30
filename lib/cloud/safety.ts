@@ -81,7 +81,7 @@ export async function unblockUser(id: string): Promise<boolean> {
   return true;
 }
 
-export type ReportKind = "user" | "reel" | "comment" | "message";
+export type ReportKind = "user" | "reel" | "comment" | "message" | "feedback";
 
 export async function sendReport(r: { kind: ReportKind; targetUser?: string; targetId?: string; reason: string; details?: string }): Promise<boolean> {
   const me = myId();

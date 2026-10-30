@@ -61,3 +61,10 @@ returns void language sql security definer set search_path = public as $$
 $$;
 revoke all on function public.drop_push_endpoint(text) from public, anon;
 grant execute on function public.drop_push_endpoint(text) to authenticated;
+
+-- ── In-app feedback ─────────────────────────────────────────────
+-- "Send feedback" lands in the reports table as kind 'feedback', so the
+-- admin screen shows it next to reports.
+alter table public.reports drop constraint if exists reports_target_kind_check;
+alter table public.reports add constraint reports_target_kind_check
+  check (target_kind in ('user', 'reel', 'comment', 'message', 'feedback'));
