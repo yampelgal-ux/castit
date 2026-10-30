@@ -1,4 +1,6 @@
 "use client";
+import { ProApprovalBanner } from "@/components/TrustBanners";
+import { PushPrompt } from "@/components/PushPrompt";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -16,6 +18,7 @@ import {
   type Project, type Submission, type InboxItem,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useSavedSearchAlerts } from "@/lib/pro-search";
 
 export default function ProDashboardPage() {
   const { profile } = useStore();
@@ -23,6 +26,7 @@ export default function ProDashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [inbox, setInbox] = useState<InboxItem[]>([]);
+  const savedAlerts = useSavedSearchAlerts().filter((a) => a.newIds.length > 0);
 
   useEffect(() => {
     setProjects(loadProjects());
@@ -52,6 +56,18 @@ export default function ProDashboardPage() {
     };
   }, [projects, submissions]);
 
+  // "Your week" — progress the casting director made in the last 7 days.
+  const week = useMemo(() => {
+    const since = Date.now() - 7 * 86400_000;
+    const recent = (iso?: string) => !!iso && +new Date(iso) >= since;
+    return {
+      tapes: submissions.reduce((n, s) => n + s.tapes.filter((tp) => recent(tp.submittedAt)).length, 0),
+      decided: submissions.filter((s) => recent(s.decidedAt) && s.stage !== "submitted" && s.stage !== "invited").length,
+      booked: submissions.filter((s) => s.stage === "booked" && recent(s.decidedAt)).length,
+      invited: submissions.filter((s) => recent(s.createdAt)).length,
+    };
+  }, [submissions]);
+
   const todo = submissions
     .filter((s) => s.stage === "submitted")
     .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
@@ -63,7 +79,7 @@ export default function ProDashboardPage() {
         title={
           <span className="flex items-center gap-2">
             <span className="font-display text-lg">{t("pd.studio")}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-plum/20 text-plum-light font-semibold tracking-wider">PRO</span>
+            <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-plum/20 text-plum-light font-semibold tracking-wider">PRO</span>
           </span>
         }
         right={
@@ -75,6 +91,8 @@ export default function ProDashboardPage() {
           </>
         }
       />
+      <ProApprovalBanner />
+      <PushPrompt />
 
       <div className="px-5 pt-3 space-y-5" dir={dir}>
         {/* Greeting */}
@@ -105,7 +123,7 @@ export default function ProDashboardPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className={cn(
-                  "text-[10px] uppercase tracking-widest font-semibold",
+                  "text-[0.6875rem] uppercase tracking-widest font-semibold",
                   inboxCounts.urgent > 0 ? "text-danger" : "text-gold"
                 )}>
                   {t("pd.actionInbox")}
@@ -115,7 +133,7 @@ export default function ProDashboardPage() {
                     ? t("pd.urgentActions", { n: inboxCounts.urgent })
                     : t("pd.itemsWaiting", { n: inboxCounts.total })}
                 </div>
-                <div className="text-[10px] text-text-muted mt-0.5">
+                <div className="text-[0.6875rem] text-text-muted mt-0.5">
                   {inboxCounts.toReview > 0 && t("pd.tapesToReviewShort", { n: inboxCounts.toReview })}
                   {t("pd.tapOpen")}
                 </div>
@@ -126,7 +144,7 @@ export default function ProDashboardPage() {
         )}
 
         {/* Triage CTA — when ≥3 tapes to review */}
-        {inboxCounts.toReview >= 3 && (
+        {inboxCounts.toReview >= 1 && (
           <Link
             href="/pro/triage"
             className="block rounded-2xl p-3 bg-bg-elevated border border-gold/30 hover:border-gold/50 transition"
@@ -137,11 +155,65 @@ export default function ProDashboardPage() {
               </div>
               <div className="flex-1">
                 <div className="text-sm font-semibold">{t("pd.triage")}</div>
-                <div className="text-[10px] text-text-muted">{t("pd.triageSub", { n: inboxCounts.toReview })}</div>
+                <div className="text-[0.6875rem] text-text-muted">{t("pd.triageSub", { n: inboxCounts.toReview })}</div>
               </div>
-              <span className="text-[10px] font-bold text-gold tnum">{inboxCounts.toReview}</span>
+              <span className="text-[0.6875rem] font-bold text-gold tnum">{inboxCounts.toReview}</span>
             </div>
           </Link>
+        )}
+
+        {/* Saved searches with new matching talents */}
+        {savedAlerts.length > 0 && (
+          <Link
+            href="/pro/search"
+            className="block rounded-2xl p-3 bg-bg-elevated border border-gold/30 hover:border-gold/50 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gold/15 text-gold grid place-items-center shrink-0">
+                <Bell className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold">
+                  {dir === "rtl" ? "שחקנים חדשים שמתאימים לחיפושים שלך" : "New talent matching your saved searches"}
+                </div>
+                <div className="text-[0.6875rem] text-text-muted truncate">
+                  {savedAlerts.map((a) => `${a.search.name} (${a.newIds.length})`).join(" · ")}
+                </div>
+              </div>
+              <span className="text-[0.6875rem] font-bold text-gold tnum">
+                {savedAlerts.reduce((n, a) => n + a.newIds.length, 0)}
+              </span>
+            </div>
+          </Link>
+        )}
+
+        {/* Your week */}
+        {(week.tapes + week.decided + week.booked + week.invited) > 0 && (
+          <div className="rounded-2xl p-4 bg-gold text-on-accent">
+            <div className="text-[0.6875rem] uppercase tracking-widest font-semibold opacity-80">
+              {dir === "rtl" ? "השבוע שלך" : "Your week"}
+            </div>
+            <div className="grid grid-cols-4 gap-2 mt-2 text-center">
+              {[
+                [week.invited, dir === "rtl" ? "הזמנות" : "Invites"],
+                [week.tapes, dir === "rtl" ? "טייפים" : "Tapes"],
+                [week.decided, dir === "rtl" ? "החלטות" : "Decisions"],
+                [week.booked, dir === "rtl" ? "לוהקו" : "Booked"],
+              ].map(([n, l]) => (
+                <div key={String(l)}>
+                  <div className="font-display text-2xl tnum leading-none">{n}</div>
+                  <div className="text-[0.6875rem] mt-1 opacity-80">{l}</div>
+                </div>
+              ))}
+            </div>
+            {week.decided > 0 && (
+              <p className="text-xs mt-3 opacity-90">
+                {dir === "rtl"
+                  ? `קיבלת ${week.decided} החלטות השבוע, חסכת בערך ${Math.max(1, Math.round(week.decided * 4 / 60))} שעות עבודה.`
+                  : `${week.decided} decisions this week, about ${Math.max(1, Math.round(week.decided * 4 / 60))}h of work saved.`}
+              </p>
+            )}
+          </div>
         )}
 
         {/* KPI grid */}
@@ -183,9 +255,9 @@ export default function ProDashboardPage() {
               <FolderOpen className="w-7 h-7 text-gold" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">{t("pd.workspaceTag")}</div>
+              <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">{t("pd.workspaceTag")}</div>
               <div className="font-display text-xl leading-tight mt-0.5">{t("pd.projectsTitle")}</div>
-              <div className="text-[11px] text-text-muted mt-0.5">
+              <div className="text-[0.6875rem] text-text-muted mt-0.5">
                 {t("pd.projectsSub")}
               </div>
             </div>
@@ -200,7 +272,7 @@ export default function ProDashboardPage() {
               <h2 className="text-xs uppercase tracking-widest text-text-muted">
                 {t("pd.awaiting")} <span className="text-text font-semibold tnum">({stats.toReview})</span>
               </h2>
-              <Link href="/pro/projects" className="text-[11px] text-gold font-semibold">{t("pd.seeAll")}</Link>
+              <Link href="/pro/projects" className="text-[0.6875rem] text-gold font-semibold">{t("pd.seeAll")}</Link>
             </div>
             <div className="space-y-2">
               {todo.map((s, i) => <PendingRow key={s.id} s={s} i={i} />)}
@@ -220,7 +292,7 @@ export default function ProDashboardPage() {
             </p>
             <Link
               href="/pro/projects"
-              className="inline-flex items-center gap-2 mt-4 px-5 h-11 rounded-full bg-gold text-bg text-sm font-semibold"
+              className="inline-flex items-center gap-2 mt-4 px-5 h-11 rounded-full bg-gold text-on-accent text-sm font-semibold"
             >
               <Plus className="w-4 h-4" /> {t("pd.empty.cta")}
             </Link>
@@ -249,7 +321,7 @@ function KPI({
         <span className="font-display text-2xl tnum">{value}</span>
         {urgent && value > 0 && <span className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />}
       </div>
-      <div className="text-[10px] text-text-muted uppercase tracking-wider mt-0.5">{label}</div>
+      <div className="text-[0.6875rem] text-text-muted uppercase tracking-wider mt-0.5">{label}</div>
     </Link>
   );
 }
@@ -267,7 +339,7 @@ function QuickAction({ icon: Icon, label, tone, href }: { icon: any; label: stri
       className={cn("flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl border", color)}
     >
       <Icon className="w-5 h-5" />
-      <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
+      <span className="text-[0.6875rem] font-semibold uppercase tracking-wider">{label}</span>
     </Link>
   );
 }
@@ -287,9 +359,9 @@ function PendingRow({ s, i }: { s: Submission; i: number }) {
         <img src={s.talentPhoto} alt={s.talentName} className="w-10 h-10 rounded-xl object-cover" />
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold truncate">{s.talentName}</div>
-          <div className="text-[10px] text-text-muted">{timeAgo(s.createdAt, t)}</div>
+          <div className="text-[0.6875rem] text-text-muted">{timeAgo(s.createdAt, t)}</div>
         </div>
-        <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 font-semibold uppercase tracking-wider">
+        <span className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-gold/30 font-semibold uppercase tracking-wider">
           {t("pd.review")}
         </span>
       </Link>

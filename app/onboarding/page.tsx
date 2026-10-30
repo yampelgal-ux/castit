@@ -1,4 +1,5 @@
 "use client";
+import { photoToDataUrl } from "@/lib/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,10 +43,12 @@ export default function OnboardingPage() {
     router.replace(role === "Talent" ? "/typecast" : "/pro/dashboard");
   }
 
-  function onPhoto(file: File) {
-    const url = URL.createObjectURL(file);
-    setPhoto(url);
-    setProfile({ photoUrl: url });
+  async function onPhoto(file: File) {
+    try {
+      const url = await photoToDataUrl(file);
+      setPhoto(url);
+      setProfile({ photoUrl: url });
+    } catch {}
   }
 
   function toggleGoal(g: Goal) {
@@ -86,7 +89,7 @@ export default function OnboardingPage() {
           >
             {step === 0 && (
               <>
-                <div className="text-[11px] uppercase tracking-widest text-gold mb-2">
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-2">
                   {t("ob.step", { n: 1 })}
                 </div>
                 <h1 className="font-display text-3xl tracking-editorial leading-[1.05]">
@@ -117,7 +120,7 @@ export default function OnboardingPage() {
 
             {step === 1 && (
               <>
-                <div className="text-[11px] uppercase tracking-widest text-gold mb-2">
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-2">
                   {t("ob.step", { n: 2 })}
                 </div>
                 <h1 className="font-display text-3xl tracking-editorial leading-[1.05]">
@@ -148,7 +151,7 @@ export default function OnboardingPage() {
                         </div>
                         {active && (
                           <div className="w-6 h-6 rounded-full bg-gold grid place-items-center shrink-0">
-                            <Check className="w-3.5 h-3.5 text-bg" strokeWidth={3} />
+                            <Check className="w-3.5 h-3.5 text-on-accent" strokeWidth={3} />
                           </div>
                         )}
                       </button>
@@ -160,7 +163,7 @@ export default function OnboardingPage() {
 
             {step === 2 && (
               <>
-                <div className="text-[11px] uppercase tracking-widest text-gold mb-2">
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-2">
                   {t("ob.step", { n: 3 })}
                 </div>
                 <h1 className="font-display text-3xl tracking-editorial leading-[1.05]">
@@ -226,14 +229,14 @@ export default function OnboardingPage() {
           {step < 2 ? (
             <button
               onClick={next}
-              className="flex-1 h-12 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-2xl bg-gold text-on-accent font-semibold flex items-center justify-center gap-2"
             >
               {t("common.continue")} <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
             <button
               onClick={finish}
-              className="flex-1 h-12 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-2xl bg-gold text-on-accent font-semibold flex items-center justify-center gap-2"
             >
               {photo ? t("ob.enter") : t("ob.skipNow")}
               <ArrowRight className="w-4 h-4" />
@@ -270,7 +273,7 @@ function RoleCard({
       </div>
       {selected && (
         <div className="w-6 h-6 rounded-full bg-gold grid place-items-center">
-          <Check className="w-3.5 h-3.5 text-bg" strokeWidth={3} />
+          <Check className="w-3.5 h-3.5 text-on-accent" strokeWidth={3} />
         </div>
       )}
     </button>

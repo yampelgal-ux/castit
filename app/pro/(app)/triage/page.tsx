@@ -13,6 +13,7 @@ import {
   type Submission, type Role, type Project,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { notifyTalentStageChange } from "@/lib/notifications-store";
 import { useT } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
 
@@ -51,6 +52,11 @@ export default function ProTriagePage() {
     if (decision === "callback") moveToCallback(sub.id);
     else if (decision === "hold") moveToHold(sub.id, undefined, 48);
     else rejectSubmission(sub.id);
+    // Let the talent know right away (a pass goes out with the polite default note).
+    notifyTalentStageChange(
+      decision === "callback" ? "callback" : decision === "hold" ? "hold" : "rejected",
+      sub.talentName, current.project.title, current.role.name, sub.id,
+    );
 
     setHistory((h) => [...h, { id: sub.id, decision, prev: sub }]);
     setIdx((i) => i + 1);
@@ -120,26 +126,26 @@ export default function ProTriagePage() {
               <div className="font-display text-2xl text-success font-bold">
                 {history.filter((h) => h.decision === "callback").length}
               </div>
-              <div className="text-[10px] text-text-muted mt-1">{t("tri.callback")}</div>
+              <div className="text-[0.6875rem] text-text-muted mt-1">{t("tri.callback")}</div>
             </div>
             <div className="text-center p-3 rounded-2xl bg-sage/10 border border-sage/30">
               <div className="font-display text-2xl text-sage font-bold">
                 {history.filter((h) => h.decision === "hold").length}
               </div>
-              <div className="text-[10px] text-text-muted mt-1">{t("tri.hold")}</div>
+              <div className="text-[0.6875rem] text-text-muted mt-1">{t("tri.hold")}</div>
             </div>
             <div className="text-center p-3 rounded-2xl bg-bg-elevated border border-border">
               <div className="font-display text-2xl text-text-muted font-bold">
                 {history.filter((h) => h.decision === "pass").length}
               </div>
-              <div className="text-[10px] text-text-muted mt-1">{t("tri.pass")}</div>
+              <div className="text-[0.6875rem] text-text-muted mt-1">{t("tri.pass")}</div>
             </div>
           </div>
           <div className="mt-8 flex gap-2 justify-center">
             <Link href="/pro/inbox" className="px-4 h-10 rounded-full bg-bg-elevated border border-border text-xs font-semibold inline-flex items-center">
               {t("tri.actionInbox")}
             </Link>
-            <Link href="/pro/dashboard" className="px-4 h-10 rounded-full bg-gold text-bg text-xs font-semibold inline-flex items-center">
+            <Link href="/pro/dashboard" className="px-4 h-10 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center">
               {t("tri.dashboard")}
             </Link>
           </div>
@@ -160,7 +166,7 @@ export default function ProTriagePage() {
           <button
             onClick={undo}
             disabled={history.length === 0}
-            className="text-[11px] text-text-muted disabled:opacity-40"
+            className="text-[0.6875rem] text-text-muted disabled:opacity-40"
           >
             {t("tri.undo")}
           </button>
@@ -197,7 +203,7 @@ export default function ProTriagePage() {
             {/* Decision overlays */}
             <motion.div
               style={{ opacity: callbackOpacity }}
-              className="absolute top-6 left-6 z-20 px-3 py-1.5 rounded-xl bg-success text-bg font-display text-lg font-bold border-2 border-success rotate-[-12deg]"
+              className="absolute top-6 left-6 z-20 px-3 py-1.5 rounded-xl bg-success text-on-accent font-display text-lg font-bold border-2 border-success rotate-[-12deg]"
             >
               CALLBACK
             </motion.div>
@@ -209,7 +215,7 @@ export default function ProTriagePage() {
             </motion.div>
             <motion.div
               style={{ opacity: holdOpacity }}
-              className="absolute top-1/4 left-1/2 -translate-x-1/2 z-20 px-3 py-1.5 rounded-xl bg-sage text-bg font-display text-lg font-bold border-2 border-sage"
+              className="absolute top-1/4 left-1/2 -translate-x-1/2 z-20 px-3 py-1.5 rounded-xl bg-sage text-on-accent font-display text-lg font-bold border-2 border-sage"
             >
               HOLD
             </motion.div>
@@ -247,7 +253,7 @@ export default function ProTriagePage() {
 
               {/* Round indicator */}
               {sub.tapes.length > 1 && (
-                <div className="absolute top-3 right-3 text-[9px] px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-white font-semibold tracking-wider">
+                <div className="absolute top-3 right-3 text-[0.6875rem] px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-white font-semibold tracking-wider">
                   {t("tri.round", { n: sub.tapes.length })}
                 </div>
               )}
@@ -263,13 +269,14 @@ export default function ProTriagePage() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="text-base font-semibold">{sub.talentName}</div>
-                  <div className="text-[11px] text-text-muted truncate">
+                  <div className="text-[0.6875rem] text-text-muted truncate">
                     {current.project.title} · {current.role.name}
                   </div>
                 </div>
                 <Link
                   href={`/pro/projects/${current.project.id}/role/${current.role.id}/submission/${sub.id}`}
                   className="w-8 h-8 rounded-full bg-bg border border-border grid place-items-center text-text-muted shrink-0"
+                  aria-label="Open full submission"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -277,7 +284,7 @@ export default function ProTriagePage() {
               </div>
 
               {sub.tapes.at(-1)?.note && (
-                <p className="text-[11px] text-text-muted leading-relaxed mt-3 line-clamp-3">
+                <p className="text-[0.6875rem] text-text-muted leading-relaxed mt-3 line-clamp-3">
                   &quot;{sub.tapes.at(-1)!.note}&quot;
                 </p>
               )}
@@ -304,7 +311,7 @@ export default function ProTriagePage() {
         </button>
         <button
           onClick={() => decide("callback")}
-          className="w-14 h-14 rounded-full bg-success text-bg grid place-items-center shadow-xl active:scale-95 transition"
+          className="w-14 h-14 rounded-full bg-success text-on-accent grid place-items-center shadow-xl active:scale-95 transition"
           aria-label="Callback"
         >
           <Check className="w-7 h-7" strokeWidth={2.5} />

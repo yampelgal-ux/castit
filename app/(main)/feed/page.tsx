@@ -1,138 +1,46 @@
 "use client";
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { MessageCircle, Share2, Send, Music2, Bookmark } from "lucide-react";
-import { REELS, TALENTS } from "@/lib/mock-data";
-import { Avatar } from "@/components/Avatar";
-import { VerifiedBadge } from "@/components/VerifiedBadge";
-import { TypecastBadge } from "@/components/TypecastBadge";
-import { AnimatedLike } from "@/components/AnimatedLike";
+import Link from "next/link";
+import { Film, Upload } from "lucide-react";
+import { useAllReels } from "@/lib/cloud/talents";
 import { Brand } from "@/components/Brand";
-import { LazyVideo } from "@/components/LazyVideo";
-import { useStore } from "@/lib/store";
+import { ReelCard } from "@/components/reels/ReelCard";
 import { useT } from "@/lib/i18n";
-import { haptic } from "@/lib/haptics";
-import { cn, formatNumber } from "@/lib/utils";
 
 export default function FeedPage() {
-  const { t } = useT();
+  const { lang } = useT();
+  const he = lang === "he";
+  const { reels, talents } = useAllReels();
+  const items = reels
+    .map((reel) => ({ reel, talent: talents.find((x) => x.id === reel.talentId) }))
+    .filter((x) => x.talent);
   return (
     <div className="snap-feed no-scrollbar bg-black -mx-0">
       {/* Header overlay */}
       <div className="fixed top-0 inset-x-0 z-30 max-w-[440px] mx-auto px-5 pt-4 pb-3 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent">
-        <Brand size="sm" />
-        <div className="flex items-center gap-4 text-xs">
-          <span className="text-text-muted">{t("feed.following")}</span>
-          <span className="font-semibold relative">
-            {t("feed.forYou")}
-            <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gold rounded-full" />
-          </span>
-        </div>
+        <Brand size="sm" className="text-white" />
+        <Link href="/studio/upload" aria-label={he ? "העלאת סרטון" : "Upload a video"}
+          className="h-9 px-3 rounded-full bg-hi text-on-hi text-xs font-bold inline-flex items-center gap-1.5">
+          <Upload className="w-4 h-4" aria-hidden /> {he ? "סרטון חדש" : "New video"}
+        </Link>
       </div>
 
-      {REELS.map((reel) => {
-        const talent = TALENTS.find((t) => t.id === reel.talentId)!;
-        return <ReelView key={reel.id} reel={reel} talent={talent} />;
-      })}
+      {items.map(({ reel, talent }) => <ReelCard key={reel.id} reel={reel} talent={talent!} />)}
+
+      {items.length === 0 && (
+        <div className="h-dvh grid place-items-center px-8 text-center text-white">
+          <div className="max-w-xs">
+            <Film className="w-10 h-10 mx-auto text-hi" aria-hidden />
+            <h2 className="font-display text-2xl mt-4">{he ? "עוד אין סרטונים בפיד" : "No videos in the feed yet"}</h2>
+            <p className="text-sm text-white/70 mt-2">
+              {he ? "כשתעלי סרטון לפרופיל, הוא יופיע כאן וגם אצל המלהקים." : "When you upload a video to your profile it shows up here and for casting directors."}
+            </p>
+            <Link href="/studio/upload" className="mt-6 inline-flex items-center gap-2 h-12 px-6 rounded-full bg-hi text-on-hi font-semibold">
+              <Upload className="w-4 h-4" aria-hidden /> {he ? "העלאת סרטון" : "Upload a video"}
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function ReelView({ reel, talent }: { reel: any; talent: any }) {
-  const [liked, setLiked] = useState(false);
-  const { toggleLike, toggleBookmark, bookmarks } = useStore();
-  const bookmarked = bookmarks.has(reel.id);
-  const { t } = useT();
-
-  return (
-    <div className="relative h-dvh w-full overflow-hidden bg-black">
-      <LazyVideo
-        src={reel.videoUrl}
-        poster={reel.poster}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-
-      {/* Vignette */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none" />
-
-      {/* Right rail */}
-      <div className="absolute right-3 bottom-28 z-10 flex flex-col items-center gap-5">
-        <div className="flex flex-col items-center gap-1">
-          <Avatar src={talent.photo} size={48} ring />
-          <button className="-mt-3 w-5 h-5 rounded-full bg-danger text-white text-sm grid place-items-center font-bold leading-none">
-            +
-          </button>
-        </div>
-
-        <Action
-          icon={
-            <AnimatedLike
-              active={liked}
-              onClick={() => {
-                setLiked(!liked);
-                toggleLike(reel.id);
-                haptic(liked ? "light" : "success");
-              }}
-              size={32}
-            />
-          }
-          label={formatNumber(reel.likes + (liked ? 1 : 0))}
-        />
-        <Action icon={<MessageCircle className="w-7 h-7" />} label={formatNumber(reel.comments)} />
-        <button
-          onClick={() => { toggleBookmark(reel.id); haptic(bookmarked ? "light" : "medium"); }}
-          className="flex flex-col items-center gap-1 text-white"
-          aria-label={bookmarked ? "Remove bookmark" : "Save"}
-        >
-          <Bookmark className={cn("w-7 h-7 transition-colors", bookmarked && "fill-gold text-gold")} />
-          <span className="text-[11px] font-medium tnum">{bookmarked ? t("feed.saved") : t("feed.save")}</span>
-        </button>
-        <Action icon={<Send className="w-7 h-7" />} label={t("feed.send")} />
-        <Action icon={<Share2 className="w-7 h-7" />} label={formatNumber(reel.shares)} />
-      </div>
-
-      {/* Bottom info */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="absolute left-4 right-20 bottom-24 z-10"
-      >
-        <div className="flex items-center gap-2 mb-2">
-          <span className="font-semibold">@{talent.username}</span>
-          {talent.verified && <VerifiedBadge />}
-          <button className="ml-1 px-3 py-1 text-[11px] font-semibold rounded-full bg-white/10 backdrop-blur border border-white/20">
-            {t("feed.follow")}
-          </button>
-        </div>
-        <p className="text-sm leading-snug text-white/95 mb-3">{reel.caption}</p>
-
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          <TypecastBadge>{talent.typecast.heightCm}cm</TypecastBadge>
-          <TypecastBadge color={talent.typecast.eyeColor}>{t("feed.eyes")}</TypecastBadge>
-          <TypecastBadge color={talent.typecast.hairColor}>{talent.typecast.hairLength} {t("feed.hair")}</TypecastBadge>
-          <TypecastBadge>{talent.typecast.languages.slice(0, 2).join(" · ")}</TypecastBadge>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs text-white/80">
-          <Music2 className="w-3.5 h-3.5" />
-          <span className="truncate">{t("feed.originalAudio")} — {talent.name}</span>
-        </div>
-      </motion.div>
-
-      {/* Send to casting CTA */}
-      <button className="absolute left-4 bottom-6 z-10 px-4 py-2.5 rounded-full bg-gold text-bg font-semibold text-xs shadow-lg shadow-gold/20">
-        ✦ {t("feed.sendToPro")}
-      </button>
-    </div>
-  );
-}
-
-function Action({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <div className="flex flex-col items-center gap-1 text-white">
-      {icon}
-      <span className="text-[11px] font-medium tnum">{label}</span>
-    </div>
-  );
-}

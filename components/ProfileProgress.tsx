@@ -74,7 +74,7 @@ export function ProfileProgress({ profile, action }: { profile: ProfileLike; act
         {action}
       </div>
       {/* Discoverability framing — why completing matters */}
-      <div className="text-[11px] mb-2.5">
+      <div className="text-[0.6875rem] mb-2.5">
         <span className="text-text-muted">{t("pp.discoverability")}: </span>
         <span className={score >= 80 ? "text-success font-semibold" : score >= 50 ? "text-gold font-semibold" : "text-terra font-semibold"}>
           {discoverability}
@@ -87,7 +87,7 @@ export function ProfileProgress({ profile, action }: { profile: ProfileLike; act
         />
       </div>
       {missingLabels.length > 0 && (
-        <p className="text-[11px] text-text-muted mt-2.5 leading-relaxed">
+        <p className="text-[0.6875rem] text-text-muted mt-2.5 leading-relaxed">
           {t("pp.add")} <span className="text-text">{missingLabels.slice(0, 2).join(", ")}</span>
           {missingLabels.length > 2 && ` ${t("pp.more", { n: missingLabels.length - 2 })}`} {t("pp.toGetFound")}
         </p>

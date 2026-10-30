@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 
-const HIDDEN = ["/studio/agent", "/practice", "/onboarding", "/welcome", "/signup", "/login"];
+const HIDDEN = ["/studio/agent", "/practice", "/onboarding", "/welcome", "/signup", "/login", "/install", "/feed"];
 
 export function AriaFAB() {
   const pathname = usePathname() || "";
@@ -19,7 +19,7 @@ export function AriaFAB() {
   const { t } = useT();
 
   if (HIDDEN.some((p) => pathname.startsWith(p))) return null;
-  if (pathname.startsWith("/pro")) return null;
+  if (/^\/pro(\/|$)/.test(pathname)) return null;
   // Aria is a talent-only assistant — don't show it to Casting Pros
   if (role === "Casting Pro") return null;
 
@@ -49,7 +49,7 @@ export function AriaFAB() {
           >
             <div className="px-4 pt-3.5 pb-2 border-b border-border flex items-center justify-between">
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">{t("fab.quickActions")}</div>
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">{t("fab.quickActions")}</div>
                 <div className="font-display text-sm">
                   {t("fab.heading")}
                 </div>
@@ -64,7 +64,7 @@ export function AriaFAB() {
 
             {/* Credits display */}
             <div className={cn(
-              "mx-3 mt-2 px-3 py-1.5 rounded-xl flex items-center gap-2 text-[11px]",
+              "mx-3 mt-2 px-3 py-1.5 rounded-xl flex items-center gap-2 text-[0.6875rem]",
               lowCredits ? "bg-danger/10 border border-danger/20" : "bg-gold/8 border border-gold/15"
             )}>
               <Zap className={cn("w-3 h-3", lowCredits ? "text-danger" : "text-gold")} />
@@ -73,7 +73,7 @@ export function AriaFAB() {
                 {" "}{t("fab.credits")}
               </span>
               {lowCredits && (
-                <Link href="/studio/agent" className="ml-auto text-[10px] text-gold font-semibold underline">
+                <Link href="/studio/agent" className="ml-auto text-[0.6875rem] text-gold font-semibold underline">
                   {t("fab.topUp")}
                 </Link>
               )}
@@ -95,8 +95,8 @@ export function AriaFAB() {
         animate={open ? { rotate: 90 } : { rotate: 0 }}
         className={cn(
           "fixed z-50 w-14 h-14 rounded-full grid place-items-center",
-          "bg-gradient-to-br from-gold via-gold to-wine text-bg",
-          "shadow-[0_8px_24px_rgba(212,165,116,0.45)]",
+          "bg-gradient-to-br from-gold via-gold to-wine text-on-accent",
+          "shadow-[0_8px_24px_rgb(var(--gold)/0.45)]",
           "border border-gold-light/40"
         )}
         style={{
@@ -110,7 +110,7 @@ export function AriaFAB() {
 
         {/* Credit badge */}
         <span className={cn(
-          "absolute -top-1 -right-1 min-w-[20px] h-5 rounded-full text-[9px] font-bold grid place-items-center px-1 border-2 border-bg",
+          "absolute -top-1 -right-1 min-w-[20px] h-5 rounded-full text-[0.6875rem] font-bold grid place-items-center px-1 border-2 border-bg",
           lowCredits ? "bg-danger text-white" : "bg-bg-elevated text-gold border-gold/30"
         )}>
           {ariaCredits > 99 ? "99+" : ariaCredits}
@@ -136,7 +136,7 @@ function FabAction({
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold">{title}</div>
-        <div className="text-[10px] text-text-muted truncate">{sub}</div>
+        <div className="text-[0.6875rem] text-text-muted truncate">{sub}</div>
       </div>
     </Link>
   );

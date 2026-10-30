@@ -6,6 +6,9 @@ export function isCloudConfigured(): boolean {
   return !!url && !!key && !/YOUR[_-]|placeholder/i.test(url) && !/^YOUR/.test(key);
 }
 
+/** Local demo (seeded people, projects, reels) only runs when no real backend is configured. */
+export const DEMO_MODE = !isCloudConfigured();
+
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 
 // Real Supabase user ids are UUIDs; mock/demo ids are short strings ("t1", "me").

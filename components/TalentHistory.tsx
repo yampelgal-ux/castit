@@ -9,6 +9,7 @@ import {
   type Submission, type Role, type Project, type Stage,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 type Entry = {
   sub: Submission;
@@ -67,7 +68,7 @@ export function TalentHistory({ talentId, talentName }: Props) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold">Your history with {talentName.split(" ")[0]}</div>
-          <div className="text-[10px] text-text-muted mt-0.5">
+          <div className="text-[0.6875rem] text-text-muted mt-0.5">
             <span className="tnum">{stats.total}</span> audition{stats.total !== 1 ? "s" : ""}
             {stats.booked > 0 && <span className="text-success font-semibold"> · {stats.booked} booked</span>}
             {stats.callback > 0 && <span className="text-gold font-semibold"> · {stats.callback} in pipeline</span>}
@@ -101,6 +102,8 @@ export function TalentHistory({ talentId, talentName }: Props) {
 function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
   const { sub, role, project } = entry;
   const meta = STAGE_META[sub.stage];
+  const { lang } = useT();
+  const he = lang === "he";
   const toneCls =
     meta.tone === "success" ? "text-success bg-success/15 border-success/30"
     : meta.tone === "gold" ? "text-gold bg-gold/15 border-gold/30"
@@ -132,14 +135,14 @@ function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <div className="text-sm font-semibold truncate">
-                {project?.title ?? "Project"}
+                {project?.title ?? (he ? "פרויקט" : "Project")}
               </div>
-              <div className="text-[10px] text-text-muted truncate">
-                as {role?.name ?? "—"} · {date}
+              <div className="text-[0.6875rem] text-text-muted truncate">
+                {he ? "בתפקיד" : "as"} {role?.name ?? "—"} · {date}
               </div>
             </div>
-            <span className={cn("text-[9px] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap", toneCls)}>
-              {meta.label}
+            <span className={cn("text-[0.6875rem] tnum font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap", toneCls)}>
+              {he ? meta.he : meta.label}
             </span>
           </div>
 
@@ -151,7 +154,7 @@ function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
               return (
                 <span
                   key={s}
-                  title={STAGE_META[s].label}
+                  title={he ? STAGE_META[s].he : STAGE_META[s].label}
                   className={cn(
                     "h-1 flex-1 rounded-full transition-colors",
                     isCurrent ? "bg-gold"
@@ -163,7 +166,7 @@ function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
             })}
           </div>
 
-          <div className="flex items-center gap-2 mt-2 text-[10px] text-text-muted">
+          <div className="flex items-center gap-2 mt-2 text-[0.6875rem] text-text-muted">
             {tapeCount > 0 && (
               <span className="inline-flex items-center gap-1">
                 <FileVideo className="w-3 h-3" /> {tapeCount} tape{tapeCount > 1 ? "s" : ""}
@@ -187,7 +190,7 @@ function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
             {project && role && (
               <Link
                 href={`/pro/projects/${project.id}/role/${role.id}/submission/${sub.id}`}
-                className="ml-auto text-[10px] text-gold font-semibold"
+                className="ml-auto text-[0.6875rem] text-gold font-semibold"
               >
                 Open →
               </Link>

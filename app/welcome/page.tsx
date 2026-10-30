@@ -10,7 +10,7 @@ import { useT } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/LanguageToggle";
 
 export default function WelcomePage() {
-  const { t, dir } = useT();
+  const { t, dir, lang } = useT();
   const router = useRouter();
   const isAuthed = useStore((s) => s.isAuthed);
   const onboarded = useStore((s) => s.onboarded);
@@ -63,11 +63,11 @@ export default function WelcomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15 }}
           >
-            <Brand size="xl" className="leading-[0.95] block" />
+            <Brand size="xl" />
             <p className="mt-6 text-2xl font-display leading-snug text-text" dir={dir}>
               {t("welcome.tagline1")} <em className="text-gold-gradient not-italic">{t("welcome.tagline2")}</em>.
             </p>
-            <p className="mt-3 text-text-muted text-[15px] leading-relaxed max-w-sm" dir={dir}>
+            <p className="mt-3 text-text-muted text-[0.9375rem] leading-relaxed max-w-sm" dir={dir}>
               {t("welcome.sub")}
             </p>
 
@@ -77,7 +77,7 @@ export default function WelcomePage() {
                 <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&q=80&auto=format&fit=crop" alt="" className="w-7 h-7 rounded-full object-cover border-2 border-bg" />
                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&q=80&auto=format&fit=crop" alt="" className="w-7 h-7 rounded-full object-cover border-2 border-bg" />
               </div>
-              <p className="text-[11px] text-text-muted max-w-[230px]">
+              <p className="text-[0.6875rem] text-text-muted max-w-[230px]">
                 {t("welcome.proof")}
               </p>
             </div>
@@ -91,7 +91,7 @@ export default function WelcomePage() {
           >
             <Link
               href="/signup"
-              className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl bg-gold text-bg font-semibold hover:bg-gold-light transition-colors group"
+              className="flex items-center justify-center gap-2 w-full h-14 rounded-2xl bg-gold text-on-accent font-semibold hover:bg-gold-light transition-colors group"
             >
               {t("welcome.getStarted")}
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
@@ -112,14 +112,22 @@ export default function WelcomePage() {
           >
             <Link
               href="/pro"
-              className="block text-center text-[11px] text-text-subtle leading-relaxed hover:text-text-muted"
+              className="block text-center text-[0.6875rem] text-text-subtle leading-relaxed hover:text-text-muted"
             >
               {t("welcome.proLine1")} · <span className="text-gold font-semibold">CastIt Pro →</span>
             </Link>
           </motion.div>
 
-          <p className="mt-3 text-center text-[11px] text-text-subtle leading-relaxed">
-            By continuing you agree to our Terms of Service & Privacy Policy.
+          <Link href="/install" className="mt-4 block text-center text-xs font-semibold text-gold">
+            📱 {t("welcome.install")}
+          </Link>
+
+          <p className="mt-3 text-center text-[0.6875rem] text-text-subtle leading-relaxed">
+            {lang === "he" ? (
+              <>בהמשך השימוש את/ה מסכים/ה ל<Link href="/terms" className="underline">תנאי השימוש</Link> ול<Link href="/privacy" className="underline">מדיניות הפרטיות</Link>.</>
+            ) : (
+              <>By continuing you agree to our <Link href="/terms" className="underline">Terms of Use</Link> & <Link href="/privacy" className="underline">Privacy Policy</Link>.</>
+            )}
           </p>
         </div>
       </div>

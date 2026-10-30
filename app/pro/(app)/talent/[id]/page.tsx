@@ -12,6 +12,8 @@ import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { TalentNotes } from "@/components/TalentNotes";
+import { SendAuditionSheet } from "@/components/SendAuditionSheet";
+import { useT } from "@/lib/i18n";
 import { StageBadge } from "@/components/StageBadge";
 import { TALENTS } from "@/lib/mock-data";
 import {
@@ -19,6 +21,9 @@ import {
   type Submission, type Role, type Project, type Stage, STAGE_META,
 } from "@/lib/projects-store";
 import { formatNumber } from "@/lib/utils";
+import { optLabel } from "@/lib/typecast-options";
+import { DEMO_MODE } from "@/lib/cloud/config";
+import { HeadshotGrid } from "@/components/Headshots";
 
 type Entry = {
   sub: Submission;
@@ -30,6 +35,9 @@ export default function TalentDossierPage() {
   const { id } = useParams<{ id: string }>();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const { lang } = useT();
+  const L = (h: string, e: string) => (lang === "he" ? h : e);
 
   const allTalents = useAllTalents();
   const talent = useMemo(() => allTalents.find((t) => t.id === id), [id, allTalents]);
@@ -77,7 +85,7 @@ export default function TalentDossierPage() {
         right={
           <Link
             href={`/profile/${talent.username}`}
-            className="text-[11px] text-gold font-semibold"
+            className="text-[0.6875rem] text-gold font-semibold"
           >
             פרופיל
           </Link>
@@ -92,33 +100,44 @@ export default function TalentDossierPage() {
             <div className="flex items-center gap-1.5">
               <h1 className="font-display text-xl tracking-editorial truncate">{talent.name}</h1>
               {talent.verified && <VerifiedBadge />}
+              {talent.minor && <span className="text-[0.625rem] font-semibold px-1.5 py-0.5 rounded-full bg-plum/15 text-plum-light shrink-0">{L("קטין/ה · באישור הורה", "Minor · parent approved")}</span>}
             </div>
-            <p className="text-[11px] text-text-muted truncate">
-              {talent.typecast.gender} · {talent.typecast.ageRange[0]}–{talent.typecast.ageRange[1]} · {talent.typecast.heightCm}cm · {talent.typecast.location}
+            <p className="text-[0.6875rem] text-text-muted truncate">
+              {[optLabel(talent.typecast.gender, lang === "he"), `${talent.typecast.ageRange[0]}–${talent.typecast.ageRange[1]}`, `${talent.typecast.heightCm} ${L("ס״מ", "cm")}`, talent.typecast.location ? optLabel(talent.typecast.location, lang === "he") : ""].filter(Boolean).join(" · ")}
             </p>
-            <div className="text-[10px] text-text-subtle mt-1 tnum">
-              {formatNumber(talent.followers)} followers
-            </div>
+            {DEMO_MODE && (
+              <div className="text-[0.6875rem] text-text-subtle mt-1 tnum">
+                {formatNumber(talent.followers)} {L("עוקבים", "followers")}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Headshots */}
+      {(talent.headshots?.length ?? 0) > 0 && (
+        <div className="px-5 mt-3">
+          <h2 className="text-xs font-semibold text-text-muted mb-2">{L("תמונות", "Photos")}</h2>
+          <HeadshotGrid photos={talent.headshots!} name={talent.name} />
+        </div>
+      )}
+
       {/* Skills + languages chips */}
       <div className="px-5 mt-3 flex flex-wrap gap-1.5">
         {talent.typecast.languages.map((l) => (
-          <span key={l} className="text-[9px] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">{l}</span>
+          <span key={l} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">{optLabel(l, lang === "he")}</span>
         ))}
         {talent.typecast.skills.slice(0, 6).map((s) => (
-          <span key={s} className="text-[9px] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-gold">{s}</span>
+          <span key={s} className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg-elevated border border-border text-gold">{optLabel(s, lang === "he")}</span>
         ))}
       </div>
 
       {/* Quick stats */}
       <div className="px-5 mt-4 grid grid-cols-4 gap-2">
-        <KPI label="Auditions" value={stats.total} tone="muted" />
-        <KPI label="Pipeline"  value={stats.inPipeline} tone="gold" />
-        <KPI label="Booked"    value={stats.booked} tone="success" />
-        <KPI label="Win rate"  value={`${stats.conv}%`} tone="success" />
+        <KPI label={L("אודישנים", "Auditions")} value={stats.total} tone="muted" />
+        <KPI label={L("בתהליך", "Pipeline")} value={stats.inPipeline} tone="gold" />
+        <KPI label={L("לוהקו", "Booked")} value={stats.booked} tone="success" />
+        <KPI label={L("הצלחה", "Win rate")} value={`${stats.conv}%`} tone="success" />
       </div>
 
       {/* Quick actions */}
@@ -127,14 +146,16 @@ export default function TalentDossierPage() {
           href={`/messages?with=${talent.id}&name=${encodeURIComponent(talent.name)}`}
           className="h-10 rounded-full bg-bg-elevated border border-border text-xs font-semibold inline-flex items-center justify-center gap-1.5"
         >
-          <MessageCircle className="w-3.5 h-3.5" /> Message
+          <MessageCircle className="w-3.5 h-3.5" /> {L("הודעה", "Message")}
         </Link>
-        <Link
-          href="/pro/audition/new"
-          className="h-10 rounded-full bg-gold text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+        <button
+          type="button"
+          onClick={() => setInviteOpen(true)}
+          className="h-10 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5"
         >
-          <Megaphone className="w-3.5 h-3.5" /> Invite
-        </Link>
+          <Megaphone className="w-3.5 h-3.5" /> {L("הזמנה לאודישן", "Invite")}
+        </button>
+        <SendAuditionSheet open={inviteOpen} onClose={() => setInviteOpen(false)} talent={{ id: talent.id, name: talent.name, photo: talent.photo }} />
       </div>
 
       {/* Notes (cross-project private notes) */}
@@ -144,7 +165,7 @@ export default function TalentDossierPage() {
 
       {/* History — every submission ever */}
       <div className="px-5 mt-5">
-        <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2 inline-flex items-center gap-1.5">
+        <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2 inline-flex items-center gap-1.5">
           <History className="w-3 h-3" /> ההיסטוריה שלך עם {talent.name.split(" ")[0]}
         </div>
         {!loaded ? null : entries.length === 0 ? (
@@ -168,7 +189,7 @@ function KPI({ label, value, tone }: { label: string; value: number | string; to
   return (
     <div className="rounded-xl bg-bg-elevated border border-border p-2.5 text-center">
       <div className={`font-display text-base font-bold tnum ${cls}`}>{value}</div>
-      <div className="text-[9px] uppercase tracking-wider text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{label}</div>
     </div>
   );
 }
@@ -198,13 +219,13 @@ function HistoryRow({ entry, i }: { entry: Entry; i: number }) {
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="text-sm font-semibold truncate">{project.title}</div>
-                <div className="text-[10px] text-text-muted truncate">
+                <div className="text-[0.6875rem] text-text-muted truncate">
                   as {role.name} · {date}
                 </div>
               </div>
               <StageBadge stage={sub.stage} />
             </div>
-            <div className="flex items-center gap-3 mt-1.5 text-[10px] text-text-muted">
+            <div className="flex items-center gap-3 mt-1.5 text-[0.6875rem] text-text-muted">
               {tapeCount > 0 && (
                 <span className="inline-flex items-center gap-1">
                   <FileVideo className="w-3 h-3" /> {tapeCount} tape{tapeCount > 1 ? "s" : ""}

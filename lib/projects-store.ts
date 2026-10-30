@@ -19,16 +19,21 @@ export type Stage =
   | "booked"
   | "rejected";
 
-export const STAGE_META: Record<Stage, { label: string; tone: "gold" | "plum" | "sage" | "success" | "muted" | "violet" | "danger" }> = {
-  invited:     { label: "Invited",          tone: "plum" },
-  submitted:   { label: "To review",        tone: "gold" },
-  callback:    { label: "Callback",         tone: "success" },
-  hold:        { label: "Hold",             tone: "sage" },
-  avail_check: { label: "Avail check",      tone: "plum" },
-  offered:     { label: "Offer out",        tone: "violet" },
-  booked:      { label: "Booked",           tone: "success" },
-  rejected:    { label: "Passed",           tone: "muted" },
+export const STAGE_META: Record<Stage, { label: string; he: string; tone: "gold" | "plum" | "sage" | "success" | "muted" | "violet" | "danger" }> = {
+  invited:     { label: "Invited",          he: "הוזמן/ה",        tone: "plum" },
+  submitted:   { label: "To review",        he: "לצפייה",         tone: "gold" },
+  callback:    { label: "Callback",         he: "קולבק",          tone: "success" },
+  hold:        { label: "Hold",             he: "בהמתנה",         tone: "sage" },
+  avail_check: { label: "Avail check",      he: "בדיקת זמינות",   tone: "plum" },
+  offered:     { label: "Offer out",        he: "הצעה נשלחה",     tone: "violet" },
+  booked:      { label: "Booked",           he: "נבחר/ה",         tone: "success" },
+  rejected:    { label: "Passed",           he: "לא נבחר/ה",      tone: "muted" },
 };
+
+export function stageLabel(stage: Stage, he: boolean): string {
+  const m = STAGE_META[stage];
+  return he ? m.he : m.label;
+}
 
 // Time-coded comment on a tape (e.g. "0:34 — great pause")
 export type TapeComment = {
@@ -378,7 +383,12 @@ export function confirmBooked(id: string, message?: string) {
   const sub = getSubmission(id);
   patchSubmission(id, { stage: "booked", proMessage: message, prevStage: sub?.stage });
 }
+/** Sent automatically when a casting director passes without writing a note. */
+export const DEFAULT_REJECT_MESSAGE =
+  "תודה רבה על ההגשה והזמן שהשקעת. הפעם הלכנו לכיוון אחר בתפקיד הזה, ונשמח לראות אותך בהזדמנויות הבאות.";
+
 export function rejectSubmission(id: string, message?: string) {
+  if (!message) message = DEFAULT_REJECT_MESSAGE;
   const sub = getSubmission(id);
   // Remember where they were so Reopen can restore it (unless already tracked)
   const prev = sub && sub.stage !== "rejected" ? sub.stage : sub?.prevStage;
@@ -625,5 +635,46 @@ export function roleCounts(roleId: string) {
     offered: by("offered"),
     booked: by("booked"),
     rejected: by("rejected"),
+  };
+}
+
+// Everything the projects board needs about one project in a single pass:
+// pipeline distribution, what's waiting on the casting team, and what's next.
+export function projectOverview(projectId: string) {
+  const roles = getRolesByProject(projectId);
+  const roleIds = new Set(roles.map((r) => r.id));
+  const subs = loadSubmissions().filter((s) => roleIds.has(s.roleId));
+  const byStage = Object.fromEntries((Object.keys(STAGE_META) as Stage[]).map((st) => [st, 0])) as Record<Stage, number>;
+  for (const s of subs) byStage[s.stage] += 1;
+  const now = Date.now();
+  const week = now + 7 * 86400_000;
+  const roleById = new Map(roles.map((r) => [r.id, r]));
+  const deadlines = subs
+    .filter((s) => s.stage === "invited")
+    .map((s) => s.inviteDeadline || roleById.get(s.roleId)?.deadline)
+    .concat(roles.map((r) => r.deadline))
+    .filter((d): d is string => !!d && new Date(d).getTime() >= now - 86400_000)
+    .sort();
+  const callbacksThisWeek = subs.filter((s) =>
+    s.stage === "callback" && s.callbackScheduledAt && !s.callbackCompleted &&
+    new Date(s.callbackScheduledAt).getTime() >= now && new Date(s.callbackScheduledAt).getTime() <= week).length;
+  const lastActivity = subs.reduce((m, s) => {
+    const t = Math.max(new Date(s.createdAt).getTime(), ...s.tapes.map((tp) => new Date(tp.submittedAt).getTime()));
+    return t > m ? t : m;
+  }, 0);
+  const toReview = byStage.submitted;
+  const awaitingTalent = subs.filter((s) => s.offerResponse === "pending" || s.availResponse === "pending").length;
+  return {
+    roles: roles.length,
+    total: subs.length,
+    byStage,
+    toReview,
+    awaitingTalent,
+    callbacksThisWeek,
+    nextDeadline: deadlines[0] as string | undefined,
+    openRoles: roles.filter((r) => !subs.some((s) => s.roleId === r.id && s.stage === "booked")).length,
+    lastActivity,
+    // Higher = needs the casting team sooner (used to sort the board)
+    urgency: toReview * 3 + callbacksThisWeek * 2 + (deadlines[0] && new Date(deadlines[0]).getTime() < week ? 2 : 0),
   };
 }

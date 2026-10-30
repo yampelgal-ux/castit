@@ -111,7 +111,7 @@ export default function ApprovePage() {
       {/* Header band */}
       <div className="border-b border-border bg-bg-elevated/60">
         <div className="max-w-[640px] mx-auto px-5 py-6">
-          <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">
             Director Review
           </div>
           <h1 className="font-display text-3xl tracking-editorial mt-1">{session.projectTitle}</h1>
@@ -123,7 +123,7 @@ export default function ApprovePage() {
               {session.greeting}
             </div>
           )}
-          <div className="text-[10px] text-text-subtle mt-3 inline-flex items-center gap-2">
+          <div className="text-[0.6875rem] text-text-subtle mt-3 inline-flex items-center gap-2">
             <span>{session.talents.length} tapes</span>
             <span>·</span>
             <span className="text-gold font-semibold tnum">{voted} voted</span>
@@ -145,7 +145,7 @@ export default function ApprovePage() {
       </div>
 
       <div className="max-w-[640px] mx-auto px-5 mt-10 text-center">
-        <div className="inline-flex items-center gap-1.5 text-[10px] text-text-subtle">
+        <div className="inline-flex items-center gap-1.5 text-[0.6875rem] text-text-subtle">
           <Sparkles className="w-3 h-3" /> Curated on CastIt · auto-syncs to the casting director
         </div>
       </div>
@@ -174,7 +174,7 @@ export default function ApprovePage() {
               <button
                 onClick={submitName}
                 disabled={!voterName.trim()}
-                className="w-full mt-3 h-12 rounded-2xl bg-gold text-bg font-semibold disabled:opacity-40"
+                className="w-full mt-3 h-12 rounded-2xl bg-gold text-on-accent font-semibold disabled:opacity-40"
               >
                 Save & Vote
               </button>
@@ -187,8 +187,8 @@ export default function ApprovePage() {
 }
 
 const VOTE_META: Record<ApprovalVote, { label: string; cls: string; icon: typeof ThumbsUp }> = {
-  yes:   { label: "Yes",   cls: "bg-success text-bg",      icon: ThumbsUp },
-  maybe: { label: "Maybe", cls: "bg-gold text-bg",         icon: HelpCircle },
+  yes:   { label: "Yes",   cls: "bg-success text-on-accent",      icon: ThumbsUp },
+  maybe: { label: "Maybe", cls: "bg-gold text-on-accent",         icon: HelpCircle },
   no:    { label: "No",    cls: "bg-danger text-white",    icon: ThumbsDown },
 };
 
@@ -244,9 +244,9 @@ function TalentCard({ t, i, onVote }: { t: ApprovalTalent; i: number; onVote: (v
         <img src={t.talentPhoto} alt={t.talentName} className="w-12 h-12 rounded-xl object-cover shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-sm truncate">{t.talentName}</div>
-          <div className="text-[11px] text-text-muted truncate">{t.roleName}</div>
+          <div className="text-[0.6875rem] text-text-muted truncate">{t.roleName}</div>
           {t.vote && t.voterName && (
-            <div className="text-[10px] mt-1 inline-flex items-center gap-1 text-text-muted">
+            <div className="text-[0.6875rem] mt-1 inline-flex items-center gap-1 text-text-muted">
               {(() => { const Icon = VOTE_META[t.vote].icon; return <Icon className="w-2.5 h-2.5" />; })()}
               <strong className="text-text">{t.voterName}</strong> marked {VOTE_META[t.vote].label}
             </div>

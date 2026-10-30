@@ -27,7 +27,9 @@ const proItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const role = useStore((s) => s.profile.role);
+  const storedRole = useStore((s) => s.profile.role);
+  // Inside /pro always show the casting nav, whatever role this device remembers.
+  const role = pathname === "/pro" || pathname?.startsWith("/pro/") ? "Casting Pro" : storedRole;
   const items = role === "Casting Pro" ? proItems : talentItems;
   const unreadTalent = useUnreadCount("talent");
   const unreadPro = useUnreadCount("pro");
@@ -42,7 +44,7 @@ export function BottomNav() {
             const { href, icon: Icon, tkey } = item;
             const label = t(tkey);
             const showBadge = !!item.badgeFor;
-            const active = pathname?.startsWith(href.split("/").slice(0, 2).join("/"));
+            const active = !!pathname && (pathname === href || pathname.startsWith(href + "/") || (href === "/profile/me" && pathname.startsWith("/profile/")));
             return (
               <Link
                 key={href}
@@ -59,12 +61,12 @@ export function BottomNav() {
                     strokeWidth={active ? 2.4 : 2}
                   />
                   {showBadge && unread > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 rounded-full bg-danger text-white text-[8px] font-bold grid place-items-center px-0.5">
+                    <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 rounded-full bg-danger text-white text-[0.6875rem] font-bold grid place-items-center px-0.5">
                       {unread > 9 ? "9+" : unread}
                     </span>
                   )}
                 </div>
-                <span className={cn("text-[9px] font-medium tracking-wide", active && "text-gold")}>
+                <span className={cn("text-[0.6875rem] font-medium tracking-wide", active && "text-gold")}>
                   {label}
                 </span>
               </Link>

@@ -17,7 +17,8 @@ export type NotifKind =
   | "like"          // social like on reel
   | "comment"       // social comment on reel
   | "casting"       // new casting match
-  | "application";  // application status change
+  | "application"   // application status change
+  | "reminder";     // Aria reminder: deadline, callback, calendar event
 
 export type AppNotification = {
   id: string;
@@ -146,6 +147,16 @@ export function notifyProTapeIn(talentName: string, roleName: string, submission
     kind: "tape_in",
     title: `טייפ חדש מ-${talentName}`,
     body: `עבור ${roleName} — לחץ לסקירה`,
+    href: `/pro/projects/${projectId}/role/${roleId}/submission/${submissionId}`,
+  });
+}
+
+export function notifyProJoinedViaLink(talentName: string, roleName: string, submissionId: string, projectId: string, roleId: string) {
+  addNotification({
+    audience: "pro",
+    kind: "invite",
+    title: `${talentName || "שחקן/ית"} הצטרף/ה דרך הקישור`,
+    body: `לתפקיד ${roleName} — מחכים לטייפ`,
     href: `/pro/projects/${projectId}/role/${roleId}/submission/${submissionId}`,
   });
 }

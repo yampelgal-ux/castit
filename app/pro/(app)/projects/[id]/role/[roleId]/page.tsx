@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   FileVideo, Calendar, DollarSign, ChevronRight, ScrollText, Clock, Edit3, Columns,
-  Check, X, Zap, CheckSquare, Square, Sparkles, PauseCircle, XCircle,
+  Check, X, CheckSquare, Square, Sparkles, PauseCircle, XCircle, MessageCircle, Megaphone,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
@@ -18,26 +18,23 @@ import {
 import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptics";
 import { SidesFileInput, SidesFileViewer } from "@/components/SidesFileInput";
+import { InviteLinkSheet } from "@/components/InviteLinkSheet";
+import { useT } from "@/lib/i18n";
 
 // Pipeline columns — full mode has all 8 stages, quick mode has 3
-const PIPELINE_FULL: { id: "all" | Stage; label: string }[] = [
-  { id: "all",         label: "All" },
-  { id: "invited",     label: STAGE_META.invited.label },
-  { id: "submitted",   label: STAGE_META.submitted.label },
-  { id: "callback",    label: STAGE_META.callback.label },
-  { id: "hold",        label: STAGE_META.hold.label },
-  { id: "avail_check", label: STAGE_META.avail_check.label },
-  { id: "offered",     label: STAGE_META.offered.label },
-  { id: "booked",      label: STAGE_META.booked.label },
-  { id: "rejected",    label: STAGE_META.rejected.label },
+const ALL = { label: "All", he: "הכל" };
+const PIPELINE_FULL: { id: "all" | Stage; label: string; he: string }[] = [
+  { id: "all", ...ALL },
+  ...(["invited", "submitted", "callback", "hold", "avail_check", "offered", "booked", "rejected"] as Stage[])
+    .map((id) => ({ id, label: STAGE_META[id].label, he: STAGE_META[id].he })),
 ];
 
-const PIPELINE_QUICK: { id: "all" | Stage; label: string }[] = [
-  { id: "all",       label: "All" },
-  { id: "invited",   label: "Invited" },
-  { id: "submitted", label: "לסקירה" },
-  { id: "booked",    label: "נבחר" },
-  { id: "rejected",  label: "נדחה" },
+const PIPELINE_QUICK: { id: "all" | Stage; label: string; he: string }[] = [
+  { id: "all", ...ALL },
+  { id: "invited",   label: "Invited",   he: "הוזמנו" },
+  { id: "submitted", label: "To review", he: "לסקירה" },
+  { id: "booked",    label: "Selected",  he: "נבחרו" },
+  { id: "rejected",  label: "Passed",    he: "נדחו" },
 ];
 
 export default function RoleDetailPage() {
@@ -49,6 +46,10 @@ export default function RoleDetailPage() {
   const [editingBrief, setEditingBrief] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [inviting, setInviting] = useState<null | "whatsapp" | "board">(null);
+  const { lang, dir } = useT();
+  const he = lang === "he";
+  const L = (h: string, e: string) => (he ? h : e);
 
   function reload() {
     setRole(getRole(roleId) ?? null);
@@ -56,7 +57,12 @@ export default function RoleDetailPage() {
     setSubs(getSubmissionsByRole(roleId));
   }
 
-  useEffect(() => { reload(); }, [roleId, id]);
+  useEffect(() => {
+    reload();
+    // Actors who join through an invite link arrive from the cloud.
+    window.addEventListener("castit:remote-update", reload);
+    return () => window.removeEventListener("castit:remote-update", reload);
+  }, [roleId, id]);
 
   function toggleSelect(subId: string) {
     setSelected((prev) => {
@@ -82,8 +88,8 @@ export default function RoleDetailPage() {
   if (!role) {
     return (
       <div className="min-h-dvh bg-bg">
-        <Header back title="Role" />
-        <EmptyState icon={FileVideo} title="Not found" />
+        <Header back title={L("תפקיד", "Role")} />
+        <EmptyState icon={FileVideo} title={L("התפקיד לא נמצא", "Not found")} />
       </div>
     );
   }
@@ -101,16 +107,16 @@ export default function RoleDetailPage() {
   );
 
   return (
-    <div className="min-h-dvh bg-bg pb-24">
+    <div className="min-h-dvh bg-bg pb-24" dir={dir}>
       <Header
         back
         title={role.name}
         right={subs.length > 0 && (
           <button
             onClick={() => selectMode ? exitSelect() : setSelectMode(true)}
-            className="text-[11px] text-gold font-semibold"
+            className="text-[0.6875rem] text-gold font-semibold"
           >
-            {selectMode ? "ביטול" : "בחירה"}
+            {selectMode ? L("ביטול", "Cancel") : L("בחירה", "Select")}
           </button>
         )}
       />
@@ -119,8 +125,8 @@ export default function RoleDetailPage() {
         {/* Brief */}
         <div className="rounded-2xl bg-bg-elevated border border-border p-4">
           <div className="flex items-center justify-between">
-            <div className="text-[10px] uppercase tracking-widest text-gold">Role brief</div>
-            <button onClick={() => setEditingBrief(true)} className="text-text-muted">
+            <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{L("תקציר התפקיד", "Role brief")}</div>
+            <button onClick={() => setEditingBrief(true)} className="text-text-muted" aria-label={L("עריכת התפקיד", "Edit role")}>
               <Edit3 className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -130,13 +136,13 @@ export default function RoleDetailPage() {
           {(role.deadline || role.shootDates || role.payRange) && (
             <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-border">
               {role.deadline && (
-                <Mini icon={Clock} label="Tape due" value={fmtDate(role.deadline)} />
+                <Mini icon={Clock} label={L("טייפ עד", "Tape due")} value={fmtDate(role.deadline, he)} />
               )}
               {role.shootDates && (
-                <Mini icon={Calendar} label="Shoot" value={role.shootDates} />
+                <Mini icon={Calendar} label={L("צילומים", "Shoot")} value={role.shootDates} />
               )}
               {role.payRange && (
-                <Mini icon={DollarSign} label="Pay" value={role.payRange} />
+                <Mini icon={DollarSign} label={L("שכר", "Pay")} value={role.payRange} />
               )}
             </div>
           )}
@@ -149,8 +155,8 @@ export default function RoleDetailPage() {
 
           {role.sides && (
             <details className="mt-3 pt-3 border-t border-border">
-              <summary className="cursor-pointer text-[11px] uppercase tracking-widest text-gold flex items-center gap-1.5">
-                <ScrollText className="w-3 h-3" /> Sides
+              <summary className="cursor-pointer text-[0.6875rem] uppercase tracking-widest text-gold flex items-center gap-1.5">
+                <ScrollText className="w-3 h-3" /> {L("סצנה", "Sides")}
               </summary>
               <pre className="text-xs leading-relaxed mt-2 whitespace-pre-wrap font-mono text-text-muted">{role.sides}</pre>
             </details>
@@ -158,13 +164,42 @@ export default function RoleDetailPage() {
 
           {role.selfTapeInstructions && (
             <details className="mt-2">
-              <summary className="cursor-pointer text-[11px] uppercase tracking-widest text-gold">
-                Self-tape instructions
+              <summary className="cursor-pointer text-[0.6875rem] uppercase tracking-widest text-gold">
+                {L("הנחיות לסלף-טייפ", "Self-tape instructions")}
               </summary>
               <p className="text-xs leading-relaxed mt-2 text-text-muted">{role.selfTapeInstructions}</p>
             </details>
           )}
         </div>
+
+        {/* Invite actors who aren't on CastIt yet */}
+        <button
+          onClick={() => setInviting("whatsapp")}
+          className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40 text-sm text-start"
+        >
+          <div className="w-8 h-8 rounded-lg bg-[#25D366]/15 text-[#1a9e4b] grid place-items-center shrink-0">
+            <MessageCircle className="w-4 h-4" aria-hidden />
+          </div>
+          <div className="flex-1">
+            <div className="font-semibold">{L("הזמנה בוואטסאפ", "Invite on WhatsApp")}</div>
+            <div className="text-[0.6875rem] text-text-muted">{L("קישור לשחקנים שעוד לא ב-CastIt", "A link for actors not on CastIt yet")}</div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-text-muted rtl:rotate-180" aria-hidden />
+        </button>
+
+        <button
+          onClick={() => setInviting("board")}
+          className="w-full flex items-center gap-2.5 p-2.5 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40 text-sm text-start"
+        >
+          <div className="w-8 h-8 rounded-lg bg-gold/15 text-gold grid place-items-center shrink-0">
+            <Megaphone className="w-4 h-4" aria-hidden />
+          </div>
+          <div className="flex-1">
+            <div className="font-semibold">{L("פרסום כאודישן פתוח", "Post as an open audition")}</div>
+            <div className="text-[0.6875rem] text-text-muted">{L("כל השחקנים באפליקציה יוכלו להגיש", "Every actor on the app can apply")}</div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-text-muted rtl:rotate-180" aria-hidden />
+        </button>
 
         {/* Optional: compare tapes */}
         {subs.length >= 2 && (
@@ -176,8 +211,8 @@ export default function RoleDetailPage() {
               <Columns className="w-4 h-4" />
             </div>
             <div className="flex-1">
-              <div className="font-semibold">Compare tapes</div>
-              <div className="text-[10px] text-text-muted">Optional — view 2–4 talents side-by-side</div>
+              <div className="font-semibold">{L("השוואת טייפים", "Compare tapes")}</div>
+              <div className="text-[0.6875rem] text-text-muted">{L("2 עד 4 שחקנים זה לצד זה", "View 2–4 talents side-by-side")}</div>
             </div>
             <ChevronRight className="w-4 h-4 text-text-muted" />
           </Link>
@@ -186,16 +221,16 @@ export default function RoleDetailPage() {
         {/* Pipeline summary */}
         {isQuick ? (
           <div className="grid grid-cols-3 gap-2">
-            <PipeStat label="לסקירה" value={counts.submitted} tone="gold" />
-            <PipeStat label="נבחרו" value={counts.booked} tone="success" />
-            <PipeStat label="נדחו" value={counts.rejected ?? 0} tone="sage" />
+            <PipeStat label={L("לסקירה", "To review")} value={counts.submitted} tone="gold" />
+            <PipeStat label={L("נבחרו", "Selected")} value={counts.booked} tone="success" />
+            <PipeStat label={L("נדחו", "Passed")} value={counts.rejected ?? 0} tone="sage" />
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-2">
-            <PipeStat label="To review" value={counts.submitted} tone="gold" />
-            <PipeStat label="Callbacks" value={counts.callback} tone="success" />
-            <PipeStat label="Hold" value={counts.hold} tone="sage" />
-            <PipeStat label="Booked" value={counts.booked} tone="success" />
+            <PipeStat label={L("לצפייה", "To review")} value={counts.submitted} tone="gold" />
+            <PipeStat label={L("קולבק", "Callbacks")} value={counts.callback} tone="success" />
+            <PipeStat label={L("בהמתנה", "Hold")} value={counts.hold} tone="sage" />
+            <PipeStat label={L("נבחרו", "Booked")} value={counts.booked} tone="success" />
           </div>
         )}
 
@@ -210,11 +245,11 @@ export default function RoleDetailPage() {
                 onClick={() => setStage(t.id)}
                 className={cn(
                   "px-3 h-8 rounded-full text-xs font-semibold whitespace-nowrap border transition-all inline-flex items-center gap-1.5",
-                  stage === t.id ? "bg-gold text-bg border-gold" : "bg-bg-elevated text-text-muted border-border"
+                  stage === t.id ? "bg-gold text-on-accent border-gold" : "bg-bg-elevated text-text-muted border-border"
                 )}
               >
-                {t.label}
-                <span className={cn("tnum", stage === t.id ? "text-bg/70" : "text-text-subtle")}>{count}</span>
+                {he ? t.he : t.label}
+                <span className={cn("tnum", stage === t.id ? "text-on-accent/70" : "text-text-subtle")}>{count}</span>
               </button>
             );
           })}
@@ -223,11 +258,11 @@ export default function RoleDetailPage() {
         {sorted.length === 0 ? (
           <EmptyState
             icon={FileVideo}
-            title={subs.length === 0 ? "No submissions yet" : "Nothing in this stage"}
+            title={subs.length === 0 ? L("עוד אין מועמדים", "No submissions yet") : L("אין כאן אף אחד", "Nothing in this stage")}
             description={
               subs.length === 0
-                ? "Invite talents to read for this role — or share the role publicly to collect tapes."
-                : "Switch to another stage to see talents in different parts of the pipeline."
+                ? L("הזמינו שחקנים מהחיפוש, או שלחו קישור בוואטסאפ למי שעוד לא באפליקציה.", "Invite talents from search, or send a WhatsApp link to actors who aren't on the app yet.")
+                : L("עברו לשלב אחר כדי לראות שחקנים בשלבים אחרים.", "Switch to another stage to see talents in different parts of the pipeline.")
             }
           />
         ) : (
@@ -243,6 +278,7 @@ export default function RoleDetailPage() {
                 selectMode={selectMode}
                 selected={selected.has(s.id)}
                 onToggleSelect={() => toggleSelect(s.id)}
+                he={he}
               />
             ))}
           </div>
@@ -257,39 +293,41 @@ export default function RoleDetailPage() {
           className="fixed bottom-0 inset-x-0 z-40 max-w-[440px] mx-auto p-3"
         >
           <div className="rounded-2xl bg-bg-elevated border border-gold/30 shadow-2xl p-3">
-            <div className="text-[11px] text-text-muted mb-2 text-center">
-              <span className="text-gold font-bold tnum">{selected.size}</span> נבחרו
+            <div className="text-[0.6875rem] text-text-muted mb-2 text-center">
+              <span className="text-gold font-bold tnum">{selected.size}</span> {L("נבחרו", "selected")}
             </div>
             {isQuick ? (
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => bulkApply((sid) => rejectSubmission(sid))}
                   className="h-10 rounded-xl bg-bg border border-danger/30 text-danger text-xs font-semibold inline-flex items-center justify-center gap-1.5">
-                  <XCircle className="w-3.5 h-3.5" /> Pass לכולם
+                  <XCircle className="w-3.5 h-3.5" /> {L("דחייה לכולם", "Pass all")}
                 </button>
                 <button onClick={() => bulkApply((sid) => confirmBooked(sid))}
-                  className="h-10 rounded-xl bg-success text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
-                  <Check className="w-3.5 h-3.5" /> Select לכולם
+                  className="h-10 rounded-xl bg-success text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5">
+                  <Check className="w-3.5 h-3.5" /> {L("בחירה לכולם", "Select all")}
                 </button>
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-2">
                 <button onClick={() => bulkApply((sid) => moveToCallback(sid, { type: "tape" }))}
-                  className="h-10 rounded-xl bg-success/90 text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" /> Callback
+                  className="h-10 rounded-xl bg-success/90 text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> {L("קולבק", "Callback")}
                 </button>
                 <button onClick={() => bulkApply((sid) => moveToHold(sid, undefined, 48))}
-                  className="h-10 rounded-xl bg-sage/80 text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
-                  <PauseCircle className="w-3.5 h-3.5" /> Hold
+                  className="h-10 rounded-xl bg-sage/80 text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5">
+                  <PauseCircle className="w-3.5 h-3.5" /> {L("המתנה", "Hold")}
                 </button>
                 <button onClick={() => bulkApply((sid) => rejectSubmission(sid))}
                   className="h-10 rounded-xl bg-bg border border-danger/30 text-danger text-xs font-semibold inline-flex items-center justify-center gap-1.5">
-                  <XCircle className="w-3.5 h-3.5" /> Pass
+                  <XCircle className="w-3.5 h-3.5" /> {L("דחייה", "Pass")}
                 </button>
               </div>
             )}
           </div>
         </motion.div>
       )}
+
+      {inviting && <InviteLinkSheet role={role} project={project} mode={inviting} onClose={() => setInviting(null)} />}
 
       {editingBrief && (
         <EditBriefSheet
@@ -306,8 +344,8 @@ function Mini({ icon: Icon, label, value }: { icon: any; label: string; value: s
   return (
     <div className="rounded-xl bg-bg/50 border border-border p-2">
       <Icon className="w-3 h-3 text-gold mb-0.5" />
-      <div className="text-[10px] uppercase tracking-wider text-text-muted">{label}</div>
-      <div className="text-[11px] font-semibold truncate">{value}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] font-semibold truncate">{value}</div>
     </div>
   );
 }
@@ -321,13 +359,13 @@ function PipeStat({ label, value, tone }: { label: string; value: number; tone: 
   return (
     <div className={cn("rounded-2xl border border-border p-2.5", value > 0 ? colors.bg : "bg-bg-elevated")}>
       <div className={cn("font-display text-xl tnum", value > 0 ? colors.fg : "text-text")}>{value}</div>
-      <div className="text-[9px] uppercase tracking-wider text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{label}</div>
     </div>
   );
 }
 
 function SubmissionRow({
-  s, projectId, i, isQuick, onAction, selectMode, selected, onToggleSelect,
+  s, projectId, i, isQuick, onAction, selectMode, selected, onToggleSelect, he,
 }: {
   s: Submission;
   projectId: string;
@@ -337,7 +375,9 @@ function SubmissionRow({
   selectMode?: boolean;
   selected?: boolean;
   onToggleSelect?: () => void;
+  he: boolean;
 }) {
+  const L = (h: string, e: string) => (he ? h : e);
   const lastTape = s.tapes[s.tapes.length - 1];
   const canQuickDecide = isQuick && s.stage === "submitted" && !selectMode;
 
@@ -349,24 +389,27 @@ function SubmissionRow({
           ? <CheckSquare className="w-5 h-5 text-gold shrink-0" />
           : <Square className="w-5 h-5 text-text-muted shrink-0" />
       )}
-      <img src={s.talentPhoto} alt={s.talentName} className="w-12 h-12 rounded-xl object-cover shrink-0" />
+      {s.talentPhoto
+        // eslint-disable-next-line @next/next/no-img-element
+        ? <img src={s.talentPhoto} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0" />
+        : <div className="w-12 h-12 rounded-xl bg-hi text-on-hi grid place-items-center font-display text-lg shrink-0" aria-hidden>{(s.talentName || "?").slice(0, 1)}</div>}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-sm truncate">{s.talentName}</span>
           <StageBadge stage={s.stage} />
           {s.tapes.length > 1 && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-bg border border-border text-text-muted">
+            <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-bg border border-border text-text-muted">
               R{s.tapes.length}
             </span>
           )}
         </div>
-        <div className="text-[11px] text-text-muted truncate mt-0.5">
+        <div className="text-[0.6875rem] text-text-muted truncate mt-0.5">
           {lastTape
-            ? <><FileVideo className="w-3 h-3 inline mr-1" />Last tape {timeAgo(lastTape.submittedAt)}</>
-            : <>Invited {timeAgo(s.createdAt)}</>}
+            ? <><FileVideo className="w-3 h-3 inline me-1" />{L("טייפ אחרון", "Last tape")} {timeAgo(lastTape.submittedAt, he)}</>
+            : <>{L("הוזמן/ה", "Invited")} {timeAgo(s.createdAt, he)}</>}
         </div>
       </div>
-      {!selectMode && <ChevronRight className="w-4 h-4 text-text-muted shrink-0" />}
+      {!selectMode && <ChevronRight className="w-4 h-4 text-text-muted shrink-0 rtl:rotate-180" />}
     </>
   );
 
@@ -381,7 +424,7 @@ function SubmissionRow({
       )}
     >
       {selectMode ? (
-        <button onClick={onToggleSelect} className="w-full flex items-center gap-3 p-3 text-right">
+        <button onClick={onToggleSelect} className="w-full flex items-center gap-3 p-3 text-start">
           {inner}
         </button>
       ) : (
@@ -404,7 +447,7 @@ function SubmissionRow({
             }}
             className="h-9 rounded-xl bg-bg border border-danger/30 text-danger text-xs font-semibold inline-flex items-center justify-center gap-1.5"
           >
-            <X className="w-3.5 h-3.5" /> Pass
+            <X className="w-3.5 h-3.5" /> {L("דחייה", "Pass")}
           </button>
           <button
             onClick={(e) => {
@@ -413,9 +456,9 @@ function SubmissionRow({
               haptic("medium");
               onAction();
             }}
-            className="h-9 rounded-xl bg-success text-bg text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+            className="h-9 rounded-xl bg-success text-on-accent text-xs font-semibold inline-flex items-center justify-center gap-1.5"
           >
-            <Check className="w-3.5 h-3.5" /> Select
+            <Check className="w-3.5 h-3.5" /> {L("בחירה", "Select")}
           </button>
         </div>
       )}
@@ -431,6 +474,8 @@ function EditBriefSheet({ role, onClose, onSaved }: { role: Role; onClose: () =>
   const [deadline, setDeadline] = useState(role.deadline ?? "");
   const [shootDates, setShootDates] = useState(role.shootDates ?? "");
   const [payRange, setPayRange] = useState(role.payRange ?? "");
+  const { lang } = useT();
+  const L = (h: string, e: string) => (lang === "he" ? h : e);
 
   function submit() {
     updateRole(role.id, {
@@ -453,47 +498,47 @@ function EditBriefSheet({ role, onClose, onSaved }: { role: Role; onClose: () =>
         className="relative w-full bg-bg-elevated border-t border-border rounded-t-3xl p-5 max-h-[90dvh] overflow-y-auto"
       >
         <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
-        <h2 className="font-display text-2xl mb-4">Edit role</h2>
+        <h2 className="font-display text-2xl mb-4">{L("עריכת התפקיד", "Edit role")}</h2>
 
         <div className="space-y-3">
-          <Field label="Brief">
+          <Field label={L("תיאור", "Brief")}>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
               className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60" />
           </Field>
-          <Field label="Sides (scene text)">
+          <Field label={L("סצנה (טקסט)", "Sides (scene text)")}>
             <textarea value={sides} onChange={(e) => setSides(e.target.value)} rows={4}
               className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60 font-mono" />
           </Field>
-          <Field label="Sides file (PDF / DOC)">
+          <Field label={L("קובץ סצנה (PDF / DOC)", "Sides file (PDF / DOC)")}>
             <SidesFileInput
               roleId={role.id}
               value={sidesFile}
               onChange={setSidesFile}
             />
           </Field>
-          <Field label="Self-tape instructions">
+          <Field label={L("הנחיות לסלף-טייפ", "Self-tape instructions")}>
             <textarea value={instructions} onChange={(e) => setInstructions(e.target.value)} rows={2}
               className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60" />
           </Field>
           <div className="grid grid-cols-2 gap-2.5">
-            <Field label="Tape deadline">
+            <Field label={L("טייפ עד", "Tape deadline")}>
               <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)}
                 className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60" />
             </Field>
-            <Field label="Shoot dates">
+            <Field label={L("תאריכי צילום", "Shoot dates")}>
               <input value={shootDates} onChange={(e) => setShootDates(e.target.value)}
                 className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60" />
             </Field>
           </div>
-          <Field label="Pay / Rate">
+          <Field label={L("שכר", "Pay / Rate")}>
             <input value={payRange} onChange={(e) => setPayRange(e.target.value)}
               className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60" />
           </Field>
         </div>
 
         <button onClick={submit}
-          className="mt-5 w-full h-12 rounded-2xl bg-gold text-bg font-semibold">
-          Save
+          className="mt-5 w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold">
+          {L("שמירה", "Save")}
         </button>
       </motion.div>
     </div>
@@ -503,21 +548,22 @@ function EditBriefSheet({ role, onClose, onSaved }: { role: Role; onClose: () =>
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-widest text-text-muted">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">{label}</div>
       <div className="mt-1">{children}</div>
     </div>
   );
 }
 
-function fmtDate(iso: string) {
-  try { return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+function fmtDate(iso: string, he: boolean) {
+  try { return new Date(iso).toLocaleDateString(he ? "he-IL" : "en-US", { month: "short", day: "numeric" }); }
   catch { return iso; }
 }
-function timeAgo(iso: string) {
+function timeAgo(iso: string, he: boolean) {
   const ms = Date.now() - new Date(iso).getTime();
   const d = Math.floor(ms / 86400000);
-  if (d === 0) return "today";
-  if (d === 1) return "yesterday";
-  if (d < 7) return `${d}d ago`;
-  return `${Math.floor(d / 7)}w ago`;
+  if (d === 0) return he ? "היום" : "today";
+  if (d === 1) return he ? "אתמול" : "yesterday";
+  if (d < 7) return he ? `לפני ${d} ימים` : `${d}d ago`;
+  const w = Math.floor(d / 7);
+  return he ? (w === 1 ? "לפני שבוע" : `לפני ${w} שבועות`) : `${w}w ago`;
 }

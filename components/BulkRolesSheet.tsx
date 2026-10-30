@@ -136,7 +136,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
               >
                 <Camera className="w-5 h-5 text-gold" />
                 <span className="text-xs font-semibold">מצלמה</span>
-                <span className="text-[9px] text-text-subtle">צלם breakdown</span>
+                <span className="text-[0.6875rem] text-text-subtle">צלם breakdown</span>
               </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -144,7 +144,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
               >
                 <ImageIcon className="w-5 h-5 text-gold" />
                 <span className="text-xs font-semibold">גלריה</span>
-                <span className="text-[9px] text-text-subtle">צילום מסך</span>
+                <span className="text-[0.6875rem] text-text-subtle">צילום מסך</span>
               </button>
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -152,7 +152,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
               >
                 <FileText className="w-5 h-5 text-gold" />
                 <span className="text-xs font-semibold">קובץ</span>
-                <span className="text-[9px] text-text-subtle">.txt / PDF</span>
+                <span className="text-[0.6875rem] text-text-subtle">.txt / PDF</span>
               </button>
             </div>
             <input
@@ -179,7 +179,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
               }}
             />
 
-            <div className="text-[10px] uppercase tracking-widest text-text-subtle text-center my-2">
+            <div className="text-[0.6875rem] uppercase tracking-widest text-text-subtle text-center my-2">
               או הדבק
             </div>
 
@@ -202,7 +202,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
             <button
               disabled={!text.trim() || parsing}
               onClick={() => parse({ text })}
-              className="w-full mt-4 h-12 rounded-2xl bg-gold text-bg font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-40"
+              className="w-full mt-4 h-12 rounded-2xl bg-gold text-on-accent font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-40"
             >
               {parsing ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> מנתח...</>
@@ -216,11 +216,11 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h2 className="font-display text-xl">סקור ואשר</h2>
-                <p className="text-[11px] text-text-muted mt-0.5">
+                <p className="text-[0.6875rem] text-text-muted mt-0.5">
                   זיהיתי <span className="text-gold font-semibold tnum">{parsed.length}</span> תפקידים · {keep.size} נבחרים
                 </p>
               </div>
-              <button onClick={() => setParsed(null)} className="text-[11px] text-text-muted">
+              <button onClick={() => setParsed(null)} className="text-[0.6875rem] text-text-muted">
                 התחל מחדש
               </button>
             </div>
@@ -242,7 +242,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
                       className={cn(
                         "w-6 h-6 rounded-md grid place-items-center shrink-0 mt-0.5 border",
                         keep.has(i)
-                          ? "bg-gold border-gold text-bg"
+                          ? "bg-gold border-gold text-on-accent"
                           : "bg-bg border-border text-text-muted"
                       )}
                     >
@@ -258,17 +258,17 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
                         value={r.description}
                         onChange={(e) => patchRole(i, { description: e.target.value })}
                         rows={2}
-                        className="w-full mt-1 text-[11px] text-text-muted leading-relaxed bg-transparent resize-none outline-none"
+                        className="w-full mt-1 text-[0.6875rem] text-text-muted leading-relaxed bg-transparent resize-none outline-none"
                       />
                       {(r.payRange || r.shootDates) && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {r.shootDates && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">
+                            <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-bg-elevated border border-border text-text-muted">
                               {r.shootDates}
                             </span>
                           )}
                           {r.payRange && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-bg-elevated border border-border text-gold">
+                            <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-bg-elevated border border-border text-gold">
                               {r.payRange}
                             </span>
                           )}
@@ -285,7 +285,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
               onClick={commit}
               className={cn(
                 "mt-4 w-full h-12 rounded-2xl font-semibold flex items-center justify-center gap-2",
-                keep.size > 0 ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+                keep.size > 0 ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
               )}
             >
               <Plus className="w-4 h-4" /> צור {keep.size} תפקיד{keep.size !== 1 ? "ים" : ""}

@@ -1,11 +1,12 @@
 "use client";
+import { useAllTalents } from "@/lib/cloud/talents";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Sparkles, ArrowRight, ArrowLeft, Check, Megaphone, Users } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
-import { TALENTS, type Audition, type BodyType, type VoiceType, type UnionStatus, type ExperienceLevel } from "@/lib/mock-data";
+import { type Audition, type BodyType, type VoiceType, type UnionStatus, type ExperienceLevel } from "@/lib/mock-data";
 import { matchTalent } from "@/lib/matching";
 import { addAudition } from "@/lib/auditions-store";
 import { haptic } from "@/lib/haptics";
@@ -23,6 +24,7 @@ const SKILLS = ["Stage Combat", "Krav Maga", "Horseback Riding", "Singing (Mezzo
 const HAIR_LENGTHS: ("Short"|"Medium"|"Long")[] = ["Short", "Medium", "Long"];
 
 export default function NewAuditionPage() {
+  const TALENTS = useAllTalents();
   const router = useRouter();
   const { profile, userId } = useStore();
   const [step, setStep] = useState(0);
@@ -76,7 +78,7 @@ export default function NewAuditionPage() {
     return TALENTS.map((t) => ({ talent: t, match: matchTalent(t, target) }))
       .filter((r) => r.match.passes)
       .sort((a, b) => b.match.score - a.match.score);
-  }, [target]);
+  }, [TALENTS, target]);
 
   const briefValid = title.length >= 3 && location.length >= 2 && description.length >= 10;
 
@@ -115,14 +117,14 @@ export default function NewAuditionPage() {
         {step === 0 && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div>
-              <div className="text-[11px] uppercase tracking-widest text-gold">Step 1 of 3</div>
+              <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Step 1 of 3</div>
               <h2 className="font-display text-2xl tracking-editorial">The brief</h2>
             </div>
 
             <Field label="Role title *" value={title} onChange={setTitle} placeholder="Lead Female — 'After the Rain'" />
 
             <div>
-              <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 px-1">Project type</div>
+              <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5 px-1">Project type</div>
               <div className="flex flex-wrap gap-1.5">
                 {TYPES.map((t) => (
                   <button
@@ -150,7 +152,7 @@ export default function NewAuditionPage() {
             <label className="flex items-center justify-between p-3 rounded-2xl bg-bg-elevated border border-border">
               <div>
                 <div className="text-sm font-semibold">Paid role</div>
-                <div className="text-[11px] text-text-muted">Unpaid auditions show fewer applicants.</div>
+                <div className="text-[0.6875rem] text-text-muted">Unpaid auditions show fewer applicants.</div>
               </div>
               <button
                 onClick={() => setPaid(!paid)}
@@ -165,7 +167,7 @@ export default function NewAuditionPage() {
             )}
 
             <div>
-              <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 px-1">Description *</div>
+              <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5 px-1">Description *</div>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -176,7 +178,7 @@ export default function NewAuditionPage() {
             </div>
 
             <div>
-              <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 px-1">Self-tape instructions (optional)</div>
+              <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5 px-1">Self-tape instructions (optional)</div>
               <textarea
                 value={selfTape}
                 onChange={(e) => setSelfTape(e.target.value)}
@@ -191,7 +193,7 @@ export default function NewAuditionPage() {
         {step === 1 && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
             <div>
-              <div className="text-[11px] uppercase tracking-widest text-gold">Step 2 of 3</div>
+              <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Step 2 of 3</div>
               <h2 className="font-display text-2xl tracking-editorial">Who are you looking for?</h2>
               <p className="text-text-muted text-sm mt-1">Leave anything blank to mean "any". More filters = fewer, better-matched applicants.</p>
             </div>
@@ -259,18 +261,18 @@ export default function NewAuditionPage() {
         {step === 2 && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <div>
-              <div className="text-[11px] uppercase tracking-widest text-gold">Step 3 of 3</div>
+              <div className="text-[0.6875rem] uppercase tracking-widest text-gold">Step 3 of 3</div>
               <h2 className="font-display text-2xl tracking-editorial">Preview & publish</h2>
             </div>
 
             <div className="rounded-2xl bg-bg-elevated border border-border p-4">
-              <div className="text-[10px] uppercase tracking-widest text-gold">{type}</div>
+              <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{type}</div>
               <h3 className="font-display text-xl mt-0.5">{title || "Untitled role"}</h3>
-              <p className="text-[11px] text-text-muted mt-0.5">{studio} · {location} · {paid ? `Paid${fee ? ` (${fee})` : ""}` : "Unpaid"}</p>
+              <p className="text-[0.6875rem] text-text-muted mt-0.5">{studio} · {location} · {paid ? `Paid${fee ? ` (${fee})` : ""}` : "Unpaid"}</p>
               <p className="text-sm mt-3 leading-relaxed">{description || "—"}</p>
               {selfTape && (
                 <div className="mt-3 pt-3 border-t border-border">
-                  <div className="text-[10px] uppercase tracking-widest text-text-muted">Self-tape</div>
+                  <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">Self-tape</div>
                   <p className="text-xs mt-1 leading-relaxed">{selfTape}</p>
                 </div>
               )}
@@ -279,7 +281,7 @@ export default function NewAuditionPage() {
             <div className="rounded-2xl bg-gold/8 border border-gold/20 p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="w-4 h-4 text-gold" />
-                <span className="text-[11px] uppercase tracking-widest text-gold font-semibold">
+                <span className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">
                   Talent pool reach
                 </span>
               </div>
@@ -287,7 +289,7 @@ export default function NewAuditionPage() {
                 <span className="font-display text-4xl text-gold tnum">{preview.length}</span>
                 <span className="text-xs text-text-muted pb-1">talents match your criteria</span>
               </div>
-              <p className="text-[11px] text-text-muted mt-2 leading-relaxed">
+              <p className="text-[0.6875rem] text-text-muted mt-2 leading-relaxed">
                 These talents will see your audition in their <strong>For You</strong> feed first.
                 The post is also public — anyone can apply.
               </p>
@@ -297,7 +299,7 @@ export default function NewAuditionPage() {
                     <img key={talent.id} src={talent.photo} alt="" className="w-8 h-8 rounded-full border-2 border-gold/20 object-cover" />
                   ))}
                   {preview.length > 5 && (
-                    <div className="w-8 h-8 rounded-full bg-gold/20 border-2 border-gold/20 grid place-items-center text-[10px] font-semibold text-gold">
+                    <div className="w-8 h-8 rounded-full bg-gold/20 border-2 border-gold/20 grid place-items-center text-[0.6875rem] font-semibold text-gold">
                       +{preview.length - 5}
                     </div>
                   )}
@@ -325,7 +327,7 @@ export default function NewAuditionPage() {
               disabled={step === 0 && !briefValid}
               className={cn(
                 "flex-1 h-12 rounded-2xl font-semibold inline-flex items-center justify-center gap-2",
-                step === 0 && !briefValid ? "bg-bg-elevated text-text-subtle" : "bg-gold text-bg"
+                step === 0 && !briefValid ? "bg-bg-elevated text-text-subtle" : "bg-gold text-on-accent"
               )}
             >
               Continue <ArrowRight className="w-4 h-4" />
@@ -333,7 +335,7 @@ export default function NewAuditionPage() {
           ) : (
             <button
               onClick={publish}
-              className="flex-1 h-12 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-2xl bg-gold text-on-accent font-semibold inline-flex items-center justify-center gap-2"
             >
               <Megaphone className="w-4 h-4" /> Publish audition
             </button>
@@ -347,7 +349,7 @@ export default function NewAuditionPage() {
 function Field({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 px-1">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5 px-1">{label}</div>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -362,11 +364,11 @@ function Group({ label, children, toggle, onToggle }: { label: string; children:
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5 px-1">
-        <div className="text-[11px] text-text-muted">{label}</div>
+        <div className="text-[0.6875rem] text-text-muted">{label}</div>
         {onToggle && (
           <button
             onClick={() => onToggle(!toggle)}
-            className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full",
+            className={cn("text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full",
               toggle ? "text-gold bg-gold/10" : "text-text-subtle")}
           >
             {toggle ? "Specified" : "Any"}
@@ -403,7 +405,7 @@ function Tags({ options, value, onChange }: { options: readonly string[]; value:
 function DualRange({ min, max, lo, hi, suffix, onChange }: { min: number; max: number; lo: number; hi: number; suffix: string; onChange: (lo: number, hi: number) => void }) {
   return (
     <div>
-      <div className="text-[11px] tnum text-gold font-semibold mb-2">{lo}–{hi} {suffix}</div>
+      <div className="text-[0.6875rem] tnum text-gold font-semibold mb-2">{lo}–{hi} {suffix}</div>
       <div className="grid grid-cols-2 gap-2">
         <input type="range" min={min} max={max} value={lo} onChange={(e) => onChange(Math.min(+e.target.value, hi), hi)} className="w-full" />
         <input type="range" min={min} max={max} value={hi} onChange={(e) => onChange(lo, Math.max(+e.target.value, lo))} className="w-full" />

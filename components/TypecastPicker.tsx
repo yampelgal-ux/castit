@@ -40,13 +40,13 @@ export function TypecastPicker({
               {kind === "hair" && <HairSwatch swatch={s} size={56} />}
               {active && (
                 <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gold grid place-items-center shadow-[0_2px_6px_rgba(0,0,0,0.4)]">
-                  <Check className="w-3 h-3 text-bg" strokeWidth={3.5} />
+                  <Check className="w-3 h-3 text-on-accent" strokeWidth={3.5} />
                 </span>
               )}
             </div>
             <span
               className={cn(
-                "text-[10px] font-medium leading-tight text-center px-0.5 truncate w-full",
+                "text-[0.6875rem] font-medium leading-tight text-center px-0.5 truncate w-full",
                 active ? "text-gold" : "text-text-muted"
               )}
             >

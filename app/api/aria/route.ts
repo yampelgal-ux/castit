@@ -43,67 +43,53 @@ const BodySchema = z.object({
     expectedUserLine: z.string().max(2000).optional(),
   }).optional(),
   tools: z.array(z.string()).optional(),
+  // Live snapshot of the talent's auditions, calendar and pending actions
+  briefing: z.string().max(12_000).optional(),
+  lang: z.enum(['he', 'en']).optional(),
 })
 
+// Agent tools are executed in the browser (the calendar lives on the device
+// and syncs to the account). The client applies them and shows an undo chip.
 const TOOLS: Anthropic.Tool[] = [
   {
-    name: 'get_castings',
-    description: 'Fetch open casting opportunities, optionally filtered by location or paid-only.',
+    name: 'add_calendar_event',
+    description: 'Add an event to the talent\'s in-app calendar: an audition, callback, shoot day, self-tape session or personal plan. Use the user\'s local time. A reminder fires automatically before it.',
     input_schema: {
       type: 'object',
       properties: {
-        location: { type: 'string', description: 'City or region filter' },
-        paid_only: { type: 'boolean', description: 'Only return paid roles' },
+        title: { type: 'string', description: 'Short title, in the user\'s language' },
+        start: { type: 'string', description: 'Local date-time YYYY-MM-DDTHH:mm, or YYYY-MM-DD for an all-day event' },
+        kind: { type: 'string', enum: ['audition', 'callback', 'shoot', 'self_tape', 'personal'] },
+        location: { type: 'string' },
+        note: { type: 'string' },
       },
+      required: ['title', 'start', 'kind'],
     },
   },
   {
-    name: 'find_my_matches',
-    description: 'Find casting opportunities that match the user\'s typecast (age, gender, skills, languages, location). Use when the user asks "what fits me" / "best for me" / "מה מתאים לי".',
+    name: 'set_reminder',
+    description: 'Schedule a one-off reminder notification at a specific local time (e.g. "remind me tomorrow at 9 to learn the sides").',
     input_schema: {
       type: 'object',
       properties: {
-        min_score: { type: 'number', description: 'Minimum match score 0-100. Default 60.' },
-        limit: { type: 'number', description: 'Max results. Default 5.' },
+        text: { type: 'string', description: 'What to remind about, in the user\'s language' },
+        at: { type: 'string', description: 'Local date-time YYYY-MM-DDTHH:mm' },
       },
-    },
-  },
-  {
-    name: 'apply_to_casting',
-    description: 'Submit an application to a specific casting on behalf of the user.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        casting_id: { type: 'string' },
-        message: { type: 'string', description: 'Short motivation note (1-3 sentences).' },
-      },
-      required: ['casting_id', 'message'],
+      required: ['text', 'at'],
     },
   },
   {
     name: 'block_calendar',
-    description: 'Block a date range on the user calendar (self-tape day, vacation, etc).',
+    description: 'Mark days as busy (or available) so casting pros see the talent\'s availability.',
     input_schema: {
       type: 'object',
       properties: {
-        from: { type: 'string', description: 'ISO date YYYY-MM-DD' },
-        to:   { type: 'string', description: 'ISO date YYYY-MM-DD' },
+        from: { type: 'string', description: 'YYYY-MM-DD' },
+        to: { type: 'string', description: 'YYYY-MM-DD (same as from for one day)' },
+        status: { type: 'string', enum: ['busy', 'available'] },
         reason: { type: 'string' },
       },
-      required: ['from', 'to'],
-    },
-  },
-  {
-    name: 'suggest_typecast_update',
-    description: 'Suggest a typecast field the user should add or refine, based on conversation context.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        field: { type: 'string', description: 'e.g. accents, voiceType, unionStatus' },
-        suggestion: { type: 'string' },
-        reason: { type: 'string' },
-      },
-      required: ['field', 'suggestion'],
+      required: ['from', 'to', 'status'],
     },
   },
 ]
@@ -198,11 +184,20 @@ Give specific, actionable, kind feedback. Reference concrete craft elements: bre
 Keep responses under 4 sentences. Respond in the user's language.${profileBlock}`
   }
 
-  return `You are Aria, a smart and concise AI casting agent for ${b.userName || 'a talent'}.
-You help manage casting opportunities, callbacks, negotiations, scheduling, and career strategy.
-You can call tools to fetch real castings, find matches based on the user's typecast, submit applications, or block calendar dates.
-Be warm but professional. Keep responses short (1-3 sentences max).
-Respond in the same language the user writes in.${profileBlock}`
+  const lang = b.lang === 'en' ? 'English' : 'Hebrew'
+  return `You are Aria, the personal manager inside CastIt for ${b.userName || 'an actor'}.
+Your job is to keep their acting career organized: track every audition, self-tape deadline, callback, hold and offer; plan their week; and make sure nothing slips.
+
+How you work:
+- Ground every answer in the briefing below. It is the live state of their auditions and calendar. Never invent auditions, dates, castings or replies from casting directors; if something isn't in the briefing, say you don't see it.
+- When they mention a date (an audition, callback, shoot, class, or anything that blocks their time), add it to the calendar with add_calendar_event. When they ask to be reminded, use set_reminder. When they say they're unavailable or free on certain days, use block_calendar. Convert relative dates ("next Tuesday", "מחר") using the current time in the briefing.
+- Whenever you call a tool, also write one short sentence saying what you added.
+- When asked what's next, lead with what is urgent: deadlines within 48 hours, pending availability checks and offers, then upcoming callbacks.
+- For prep questions, give concrete, practical advice (self-tape setup, slate, learning sides, what to wear to a callback).
+- Be warm, direct and brief: 1-4 short sentences or a tight list. Write in ${lang} unless the user writes in another language.${profileBlock}
+
+Briefing:
+${b.briefing || '(no data yet)'}`
 }
 
 export async function POST(req: Request) {
@@ -240,20 +235,29 @@ export async function POST(req: Request) {
       })
     }
     return Response.json({
-      text: "On it. I'll update you the moment something changes.",
+      text: body.lang === 'en'
+        ? "Aria isn't connected yet (no ANTHROPIC_API_KEY on the server). Your calendar and reminders still work."
+        : 'Aria עדיין לא מחוברת (חסר ANTHROPIC_API_KEY בשרת). היומן והתזכורות עובדים גם בלעדיה.',
     })
   }
 
   const client = new Anthropic({ apiKey })
 
   try {
+    const isScene = body.mode === 'scene_partner' || body.mode === 'custom_scene'
     const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: body.mode === 'scene_partner' ? 220 : body.mode === 'custom_scene' ? 600 : 512,
-      tools: body.mode === 'scene_partner' || body.mode === 'custom_scene' ? undefined : TOOLS,
+      model: 'claude-opus-5-5',
+      max_tokens: isScene ? 8000 : 16000,
+      // Scene partner / coach replies must be fast; the manager gets more room to reason.
+      output_config: { effort: body.mode === 'agent' || !body.mode ? 'medium' : 'low' },
+      tools: body.mode === 'agent' || !body.mode ? TOOLS : undefined,
       system: buildSystemPrompt(body),
       messages: body.messages,
     })
+
+    if (response.stop_reason === 'refusal') {
+      return Response.json({ text: body.lang === 'en' ? "I can't help with that one." : 'בזה אני לא יכולה לעזור.', toolCalls: [] })
+    }
 
     const text = response.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')

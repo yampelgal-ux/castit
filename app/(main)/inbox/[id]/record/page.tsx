@@ -1,11 +1,11 @@
 "use client";
+import { compressVideo, MAX_TAPE_SECONDS } from "@/lib/video-compress";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Video, Circle, Square, RotateCcw, Send, X, AlertCircle,
-  CheckCircle2, ScrollText, Clock, Camera, Wand2, Loader2, Sparkles,
-  Upload, FileVideo,
+  Video, Circle, Square, RotateCcw, Send, AlertCircle, CheckCircle2, ScrollText,
+  Camera, Wand2, Loader2, Sparkles, Upload, FileVideo, SwitchCamera, ChevronDown, X,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import {
@@ -16,92 +16,56 @@ import { saveTapeVideo, newTapeKey } from "@/lib/tape-storage";
 import { SidesFileViewer } from "@/components/SidesFileInput";
 import { loadSidesFile } from "@/lib/sides-storage";
 import { useT } from "@/lib/i18n";
+import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
-type RecState = "idle" | "countdown" | "recording" | "review";
+// Self-tape flow: choose (upload a file or record here) → record → review → send.
+// The camera only turns on when the talent chooses to record, and the preview
+// sits in a framed box with the sides and controls around it, never full-screen.
+type Mode = "choose" | "camera" | "countdown" | "recording" | "review" | "sending" | "sent";
+type Take = { url: string; blob: Blob; duration: number; uploaded?: boolean; filename?: string };
 
-const MAX_SEC = 120; // 2 min cap for a self-tape
+const MAX_SEC = 180; // 3 min cap for an in-app take
+const MAX_FILE = 500 * 1024 * 1024;
 
 export default function SelfTapeStudioPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { t } = useT();
+  const { t, lang, dir } = useT();
+  const L = (he: string, en: string) => (lang === "he" ? he : en);
 
   const [sub, setSub] = useState<Submission | null>(null);
   const [role, setRole] = useState<Role | null>(null);
   const [project, setProject] = useState<Project | null>(null);
 
-  const [state, setState] = useState<RecState>("idle");
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [permError, setPermError] = useState<string | null>(null);
+  const [mode, setMode] = useState<Mode>("choose");
+  const [facing, setFacing] = useState<"user" | "environment">("user");
+  const [camError, setCamError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(3);
   const [elapsed, setElapsed] = useState(0);
-  const [takes, setTakes] = useState<{ url: string; blob: Blob; duration: number; uploaded?: boolean; filename?: string }[]>([]);
-  const [selectedTake, setSelectedTake] = useState(0);
+  const [takes, setTakes] = useState<Take[]>([]);
+  const [selected, setSelected] = useState(0);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [reading, setReading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [sendResult, setSendResult] = useState<"cloud" | "local" | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [shrink, setShrink] = useState<number | null>(null);
   const [showSides, setShowSides] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
 
-  // Aria pre-recording coaching
   const [coaching, setCoaching] = useState<string | null>(null);
   const [coachingOpen, setCoachingOpen] = useState(false);
   const [coachingLoading, setCoachingLoading] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const reviewRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const elapsedRef = useRef(0);
   const tickRef = useRef<number | null>(null);
-  const uploadInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const phoneCamInputRef = useRef<HTMLInputElement>(null);
 
-  // Read duration from a video file via metadata
-  function getVideoDuration(file: File): Promise<number> {
-    return new Promise((resolve) => {
-      const v = document.createElement("video");
-      v.preload = "metadata";
-      v.muted = true;
-      const url = URL.createObjectURL(file);
-      v.onloadedmetadata = () => {
-        const d = Math.round(v.duration || 0);
-        URL.revokeObjectURL(url);
-        resolve(d || 0);
-      };
-      v.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
-      v.src = url;
-    });
-  }
-
-  async function handleFileUpload(file: File) {
-    setUploadError(null);
-    if (!file.type.startsWith("video/")) {
-      setUploadError(t("rec.errVideoOnly"));
-      return;
-    }
-    // Cap at 500MB to keep IDB happy
-    const MAX = 500 * 1024 * 1024;
-    if (file.size > MAX) {
-      setUploadError(t("rec.errTooBig"));
-      return;
-    }
-    setUploading(true);
-    try {
-      const duration = await getVideoDuration(file);
-      const url = URL.createObjectURL(file);
-      setTakes((prev) => [...prev, { url, blob: file, duration, uploaded: true, filename: file.name }]);
-      setSelectedTake(takes.length); // newest take
-      setState("review");
-      // Stop any live camera preview to save resources
-      stream?.getTracks().forEach((t) => t.stop());
-    } catch (e) {
-      setUploadError(e instanceof Error ? e.message : "Upload failed");
-    } finally {
-      setUploading(false);
-    }
-  }
-
-  // Load submission + role + project
   useEffect(() => {
     const s = getSubmission(id);
     setSub(s ?? null);
@@ -112,159 +76,179 @@ export default function SelfTapeStudioPage() {
     }
   }, [id]);
 
-  // Get camera + mic on mount
-  useEffect(() => {
-    (async () => {
-      try {
-        const s = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user", width: { ideal: 1080 }, height: { ideal: 1920 } },
-          audio: true,
-        });
-        setStream(s);
-        if (videoRef.current) {
-          videoRef.current.srcObject = s;
-        }
-      } catch (e: any) {
-        setPermError(e?.message || "Camera permission denied");
-      }
-    })();
-    return () => {
-      stream?.getTracks().forEach((t) => t.stop());
-      if (tickRef.current) cancelAnimationFrame(tickRef.current);
-    };
-    // eslint-disable-next-line
+  // Always release the camera when leaving the page.
+  useEffect(() => () => {
+    stopStream();
+    if (tickRef.current) cancelAnimationFrame(tickRef.current);
   }, []);
 
+  function stopStream() {
+    streamRef.current?.getTracks().forEach((tr) => tr.stop());
+    streamRef.current = null;
+  }
+
+  async function openCamera(face = facing) {
+    setCamError(null);
+    stopStream();
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: face, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: true,
+      });
+      streamRef.current = s;
+      setMode("camera");
+      // The <video> mounts with the camera mode; attach on the next frame.
+      requestAnimationFrame(() => { if (videoRef.current) videoRef.current.srcObject = s; });
+    } catch {
+      setCamError(L(
+        "אין גישה למצלמה. אשרו מצלמה ומיקרופון בהגדרות הדפדפן, או העלו קובץ שצילמתם.",
+        "No camera access. Allow camera and microphone in the browser settings, or upload a file you recorded."
+      ));
+      setMode("choose");
+    }
+  }
+
+  function flipCamera() {
+    const next = facing === "user" ? "environment" : "user";
+    setFacing(next);
+    void openCamera(next);
+  }
+
   function startCountdown() {
+    haptic("medium");
     setCountdown(3);
-    setState("countdown");
+    setMode("countdown");
     let n = 3;
     const i = setInterval(() => {
       n -= 1;
-      if (n <= 0) {
-        clearInterval(i);
-        startRecording();
-      } else {
-        setCountdown(n);
-      }
+      if (n <= 0) { clearInterval(i); startRecording(); }
+      else setCountdown(n);
     }, 1000);
   }
 
   function startRecording() {
+    const stream = streamRef.current;
     if (!stream) return;
     chunksRef.current = [];
-    const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
-      ? "video/webm;codecs=vp9,opus"
-      : "video/webm";
-    const rec = new MediaRecorder(stream, { mimeType: mime });
+    const mime = ["video/mp4", "video/webm;codecs=vp9,opus", "video/webm"].find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
+    // 720p at ~2.5Mbps: plenty for a self-tape, and keeps uploads small.
+    const rec = new MediaRecorder(stream, { ...(mime ? { mimeType: mime } : {}), videoBitsPerSecond: 2_500_000 });
     rec.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
     rec.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: mime });
-      const url = URL.createObjectURL(blob);
-      setTakes((prev) => [...prev, { url, blob, duration: elapsed }]);
-      setSelectedTake((prev) => takes.length); // newest take
-      setState("review");
+      const blob = new Blob(chunksRef.current, { type: rec.mimeType || "video/webm" });
+      addTake({ url: URL.createObjectURL(blob), blob, duration: elapsedRef.current });
     };
-    rec.start();
+    rec.start(1000);
     recorderRef.current = rec;
+    elapsedRef.current = 0;
     setElapsed(0);
-    setState("recording");
-
+    setMode("recording");
     const startedAt = performance.now();
-    function tick() {
+    const tick = () => {
       const sec = Math.floor((performance.now() - startedAt) / 1000);
+      elapsedRef.current = sec;
       setElapsed(sec);
-      if (sec >= MAX_SEC) {
-        stopRecording();
-        return;
-      }
+      if (sec >= MAX_SEC) { stopRecording(); return; }
       tickRef.current = requestAnimationFrame(tick);
-    }
+    };
     tickRef.current = requestAnimationFrame(tick);
   }
 
   function stopRecording() {
+    haptic("light");
     if (tickRef.current) cancelAnimationFrame(tickRef.current);
-    if (recorderRef.current && recorderRef.current.state !== "inactive") {
-      recorderRef.current.stop();
+    if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
+  }
+
+  function addTake(take: Take) {
+    setTakes((prev) => {
+      setSelected(prev.length);
+      return [...prev, take];
+    });
+    stopStream();
+    setMode("review");
+  }
+
+  function getVideoDuration(file: Blob): Promise<number> {
+    return new Promise((resolve) => {
+      const v = document.createElement("video");
+      v.preload = "metadata";
+      v.muted = true;
+      const url = URL.createObjectURL(file);
+      v.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(Math.round(v.duration || 0)); };
+      v.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+      v.src = url;
+    });
+  }
+
+  async function handleFile(file: File) {
+    setFileError(null);
+    if (!file.type.startsWith("video/")) { setFileError(t("rec.errVideoOnly")); return; }
+    if (file.size > MAX_FILE) { setFileError(t("rec.errTooBig")); return; }
+    setReading(true);
+    try {
+      const duration = await getVideoDuration(file);
+      if (duration > MAX_TAPE_SECONDS) {
+        setFileError(L(`הסרטון ארוך מ-${MAX_TAPE_SECONDS / 60} דקות. כדאי לקצר אותו ולנסות שוב.`, `The video is longer than ${MAX_TAPE_SECONDS / 60} minutes. Trim it and try again.`));
+        return;
+      }
+      addTake({ url: URL.createObjectURL(file), blob: file, duration, uploaded: true, filename: file.name });
+    } finally {
+      setReading(false);
     }
   }
 
-  function retake() {
-    setState("idle");
-    setElapsed(0);
-  }
-
-  async function useTake() {
-    if (!sub || !role || takes.length === 0) return;
-    setSubmitting(true);
-    const take = takes[selectedTake];
+  async function send() {
+    if (!sub || takes.length === 0) return;
+    const take = takes[selected];
+    setSendError(null);
+    setMode("sending");
     const blobKey = newTapeKey(sub.id);
     try {
-      await saveTapeVideo(blobKey, take.blob);
+      // Files from the gallery are often 4K: shrink them first (recorded takes already are small).
+      const blob = take.uploaded ? await compressVideo(take.blob, { onProgress: (p) => setShrink(p) }) : take.blob;
+      setShrink(null);
+      const where = await saveTapeVideo(blobKey, blob);
+      addTape(sub.id, {
+        videoUrl: take.url,
+        tapeBlobKey: blobKey,
+        note: take.uploaded
+          ? `Uploaded${take.filename ? `: ${take.filename}` : ""} · ${formatTime(take.duration)}`
+          : `Self-tape recorded in studio · ${formatTime(take.duration)}`,
+      });
+      setSendResult(where);
+      setMode("sent");
+      haptic("success");
     } catch (e) {
-      console.error("save tape video failed", e);
+      setSendError(e instanceof Error ? e.message : L("השליחה נכשלה. נסו שוב.", "Sending failed. Try again."));
+      setMode("review");
+      haptic("error");
     }
-    addTape(sub.id, {
-      videoUrl: take.url,
-      tapeBlobKey: blobKey,
-      note: take.uploaded
-        ? `Uploaded${take.filename ? `: ${take.filename}` : ""} — ${formatTime(take.duration)}`
-        : `Self-tape recorded in studio — ${formatTime(take.duration)}`,
-    });
-
-    // No automatic AI scoring sent to the pro — that's the pro's call.
-    // The talent's tape goes straight to the pro's review queue.
-    router.replace("/inbox");
   }
 
-  // Sends the role's sides (text + file) to the Coach for full practice
   async function practiceWithAria() {
     if (!role || !project) return;
-    const payload: {
-      title: string;
-      context?: string;
-      sides?: string;
-      imageBase64?: string;
-      imageMediaType?: string;
-      fileText?: string;
-    } = {
+    const payload: { title: string; context?: string; sides?: string; imageBase64?: string; imageMediaType?: string; fileText?: string } = {
       title: `${role.name} · ${project.title}`,
       context: role.description,
       sides: role.sides,
     };
-
-    // If a sidesFile is attached, hydrate it too
     if (role.sidesFile) {
       try {
         const blob = await loadSidesFile(role.sidesFile.blobKey);
-        if (blob) {
-          if (blob.type.startsWith("image/")) {
-            // Convert to base64 for Aria vision parsing
-            const buf = await blob.arrayBuffer();
-            const bytes = new Uint8Array(buf);
-            let bin = "";
-            const chunk = 0x8000;
-            for (let i = 0; i < bytes.length; i += chunk) {
-              bin += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
-            }
-            payload.imageBase64 = btoa(bin);
-            const mt = blob.type;
-            if (mt === "image/png" || mt === "image/webp" || mt === "image/jpeg") {
-              payload.imageMediaType = mt;
-            } else {
-              payload.imageMediaType = "image/jpeg";
-            }
-          } else if (blob.type === "text/plain" || role.sidesFile.name.endsWith(".txt")) {
-            payload.fileText = await blob.text();
-          }
-          // PDF/DOC — Aria can't directly read those; we leave just the text sides
+        if (blob?.type.startsWith("image/")) {
+          const bytes = new Uint8Array(await blob.arrayBuffer());
+          let bin = "";
+          for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + 0x8000)));
+          payload.imageBase64 = btoa(bin);
+          payload.imageMediaType = ["image/png", "image/webp", "image/jpeg"].includes(blob.type) ? blob.type : "image/jpeg";
+        } else if (blob && (blob.type === "text/plain" || role.sidesFile.name.endsWith(".txt"))) {
+          payload.fileText = await blob.text();
         }
       } catch (e) {
         console.warn("could not hydrate sides file for Aria:", e);
       }
     }
-
     sessionStorage.setItem("castit_coach_incoming_scene", JSON.stringify(payload));
     router.push("/studio/coach");
   }
@@ -285,407 +269,248 @@ export default function SelfTapeStudioPage() {
           mode: "coach",
           messages: [{
             role: "user",
-            content: `I'm about to record a self-tape for this role. Give me 3 specific direction notes — intent, physicality, and one craft tip (subtext / pace / button). Be concrete, not generic. Match the language of the sides.\n\n${context}`,
+            content: `I'm about to record a self-tape for this role. Give me 3 specific direction notes — intent, physicality, and one craft tip (subtext / pace / button). Be concrete, not generic. Answer in ${lang === "he" ? "Hebrew" : "English"}.\n\n${context}`,
           }],
         }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        setCoaching(data.text ?? null);
-      }
+      if (res.ok) setCoaching((await res.json()).text ?? null);
     } finally {
       setCoachingLoading(false);
     }
-  }
-
-  if (permError) {
-    return (
-      <div className="min-h-dvh bg-bg">
-        <Header back title={t("rec.studio")} />
-        <div className="px-6 pt-10 text-center">
-          <AlertCircle className="w-12 h-12 text-danger mx-auto" />
-          <h2 className="font-display text-xl mt-4">{t("rec.cameraOff")}</h2>
-          <p className="text-sm text-text-muted mt-2 max-w-xs mx-auto">{permError}</p>
-          <p className="text-xs text-text-subtle mt-4 max-w-xs mx-auto">
-            {t("rec.cameraOffDesc")}
-          </p>
-
-          {/* Camera + gallery options — work even without camera permission */}
-          <div className="mt-6 mx-auto max-w-xs space-y-2">
-            <button
-              onClick={() => cameraInputRef.current?.click()}
-              disabled={uploading}
-              className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {uploading ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> {t("rec.loading")}</>
-              ) : (
-                <><Camera className="w-4 h-4" /> {t("rec.phoneCam")}</>
-              )}
-            </button>
-            <button
-              onClick={() => uploadInputRef.current?.click()}
-              disabled={uploading}
-              className="w-full h-12 rounded-2xl bg-bg-elevated border border-border text-text font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <Upload className="w-4 h-4" /> {t("rec.pickGallery")}
-            </button>
-          </div>
-          <p className="text-[11px] text-text-subtle mt-3">
-            {t("rec.shootWith")}
-          </p>
-
-          {uploadError && (
-            <div className="mt-3 max-w-xs mx-auto p-3 rounded-xl bg-danger/10 border border-danger/30 text-xs text-danger text-right">
-              {uploadError}
-            </div>
-          )}
-
-          <input
-            ref={cameraInputRef}
-            type="file"
-            accept="video/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) handleFileUpload(f);
-              e.target.value = "";
-            }}
-          />
-          <input
-            ref={uploadInputRef}
-            type="file"
-            accept="video/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) handleFileUpload(f);
-              e.target.value = "";
-            }}
-          />
-        </div>
-      </div>
-    );
   }
 
   if (!sub || !role || !project) {
     return (
       <div className="min-h-dvh bg-bg">
         <Header back title={t("rec.studio")} />
-        <div className="px-6 pt-10 text-center text-text-muted text-sm">Audition not found.</div>
+        <div className="px-6 pt-10 text-center text-text-muted text-sm">{L("האודישן לא נמצא.", "Audition not found.")}</div>
       </div>
     );
   }
 
+  const hasSides = !!(role.sides || role.selfTapeInstructions || role.sidesFile);
+  const live = mode === "camera" || mode === "countdown" || mode === "recording";
+  const take = takes[selected];
+
   return (
-    <div className="min-h-dvh bg-black text-white">
-      <div className="relative h-dvh w-full overflow-hidden">
-        {/* Live preview */}
-        {state !== "review" && (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ transform: "scaleX(-1)" /* mirror selfie */ }}
-          />
-        )}
+    <div className="min-h-dvh bg-bg" dir={dir}>
+      <Header back title={t("rec.studio")} />
 
-        {/* Take playback in review state */}
-        {state === "review" && takes[selectedTake] && (
-          <video
-            ref={reviewRef}
-            src={takes[selectedTake].url}
-            autoPlay
-            controls
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover bg-black"
-          />
-        )}
-
-        {/* Top bar */}
-        <div className="absolute top-0 inset-x-0 flex items-center justify-between p-4 z-10 bg-gradient-to-b from-black/70 to-transparent">
-          <button onClick={() => router.back()} className="w-9 h-9 rounded-full bg-black/40 grid place-items-center">
-            <X className="w-5 h-5" />
-          </button>
-          <div className="text-center">
-            <div className="text-[10px] uppercase tracking-widest opacity-70">{project.title}</div>
-            <div className="text-sm font-semibold">{role.name}</div>
+      <div className="px-4 pt-3 pb-10 space-y-4">
+        {/* Role card */}
+        <div className="sheet rounded-xl p-3 flex items-center gap-3">
+          <span className="w-11 h-11 rounded-md clapper shrink-0" aria-hidden />
+          <div className="min-w-0">
+            <div className="text-xs text-text-muted truncate">{project.title}</div>
+            <div className="font-display text-lg leading-tight truncate">{role.name}</div>
           </div>
-          <button
-            onClick={() => setShowSides(!showSides)}
-            className={cn(
-              "w-9 h-9 rounded-full grid place-items-center",
-              showSides ? "bg-gold text-bg" : "bg-black/40 text-white"
-            )}
-          >
-            <ScrollText className="w-4 h-4" />
-          </button>
         </div>
 
-        {/* Framing guide (rule of thirds) */}
-        {state !== "review" && (
-          <div className="absolute inset-0 pointer-events-none z-0">
-            <div className="absolute top-0 bottom-0 left-1/3 border-l border-white/15" />
-            <div className="absolute top-0 bottom-0 right-1/3 border-r border-white/15" />
-            <div className="absolute left-0 right-0 top-1/3 border-t border-white/15" />
-            <div className="absolute left-0 right-0 bottom-1/3 border-b border-white/15" />
-            <div className="absolute inset-x-0 top-[15%] flex justify-center">
-              <div className="text-[10px] uppercase tracking-widest text-white/40 bg-black/30 px-2 py-0.5 rounded-full">
-                {t("rec.headHere")}
+        {/* ── Choose ── */}
+        {mode === "choose" && (
+          <div className="space-y-3">
+            <h2 className="font-display text-xl">{L("איך תרצו לשלוח את הטייפ?", "How do you want to send your tape?")}</h2>
+
+            <label
+              htmlFor="tape-file"
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); }}
+              className={cn(
+                "block rounded-xl border-2 border-dashed p-5 text-center cursor-pointer transition-colors",
+                dragOver ? "border-border-strong bg-hi-soft" : "border-border-strong/40 bg-bg-elevated"
+              )}
+            >
+              <div className="w-14 h-14 mx-auto rounded-full bg-hi grid place-items-center border-2 border-border-strong">
+                {reading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Upload className="w-6 h-6" />}
               </div>
+              <div className="font-display text-lg mt-3">{L("העלאת קובץ וידאו", "Upload a video file")}</div>
+              <div className="text-sm text-text-muted mt-1">{L("בחרו מהגלריה או מהקבצים, או גררו לכאן", "Pick from your gallery or files, or drop it here")}</div>
+              <div className="text-xs text-text-subtle mt-2">MP4 · MOV · WEBM · {L("עד 500MB", "up to 500MB")}</div>
+            </label>
+            <input id="tape-file" ref={fileInputRef} type="file" accept="video/*" className="sr-only"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
+
+            <div className="grid grid-cols-2 gap-3">
+              <button onClick={() => openCamera()} className="h-24 rounded-xl border-2 border-border-strong bg-bg-elevated flex flex-col items-center justify-center gap-1.5 font-semibold">
+                <Video className="w-6 h-6" aria-hidden /> {L("הקלטה כאן", "Record here")}
+              </button>
+              <button onClick={() => phoneCamInputRef.current?.click()} className="h-24 rounded-xl border-2 border-border-strong bg-bg-elevated flex flex-col items-center justify-center gap-1.5 font-semibold">
+                <Camera className="w-6 h-6" aria-hidden /> {t("rec.phoneCamShort")}
+              </button>
             </div>
+            <input ref={phoneCamInputRef} type="file" accept="video/*" capture="user" className="sr-only" tabIndex={-1}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
+
+            {(fileError || camError) && (
+              <div role="alert" className="flex gap-2 p-3 rounded-lg bg-terra/10 border border-terra/40 text-sm text-terra">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> {fileError || camError}
+              </div>
+            )}
+            {takes.length > 0 && (
+              <button onClick={() => setMode("review")} className="w-full h-11 rounded-lg border border-border text-sm font-semibold">
+                {L(`חזרה לטייקים (${takes.length})`, `Back to takes (${takes.length})`)}
+              </button>
+            )}
           </div>
         )}
 
-        {/* Sides overlay (top sheet, semi-transparent) */}
-        <AnimatePresence>
-          {showSides && state !== "review" && (role.sides || role.selfTapeInstructions) && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="absolute top-20 left-4 right-4 z-10 rounded-2xl bg-black/70 backdrop-blur p-3 max-h-[40dvh] overflow-y-auto border border-white/10"
-            >
-              {role.sidesFile && (
-                <div className="mb-3">
-                  <SidesFileViewer file={role.sidesFile} />
+        {/* ── Camera / recording ── */}
+        {live && (
+          <div className="space-y-3">
+            <div className="relative mx-auto w-full max-w-[360px] aspect-[3/4] max-h-[52dvh] rounded-xl overflow-hidden bg-black border-2 border-border-strong">
+              <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover"
+                style={{ transform: facing === "user" ? "scaleX(-1)" : undefined }} />
+              {/* Framing guide */}
+              <div className="absolute inset-x-0 top-[12%] flex justify-center pointer-events-none">
+                <span className="text-xs text-white/70 bg-black/40 px-2 py-0.5 rounded-full">{t("rec.headHere")}</span>
+              </div>
+              {mode === "recording" && (
+                <div className="absolute top-2 inset-x-0 flex justify-center">
+                  <span className="flex items-center gap-2 bg-terra px-3 py-1 rounded-full text-white text-xs font-semibold tnum" role="status">
+                    <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> REC {formatTime(elapsed)} / {formatTime(MAX_SEC)}
+                  </span>
                 </div>
               )}
-              {role.selfTapeInstructions && (
-                <div className="text-[10px] uppercase tracking-widest text-gold mb-1">{t("rec.instructions")}</div>
-              )}
-              {role.selfTapeInstructions && <p className="text-xs leading-relaxed mb-3">{role.selfTapeInstructions}</p>}
-              {role.sides && (
-                <>
-                  <div className="text-[10px] uppercase tracking-widest text-gold mb-1">{t("rec.sides")}</div>
-                  <pre className="text-[11px] leading-relaxed whitespace-pre-wrap font-mono">{role.sides}</pre>
-                </>
-              )}
+              <AnimatePresence>
+                {mode === "countdown" && (
+                  <motion.div key={countdown} initial={{ scale: 1.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }}
+                    className="absolute inset-0 grid place-items-center bg-black/30" aria-live="assertive">
+                    <span className="font-display text-[96px] leading-none text-white">{countdown}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-              {/* Practice with Aria — sends sides to Coach */}
-              {(role.sides || role.sidesFile) && (
-                <button
-                  type="button"
-                  onClick={practiceWithAria}
-                  className="mt-3 w-full h-10 rounded-xl bg-gradient-to-r from-plum/40 to-gold/40 border border-gold/40 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
-                >
-                  <Wand2 className="w-3.5 h-3.5" /> {t("rec.practiceAria")}
+            {mode === "camera" && (
+              <p className="text-center text-sm text-text-muted">{L("סלייט קודם: שם, גובה וסוכנות, ואז הסצנה.", "Slate first: name, height and agency, then the scene.")}</p>
+            )}
+
+            <div className="flex items-center justify-center gap-8">
+              <button onClick={() => { stopStream(); setMode(takes.length ? "review" : "choose"); }} disabled={mode !== "camera"}
+                aria-label={L("סגירת המצלמה", "Close camera")} className="w-12 h-12 rounded-full border-2 border-border-strong grid place-items-center disabled:opacity-30">
+                <X className="w-5 h-5" />
+              </button>
+              {mode === "recording" ? (
+                <button onClick={stopRecording} aria-label={L("עצירת ההקלטה", "Stop recording")}
+                  className="w-20 h-20 rounded-full bg-bg-elevated border-4 border-border-strong grid place-items-center">
+                  <Square className="w-8 h-8 text-terra fill-terra" />
+                </button>
+              ) : (
+                <button onClick={startCountdown} disabled={mode !== "camera"} aria-label={L("התחלת הקלטה", "Start recording")}
+                  className="w-20 h-20 rounded-full bg-terra border-4 border-border-strong grid place-items-center disabled:opacity-60">
+                  <Circle className="w-8 h-8 text-white fill-white" />
                 </button>
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Countdown */}
-        <AnimatePresence>
-          {state === "countdown" && (
-            <motion.div
-              key={countdown}
-              initial={{ scale: 1.6, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 grid place-items-center z-20 pointer-events-none"
-            >
-              <div className="font-display text-[120px] leading-none text-white drop-shadow-2xl">{countdown}</div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Recording indicator */}
-        {state === "recording" && (
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10">
-            <div className="flex items-center gap-2 bg-danger/90 px-3 py-1.5 rounded-full">
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              <span className="text-xs font-semibold tnum">REC · {formatTime(elapsed)} / {formatTime(MAX_SEC)}</span>
+              <button onClick={flipCamera} disabled={mode !== "camera"} aria-label={L("החלפת מצלמה", "Switch camera")}
+                className="w-12 h-12 rounded-full border-2 border-border-strong grid place-items-center disabled:opacity-30">
+                <SwitchCamera className="w-5 h-5" />
+              </button>
             </div>
           </div>
         )}
 
-        {/* Aria coaching panel (collapsible) */}
-        {state === "idle" && (
-          <div className="absolute bottom-44 left-4 right-4 z-10">
-            <AnimatePresence>
-              {coachingOpen && coaching && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="mb-2 rounded-2xl bg-plum/20 backdrop-blur border border-plum/40 p-3 max-h-[35dvh] overflow-y-auto"
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="text-[10px] uppercase tracking-widest text-plum-light font-semibold inline-flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" /> Aria's direction
-                    </div>
-                    <button onClick={() => setCoachingOpen(false)} className="text-white/60">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <p className="text-[11px] leading-relaxed whitespace-pre-wrap">{coaching}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {/* ── Review / send ── */}
+        {(mode === "review" || mode === "sending") && take && (
+          <div className="space-y-3">
+            <video key={take.url} src={take.url} controls playsInline
+              className="mx-auto w-full max-w-[360px] max-h-[52dvh] rounded-xl bg-black border-2 border-border-strong" />
+            {takes.length > 1 && (
+              <div role="radiogroup" aria-label={L("בחירת טייק", "Choose a take")} className="flex gap-2 flex-wrap justify-center">
+                {takes.map((tk, i) => (
+                  <button key={i} role="radio" aria-checked={selected === i} onClick={() => setSelected(i)}
+                    className={cn("h-10 px-3 rounded-full text-sm font-semibold border-2 inline-flex items-center gap-1.5",
+                      selected === i ? "bg-hi text-on-hi border-border-strong" : "border-border")}>
+                    {tk.uploaded && <FileVideo className="w-3.5 h-3.5" aria-hidden />}
+                    {tk.uploaded ? L("קובץ", "File") : L(`טייק ${i + 1}`, `Take ${i + 1}`)} · {formatTime(tk.duration)}
+                  </button>
+                ))}
+              </div>
+            )}
+            {sendError && (
+              <div role="alert" className="flex gap-2 p-3 rounded-lg bg-terra/10 border border-terra/40 text-sm text-terra">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> {sendError}
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <button onClick={() => setMode("choose")} disabled={mode === "sending"}
+                className="h-12 rounded-lg border-2 border-border-strong font-semibold flex items-center justify-center gap-2 disabled:opacity-50">
+                <RotateCcw className="w-4 h-4" aria-hidden /> {t("rec.anotherTake")}
+              </button>
+              <button onClick={send} disabled={mode === "sending"}
+                className="h-12 rounded-lg bg-gold text-on-accent font-semibold flex items-center justify-center gap-2 disabled:opacity-70">
+                {mode === "sending"
+                  ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden /> {shrink !== null ? L(`מכווץ… ${Math.round(shrink * 100)}%`, `Compressing… ${Math.round(shrink * 100)}%`) : L("שולח…", "Sending…")}</>
+                  : <><Send className="w-4 h-4" aria-hidden /> {t("rec.sendTape")}</>}
+              </button>
+            </div>
+          </div>
+        )}
 
-            <button
-              onClick={async () => {
-                if (!coaching) await loadCoaching();
-                setCoachingOpen((o) => !o);
-              }}
-              className="w-full h-9 rounded-full bg-plum/30 backdrop-blur border border-plum/40 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5"
-            >
-              {coachingLoading ? (
-                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("rec.ariaPreparing")}</>
-              ) : coaching ? (
-                <><Wand2 className="w-3.5 h-3.5" /> {coachingOpen ? t("rec.hide") : t("rec.show")} {t("rec.ariaDirections")}</>
-              ) : (
-                <><Wand2 className="w-3.5 h-3.5" /> {t("rec.askAria")}</>
-              )}
+        {/* ── Sent ── */}
+        {mode === "sent" && (
+          <div className="sheet rounded-xl p-6 text-center space-y-3" role="status">
+            <CheckCircle2 className="w-12 h-12 mx-auto text-sage" />
+            <h2 className="font-display text-2xl">{L("הטייפ נשלח!", "Tape sent!")}</h2>
+            <p className="text-sm text-text-muted">
+              {sendResult === "cloud"
+                ? L("המלהק/ת יכול/ה לצפות בו עכשיו. נעדכן אותך כשתהיה תשובה.", "The casting team can watch it now. We'll let you know when they respond.")
+                : L("הטייפ נשמר במכשיר הזה. התחברו לחשבון כדי שיעלה לענן ויגיע למלהק/ת.", "Saved on this device. Sign in so it uploads and reaches the casting team.")}
+            </p>
+            <button onClick={() => router.replace("/inbox")} className="w-full h-12 rounded-lg bg-gold text-on-accent font-semibold">
+              {L("חזרה לאודישנים", "Back to auditions")}
             </button>
           </div>
         )}
 
-        {/* Slate prompt at start */}
-        {state === "idle" && (
-          <div className="absolute bottom-32 left-4 right-4 z-10 rounded-2xl bg-gold/15 backdrop-blur border border-gold/30 p-3 text-center">
-            <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">Slate first</div>
-            <p className="text-xs mt-1">Say your name + height + agent (if any), then go into the scene.</p>
-          </div>
+        {/* ── Sides & Aria (always reachable, below the camera) ── */}
+        {mode !== "sent" && hasSides && (
+          <section className="sheet rounded-xl">
+            <button onClick={() => setShowSides((v) => !v)} aria-expanded={showSides}
+              className="w-full flex items-center justify-between px-4 h-12 font-semibold">
+              <span className="flex items-center gap-2"><ScrollText className="w-4 h-4" aria-hidden /> {L("סיידס והוראות", "Sides & instructions")}</span>
+              <ChevronDown className={cn("w-4 h-4 transition-transform", showSides && "rotate-180")} aria-hidden />
+            </button>
+            {showSides && (
+              <div className="px-4 pb-4 space-y-3 border-t border-border pt-3 max-h-[40dvh] overflow-y-auto">
+                {role.sidesFile && <SidesFileViewer file={role.sidesFile} />}
+                {role.selfTapeInstructions && (
+                  <div>
+                    <div className="text-xs font-bold text-text-muted mb-1">{t("rec.instructions")}</div>
+                    <p className="text-sm leading-relaxed">{role.selfTapeInstructions}</p>
+                  </div>
+                )}
+                {role.sides && (
+                  <div>
+                    <div className="text-xs font-bold text-text-muted mb-1">{t("rec.sides")}</div>
+                    <pre className="text-sm leading-relaxed whitespace-pre-wrap font-sans">{role.sides}</pre>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
         )}
 
-        {/* Bottom controls */}
-        <div className="absolute bottom-0 inset-x-0 p-5 z-10 bg-gradient-to-t from-black/80 to-transparent">
-          {state === "idle" && (
-            <div className="flex items-center justify-center gap-6">
-              {/* Phone camera — opens iOS/Android native camera */}
-              <button
-                onClick={() => cameraInputRef.current?.click()}
-                disabled={uploading}
-                className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
-              >
-                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/30 grid place-items-center">
-                  {uploading ? (
-                    <Loader2 className="w-5 h-5 text-white animate-spin" />
-                  ) : (
-                    <Camera className="w-5 h-5 text-white" />
-                  )}
-                </div>
-                <span className="text-[10px] text-white/80">{t("rec.phoneCamShort")}</span>
+        {mode !== "sent" && (
+          <div className="grid gap-2">
+            <button
+              onClick={async () => { if (!coaching) await loadCoaching(); setCoachingOpen((o) => !o); }}
+              aria-expanded={coachingOpen}
+              className="w-full h-11 rounded-lg border border-border bg-bg-elevated text-sm font-semibold inline-flex items-center justify-center gap-2">
+              {coachingLoading
+                ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden /> {t("rec.ariaPreparing")}</>
+                : <><Sparkles className="w-4 h-4" aria-hidden /> {coaching ? `${coachingOpen ? t("rec.hide") : t("rec.show")} ${t("rec.ariaDirections")}` : t("rec.askAria")}</>}
+            </button>
+            {coachingOpen && coaching && (
+              <div className="rounded-lg bg-hi-soft border border-border p-3 text-sm leading-relaxed whitespace-pre-wrap">{coaching}</div>
+            )}
+            {(role.sides || role.sidesFile) && (
+              <button onClick={practiceWithAria} className="w-full h-11 rounded-lg border border-border text-sm font-semibold inline-flex items-center justify-center gap-2">
+                <Wand2 className="w-4 h-4" aria-hidden /> {t("rec.practiceAria")}
               </button>
-
-              {/* Main in-studio record button */}
-              <button
-                onClick={startCountdown}
-                className="w-20 h-20 rounded-full bg-danger grid place-items-center active:scale-95 transition-transform"
-              >
-                <Circle className="w-8 h-8 text-white fill-white" />
-              </button>
-
-              {/* Gallery / files — opens native picker */}
-              <button
-                onClick={() => uploadInputRef.current?.click()}
-                disabled={uploading}
-                className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
-              >
-                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/30 grid place-items-center">
-                  {uploading ? (
-                    <Loader2 className="w-5 h-5 text-white animate-spin" />
-                  ) : (
-                    <Upload className="w-5 h-5 text-white" />
-                  )}
-                </div>
-                <span className="text-[10px] text-white/80">{t("rec.galleryShort")}</span>
-              </button>
-
-              {/* Hidden inputs */}
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="video/*"
-                capture="environment"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handleFileUpload(f);
-                  e.target.value = "";
-                }}
-              />
-              <input
-                ref={uploadInputRef}
-                type="file"
-                accept="video/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handleFileUpload(f);
-                  e.target.value = "";
-                }}
-              />
-            </div>
-          )}
-
-          {/* Upload error toast */}
-          {state === "idle" && uploadError && (
-            <div className="absolute bottom-32 left-4 right-4 z-20 p-3 rounded-2xl bg-danger/90 backdrop-blur text-white text-xs text-center">
-              {uploadError}
-            </div>
-          )}
-
-          {state === "recording" && (
-            <div className="flex items-center justify-center">
-              <button
-                onClick={stopRecording}
-                className="w-20 h-20 rounded-full bg-white grid place-items-center"
-              >
-                <Square className="w-8 h-8 text-danger fill-danger" />
-              </button>
-            </div>
-          )}
-
-          {state === "review" && (
-            <div className="space-y-3">
-              {/* Takes selector */}
-              {takes.length > 1 && (
-                <div className="flex gap-1.5 justify-center">
-                  {takes.map((tk, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setSelectedTake(i)}
-                      className={cn(
-                        "px-3 h-8 rounded-full text-[11px] font-semibold border inline-flex items-center gap-1.5",
-                        selectedTake === i ? "bg-gold text-bg border-gold" : "bg-black/50 text-white border-white/20"
-                      )}
-                    >
-                      {tk.uploaded && <FileVideo className="w-3 h-3" />}
-                      {tk.uploaded ? "Uploaded" : `Take ${i + 1}`} · {formatTime(tk.duration)}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={retake}
-                  disabled={submitting}
-                  className="h-13 py-3 rounded-2xl bg-white/15 backdrop-blur border border-white/20 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  <RotateCcw className="w-4 h-4" /> {t("rec.anotherTake")}
-                </button>
-                <button
-                  onClick={useTake}
-                  disabled={submitting}
-                  className="h-13 py-3 rounded-2xl bg-gold text-bg font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
-                >
-                  {submitting ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> {t("rec.saving")}</>
-                  ) : (
-                    <><Send className="w-4 h-4" /> {t("rec.sendTape")}</>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

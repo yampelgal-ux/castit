@@ -6,7 +6,9 @@ import {
   CheckCircle2, XCircle, PauseCircle, FileVideo, Calendar, ArrowRight,
   Repeat, CalendarCheck, FileSignature, PartyPopper, Undo2, Send, Clock,
   Wand2, Loader2, MapPin, Users, X as XIcon, Video as VideoIcon,
+  CalendarPlus,
 } from "lucide-react";
+import { addToCalendar, absUrl } from "@/lib/ics";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
@@ -171,7 +173,7 @@ export default function SubmissionPage() {
           <img src={sub.talentPhoto} alt={sub.talentName} className="w-14 h-14 rounded-2xl object-cover" />
           <div className="flex-1 min-w-0">
             <h1 className="font-display text-xl leading-tight truncate">{sub.talentName}</h1>
-            <p className="text-[11px] text-text-muted truncate">For: {role?.name}</p>
+            <p className="text-[0.6875rem] text-text-muted truncate">For: {role?.name}</p>
           </div>
           <StageBadge stage={sub.stage} size="md" />
         </div>
@@ -190,13 +192,13 @@ export default function SubmissionPage() {
         {/* Tape history (round 2, 3...) */}
         {sub.tapes.length > 1 && (
           <details className="rounded-2xl bg-bg-elevated border border-border p-3">
-            <summary className="text-[11px] uppercase tracking-widest text-gold cursor-pointer">
+            <summary className="text-[0.6875rem] uppercase tracking-widest text-gold cursor-pointer">
               Earlier rounds ({sub.tapes.length - 1})
             </summary>
             <div className="mt-3 space-y-2">
               {sub.tapes.slice(0, -1).reverse().map((t) => (
                 <div key={t.round} className="rounded-xl bg-bg border border-border p-3">
-                  <div className="flex items-center gap-2 text-[11px] text-text-muted">
+                  <div className="flex items-center gap-2 text-[0.6875rem] text-text-muted">
                     <FileVideo className="w-3 h-3" /> Round {t.round} · {fmtDate(t.submittedAt)}
                   </div>
                   {t.note && <p className="text-xs mt-1">{t.note}</p>}
@@ -230,12 +232,12 @@ export default function SubmissionPage() {
         {/* Most recent pro → talent message */}
         {sub.proMessage && sub.stage !== "invited" && (
           <div className="rounded-2xl bg-gold/8 border border-gold/20 p-4">
-            <div className="text-[10px] uppercase tracking-widest text-gold mb-1 flex items-center gap-1.5">
+            <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-1 flex items-center gap-1.5">
               <Send className="w-3 h-3" /> Last message to {sub.talentName.split(" ")[0]}
             </div>
             <p className="text-xs leading-relaxed">{sub.proMessage}</p>
-            {sub.shootDates && <p className="text-[11px] text-text-muted mt-2">Shoot: {sub.shootDates}</p>}
-            {sub.payOffered && <p className="text-[11px] text-text-muted">Offer: {sub.payOffered}</p>}
+            {sub.shootDates && <p className="text-[0.6875rem] text-text-muted mt-2">Shoot: {sub.shootDates}</p>}
+            {sub.payOffered && <p className="text-[0.6875rem] text-text-muted">Offer: {sub.payOffered}</p>}
           </div>
         )}
       </div>
@@ -292,7 +294,7 @@ export default function SubmissionPage() {
                           <Users className="w-3.5 h-3.5 text-gold" />
                           <span className="text-xs font-semibold">פרונטלי</span>
                         </div>
-                        <p className="text-[10px] text-text-muted leading-snug">
+                        <p className="text-[0.6875rem] text-text-muted leading-snug">
                           פגישה בסטודיו / חדר ליהוק
                         </p>
                       </button>
@@ -310,7 +312,7 @@ export default function SubmissionPage() {
                           <VideoIcon className="w-3.5 h-3.5 text-gold" />
                           <span className="text-xs font-semibold">Self-tape נוסף</span>
                         </div>
-                        <p className="text-[10px] text-text-muted leading-snug">
+                        <p className="text-[0.6875rem] text-text-muted leading-snug">
                           סבב הקלטה נוסף עם sides חדשים
                         </p>
                       </button>
@@ -370,7 +372,7 @@ export default function SubmissionPage() {
                         onClick={() => setHoldHours(h)}
                         className={cn(
                           "h-9 px-3 rounded-full text-xs font-semibold border",
-                          holdHours === h ? "bg-gold text-bg border-gold" : "bg-bg text-text border-border"
+                          holdHours === h ? "bg-gold text-on-accent border-gold" : "bg-bg text-text border-border"
                         )}
                       >
                         {h === 168 ? "1 week" : h === 24 ? "24h" : `${h}h`}
@@ -380,13 +382,13 @@ export default function SubmissionPage() {
                       onClick={() => setHoldHours(0)}
                       className={cn(
                         "h-9 px-3 rounded-full text-xs font-semibold border",
-                        holdHours === 0 ? "bg-gold text-bg border-gold" : "bg-bg text-text border-border"
+                        holdHours === 0 ? "bg-gold text-on-accent border-gold" : "bg-bg text-text border-border"
                       )}
                     >
                       No timer
                     </button>
                   </div>
-                  <p className="text-[10px] text-text-muted mt-1.5">
+                  <p className="text-[0.6875rem] text-text-muted mt-1.5">
                     The talent is asked to stay available for this window. They see a countdown on their end.
                   </p>
                 </Field>
@@ -466,7 +468,7 @@ export default function SubmissionPage() {
               {iconFor(action.kind)}
               <div>
                 <div className="font-semibold text-sm">{confirmToast(action.kind)}</div>
-                <div className="text-[11px] opacity-80">{sub.talentName} will be notified</div>
+                <div className="text-[0.6875rem] opacity-80">{sub.talentName} will be notified</div>
               </div>
             </div>
           </motion.div>
@@ -499,7 +501,7 @@ function HoldCountdown({ until }: { until: string }) {
         <div className={cn("text-sm font-semibold", expired && "text-gold")}>
           {expired ? "Hold expired — decide now" : "Held — 1st refusal"}
         </div>
-        <div className="text-[11px] text-text-muted">
+        <div className="text-[0.6875rem] text-text-muted">
           {expired
             ? "Extend the timer, move forward, or release the talent."
             : <>Releases in <span className="font-semibold tnum">{hours > 0 ? `${hours}h ` : ""}{mins}m</span></>}
@@ -522,7 +524,7 @@ function InvitedCard({ sub, role, onSimulate }: { sub: Submission; role: Role | 
       </p>
       {sub.inviteMessage && (
         <div className="text-left mt-4 rounded-xl bg-bg/50 border border-border p-3">
-          <div className="text-[10px] uppercase tracking-widest text-gold mb-1">Invite message</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold mb-1">Invite message</div>
           <p className="text-xs leading-relaxed">{sub.inviteMessage}</p>
         </div>
       )}
@@ -539,7 +541,7 @@ function InvitedCard({ sub, role, onSimulate }: { sub: Submission; role: Role | 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-3">
-      <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1">{label}</div>
       {children}
     </div>
   );
@@ -734,12 +736,12 @@ function iconFor(kind: Action["kind"]) {
 }
 function toneClasses(tone: Action["tone"]) {
   switch (tone) {
-    case "success": return "bg-success text-bg";
+    case "success": return "bg-success text-on-accent";
     case "danger":  return "bg-danger text-white";
-    case "sage":    return "bg-sage/80 text-bg";
+    case "sage":    return "bg-sage/80 text-on-accent";
     case "plum":    return "bg-plum text-text";
     case "violet":  return "bg-violet text-white";
-    case "gold":    return "bg-gold text-bg";
+    case "gold":    return "bg-gold text-on-accent";
     case "muted":   return "bg-bg-elevated border border-border text-text";
   }
 }
@@ -760,7 +762,7 @@ function AvailStatusBanner({ sub }: { sub: Submission }) {
       <div className="rounded-2xl bg-success/10 border border-success/30 p-4">
         <div className="flex items-center gap-2 mb-1.5">
           <CheckCircle2 className="w-4 h-4 text-success" />
-          <div className="text-[10px] uppercase tracking-widest text-success font-semibold">Available</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-success font-semibold">Available</div>
         </div>
         <p className="text-xs text-text leading-relaxed">
           {first} confirmed availability{sub.shootDates ? ` for ${sub.shootDates}` : ""}. You can send the offer.
@@ -773,7 +775,7 @@ function AvailStatusBanner({ sub }: { sub: Submission }) {
       <div className="rounded-2xl bg-danger/10 border border-danger/30 p-4">
         <div className="flex items-center gap-2 mb-1.5">
           <XCircle className="w-4 h-4 text-danger" />
-          <div className="text-[10px] uppercase tracking-widest text-danger font-semibold">Not available</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-danger font-semibold">Not available</div>
         </div>
         <p className="text-xs text-text-muted leading-relaxed">
           {first} isn't free{sub.shootDates ? ` for ${sub.shootDates}` : ""}. Consider passing or adjusting dates.
@@ -786,7 +788,7 @@ function AvailStatusBanner({ sub }: { sub: Submission }) {
     <div className="rounded-2xl bg-plum/10 border border-plum/30 p-4">
       <div className="flex items-center gap-2 mb-1.5">
         <Clock className="w-4 h-4 text-plum-light" />
-        <div className="text-[10px] uppercase tracking-widest text-plum-light font-semibold">
+        <div className="text-[0.6875rem] uppercase tracking-widest text-plum-light font-semibold">
           Availability check sent
         </div>
       </div>
@@ -806,7 +808,7 @@ function OfferStatusBanner({ sub }: { sub: Submission }) {
       <div className="rounded-2xl bg-success/10 border border-success/30 p-4">
         <div className="flex items-center gap-2 mb-1.5">
           <CheckCircle2 className="w-4 h-4 text-success" />
-          <div className="text-[10px] uppercase tracking-widest text-success font-semibold">
+          <div className="text-[0.6875rem] uppercase tracking-widest text-success font-semibold">
             Offer accepted
           </div>
         </div>
@@ -821,7 +823,7 @@ function OfferStatusBanner({ sub }: { sub: Submission }) {
     <div className="rounded-2xl bg-violet/10 border border-violet/30 p-4">
       <div className="flex items-center gap-2 mb-1.5">
         <Clock className="w-4 h-4 text-violet" />
-        <div className="text-[10px] uppercase tracking-widest text-violet font-semibold">
+        <div className="text-[0.6875rem] uppercase tracking-widest text-violet font-semibold">
           Offer sent — awaiting response
         </div>
       </div>
@@ -841,7 +843,7 @@ function CallbackStatusBanner({ sub }: { sub: Submission }) {
       <div className="rounded-2xl bg-success/10 border border-success/30 p-4">
         <div className="flex items-center gap-2 mb-1.5">
           <CheckCircle2 className="w-4 h-4 text-success" />
-          <div className="text-[10px] uppercase tracking-widest text-success font-semibold">
+          <div className="text-[0.6875rem] uppercase tracking-widest text-success font-semibold">
             Callback completed
           </div>
         </div>
@@ -851,7 +853,7 @@ function CallbackStatusBanner({ sub }: { sub: Submission }) {
             : "טייפ ה-callback התקבל. כעת אפשר להמשיך ל-Hold / Avail / Offer."}
         </p>
         {sub.callbackOutcome && (
-          <div className="mt-2 pt-2 border-t border-success/20 text-[11px] text-text-muted leading-relaxed">
+          <div className="mt-2 pt-2 border-t border-success/20 text-[0.6875rem] text-text-muted leading-relaxed">
             <span className="text-success font-semibold">הערה: </span>{sub.callbackOutcome}
           </div>
         )}
@@ -865,7 +867,7 @@ function CallbackStatusBanner({ sub }: { sub: Submission }) {
       <div className="rounded-2xl bg-gold/8 border border-gold/30 p-4">
         <div className="flex items-center gap-2 mb-1.5">
           <VideoIcon className="w-4 h-4 text-gold" />
-          <div className="text-[10px] uppercase tracking-widest text-gold font-semibold">
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">
             ממתין לטייפ של {sub.talentName.split(" ")[0]}
           </div>
         </div>
@@ -883,7 +885,7 @@ function CallbackStatusBanner({ sub }: { sub: Submission }) {
     <div className="rounded-2xl bg-plum/10 border border-plum/30 p-4">
       <div className="flex items-center gap-2 mb-1.5">
         <Users className="w-4 h-4 text-plum-light" />
-        <div className="text-[10px] uppercase tracking-widest text-plum-light font-semibold">
+        <div className="text-[0.6875rem] uppercase tracking-widest text-plum-light font-semibold">
           {isPast ? "Callback היה אמור להתקיים" : "Callback פרונטלי מתוזמן"}
         </div>
       </div>
@@ -904,11 +906,19 @@ function CallbackStatusBanner({ sub }: { sub: Submission }) {
               <span>{sub.callbackLocation}</span>
             </div>
           )}
+          {!isPast && (
+            <button
+              onClick={() => addToCalendar([{ uid: `cb_${sub.id}`, title: `קולבק: ${sub.talentName}`, start: sub.callbackScheduledAt!, location: sub.callbackLocation, url: absUrl(location.pathname) }], `קולבק ${sub.talentName}`)}
+              className="mt-1 h-9 px-3 rounded-full border border-border text-xs font-semibold inline-flex items-center gap-1.5"
+            >
+              <CalendarPlus className="w-3.5 h-3.5" aria-hidden /> הוספה ליומן של הטלפון
+            </button>
+          )}
         </div>
       ) : (
         <p className="text-xs text-text-muted">תאריך לא צוין — קבע פגישה והתקדם</p>
       )}
-      <p className="text-[11px] text-gold mt-3 leading-relaxed">
+      <p className="text-[0.6875rem] text-gold mt-3 leading-relaxed">
         ⚡ לא ניתן להעביר ל-Hold / Avail / Offer לפני שהפגישה מסומנת כהושלמה.
       </p>
     </div>
@@ -982,7 +992,7 @@ function AriaDraftButton({
         type="button"
         onClick={generate}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 px-3 h-8 rounded-full bg-plum/15 border border-plum/40 text-plum-light text-[11px] font-semibold disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 px-3 h-8 rounded-full bg-plum/15 border border-plum/40 text-plum-light text-[0.6875rem] font-semibold disabled:opacity-50"
       >
         {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
         Draft with Aria
@@ -997,7 +1007,7 @@ function AriaDraftButton({
           key={t.k}
           type="button"
           onClick={() => setTone(t.k)}
-          className={`text-[10px] px-2 h-6 rounded-full border ${
+          className={`text-[0.6875rem] px-2 h-6 rounded-full border ${
             tone === t.k
               ? "bg-bg-elevated border-plum/40 text-plum-light font-semibold"
               : "bg-transparent border-border text-text-muted"

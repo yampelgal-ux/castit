@@ -120,7 +120,7 @@ export default function ScenePage() {
         <img src={scene.thumbnail} alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/50 to-transparent" />
         <div className="absolute bottom-4 left-5 right-5">
-          <div className="text-[10px] uppercase tracking-[0.25em] text-gold mb-1">{scene.source}</div>
+          <div className="text-[0.6875rem] uppercase tracking-[0.25em] text-gold mb-1">{scene.source}</div>
           <h2 className="font-display text-3xl leading-[0.95] tracking-editorial">{scene.title}</h2>
         </div>
       </div>
@@ -144,8 +144,8 @@ export default function ScenePage() {
             >
               <span className="text-base leading-none">{voiceLabel.emoji}</span>
               <span className="text-xs font-medium">{c.name}{i === 0 && " (you)"}</span>
-              <span className="text-[10px] opacity-70">·</span>
-              <span className="text-[10px]">{toneLabel.emoji}</span>
+              <span className="text-[0.6875rem] opacity-70">·</span>
+              <span className="text-[0.6875rem]">{toneLabel.emoji}</span>
             </button>
           );
         })}
@@ -175,19 +175,19 @@ export default function ScenePage() {
                 <div className="flex items-center gap-2">
                   <span
                     className={cn(
-                      "text-[10px] uppercase tracking-[0.2em] font-semibold",
+                      "text-[0.6875rem] uppercase tracking-[0.2em] font-semibold",
                       line.isYou ? "text-plum-light" : "text-gold"
                     )}
                   >
                     {line.speaker}
                   </span>
                   {line.isYou && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-plum/20 text-plum-light font-semibold">
+                    <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-plum/20 text-plum-light font-semibold">
                       YOU
                     </span>
                   )}
                   {!line.isYou && (
-                    <span className={cn("text-[10px] font-medium", tone.color)}>
+                    <span className={cn("text-[0.6875rem] font-medium", tone.color)}>
                       {tone.emoji} {tone.en}
                     </span>
                   )}
@@ -198,7 +198,7 @@ export default function ScenePage() {
                     className={cn(
                       "p-1.5 rounded-full transition-colors",
                       activeLine === i
-                        ? "bg-gold text-bg"
+                        ? "bg-gold text-on-accent"
                         : "text-text-muted hover:text-gold hover:bg-bg-muted"
                     )}
                   >
@@ -207,7 +207,7 @@ export default function ScenePage() {
                 )}
               </div>
               <p className={cn(
-                "text-[15px] leading-relaxed",
+                "text-[0.9375rem] leading-relaxed",
                 line.isYou ? "font-display italic text-text" : "text-text"
               )}>
                 {line.text}
@@ -236,7 +236,7 @@ export default function ScenePage() {
               "flex-1 h-14 rounded-2xl font-semibold flex items-center justify-center gap-3 transition-all",
               recording
                 ? "bg-terra text-text recording-pulse"
-                : "bg-gold text-bg hover:bg-gold-light"
+                : "bg-gold text-on-accent hover:bg-gold-light"
             )}
           >
             <Mic className="w-5 h-5" />
@@ -298,7 +298,7 @@ function VoicePickerSheet({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-display text-xl">Character voices</h3>
-              <p className="text-[11px] text-text-muted">Pick the voice and tone for each character</p>
+              <p className="text-[0.6875rem] text-text-muted">Pick the voice and tone for each character</p>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-full hover:bg-bg-muted">
               <X className="w-5 h-5" />
@@ -317,18 +317,18 @@ function VoicePickerSheet({
                     <div className="text-xs uppercase tracking-[0.2em] text-gold font-semibold">
                       {char.name}{idx === 0 && characters.indexOf(char) === 0 && " (you)"}
                     </div>
-                    <div className="text-[10px] text-text-subtle mt-0.5">{char.lines.length} lines</div>
+                    <div className="text-[0.6875rem] text-text-subtle mt-0.5">{char.lines.length} lines</div>
                   </div>
                   <button
                     onClick={() => onPreview(sampleLine, cv.voice, cv.tone)}
-                    className="text-[11px] text-gold font-semibold inline-flex items-center gap-1"
+                    className="text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1"
                   >
                     <Volume2 className="w-3 h-3" /> Preview
                   </button>
                 </div>
 
                 {/* Voice type */}
-                <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5">Voice</div>
+                <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5">Voice</div>
                 <div className="grid grid-cols-4 gap-2 mb-4">
                   {(Object.keys(VOICE_LABELS) as VoiceType[]).map((v) => (
                     <button
@@ -342,13 +342,13 @@ function VoicePickerSheet({
                       )}
                     >
                       <span className="text-lg leading-none">{VOICE_LABELS[v].emoji}</span>
-                      <span className="text-[10px] font-medium">{VOICE_LABELS[v].en}</span>
+                      <span className="text-[0.6875rem] font-medium">{VOICE_LABELS[v].en}</span>
                     </button>
                   ))}
                 </div>
 
                 {/* Tone */}
-                <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5">Tone</div>
+                <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5">Tone</div>
                 <div className="grid grid-cols-4 gap-2">
                   {(Object.keys(TONE_LABELS) as ToneType[]).map((t) => (
                     <button
@@ -362,7 +362,7 @@ function VoicePickerSheet({
                       )}
                     >
                       <span className="text-lg leading-none">{TONE_LABELS[t].emoji}</span>
-                      <span className="text-[9px] font-medium">{TONE_LABELS[t].en}</span>
+                      <span className="text-[0.6875rem] font-medium">{TONE_LABELS[t].en}</span>
                     </button>
                   ))}
                 </div>
@@ -374,7 +374,7 @@ function VoicePickerSheet({
         <div className="sticky bottom-0 bg-bg-elevated p-5 pt-3 border-t border-border">
           <button
             onClick={onClose}
-            className="w-full h-12 rounded-2xl bg-gold text-bg font-semibold"
+            className="w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold"
           >
             Done
           </button>

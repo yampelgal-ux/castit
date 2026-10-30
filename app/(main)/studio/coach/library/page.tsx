@@ -59,18 +59,18 @@ export default function CoachLibraryPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold truncate">{s.title}</div>
-                      <div className="text-[11px] text-text-muted mt-0.5 truncate">
+                      <div className="text-[0.6875rem] text-text-muted mt-0.5 truncate">
                         {s.characters.length} דמויות · {s.lines.length} שורות
                         {s.yourCharacter ? ` · אני: ${s.yourCharacter}` : ""}
                       </div>
                       <div className="flex items-center gap-3 mt-1.5">
                         {takes > 0 && (
-                          <span className="text-[10px] text-gold font-semibold inline-flex items-center gap-1">
+                          <span className="text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1">
                             <FileVideo className="w-3 h-3" /> {takes} טייק{takes !== 1 ? "ים" : ""}
                           </span>
                         )}
                         {s.lastPracticedAt && (
-                          <span className="text-[10px] text-text-subtle inline-flex items-center gap-1">
+                          <span className="text-[0.6875rem] text-text-subtle inline-flex items-center gap-1">
                             <Calendar className="w-3 h-3" /> {formatDate(s.lastPracticedAt)}
                           </span>
                         )}

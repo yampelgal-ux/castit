@@ -4,11 +4,11 @@
  *  • Images (Unsplash / Dicebear / own icons): stale-while-revalidate
  *  • Never touches /api/*, auth, Supabase or video streams.
  */
-const VERSION = "castit-v1";
+const VERSION = "castit-v3";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const IMAGES = `${VERSION}-images`;
-const PRECACHE = ["/offline", "/welcome", "/icons/icon-192.png", "/icons/icon-512.png", "/manifest.webmanifest"];
+const PRECACHE = ["/offline", "/welcome", "/brand/icon-192.png", "/brand/icon-512.png", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -107,4 +107,39 @@ self.addEventListener("fetch", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
+});
+
+// Reminder notifications shown via registration.showNotification (mobile):
+// tapping one focuses the app (or opens it) on the linked screen.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const href = (event.notification.data && event.notification.data.href) || "/";
+  event.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const w of wins) {
+      if ("focus" in w) { await w.focus(); if ("navigate" in w) await w.navigate(href); return; }
+    }
+    await self.clients.openWindow(href);
+  })());
+});
+
+// Phone notifications sent by /api/push. Skipped while the app is open and in
+// front: the in-app notification already shows it there.
+self.addEventListener("push", (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch { d = { title: "CastIt", body: event.data ? event.data.text() : "" }; }
+  event.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    if (wins.some((w) => w.visibilityState === "visible" && w.focused)) return;
+    await self.registration.showNotification(d.title || "CastIt", {
+      body: d.body || "",
+      icon: "/brand/icon-192.png",
+      badge: "/brand/icon-192.png",
+      tag: d.tag,
+      renotify: !!d.tag,
+      lang: /[֐-׿]/.test((d.title || "") + (d.body || "")) ? "he" : "en",
+      dir: "auto",
+      data: { href: d.href || "/" },
+    });
+  })());
 });

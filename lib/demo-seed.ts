@@ -4,7 +4,7 @@
 // Lets investors open the app and see a "running" platform instead of
 // empty states. Idempotent — only seeds when storage is empty.
 
-import { TALENTS } from "@/lib/mock-data";
+import { DEMO_TALENTS as TALENTS } from "@/lib/mock-data";
 import {
   loadProjects, loadRoles, loadSubmissions,
   addProject, addRole, inviteTalent, addTape,
@@ -21,16 +21,22 @@ export function isDemoSeeded(): boolean {
   return localStorage.getItem(SEED_FLAG) === "1";
 }
 
+const DEMO_KEYS = [
+  "castit_projects_v2", "castit_roles_v3", "castit_submissions_v3",
+  "castit_approval_sessions_v1", "castit_share_packets_v1",
+  "castit_coach_scenes_v1", "castit_coach_takes_v1",
+  SEED_FLAG,
+];
+
+/** Remove every seeded demo record from this browser. */
+export function clearDemoData(): void {
+  if (typeof window === "undefined") return;
+  for (const k of [...DEMO_KEYS, "castit_notifications_v1", "castit_auditions_v1"]) localStorage.removeItem(k);
+}
+
 export function resetDemo(): void {
   if (typeof window === "undefined") return;
-  // Clear everything relevant
-  const keys = [
-    "castit_projects_v2", "castit_roles_v3", "castit_submissions_v3",
-    "castit_approval_sessions_v1", "castit_share_packets_v1",
-    "castit_coach_scenes_v1", "castit_coach_takes_v1",
-    SEED_FLAG,
-  ];
-  for (const k of keys) localStorage.removeItem(k);
+  for (const k of DEMO_KEYS) localStorage.removeItem(k);
   // Reload to trigger reseed
   window.location.href = "/welcome";
 }

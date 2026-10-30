@@ -7,6 +7,10 @@ import {
   type Project, type Role,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+import { useCanContactTalent } from "@/lib/cloud/trust";
+import { NotApprovedNotice } from "@/components/TrustBanners";
+import { optLabel } from "@/lib/typecast-options";
 
 type Talent = { id: string; name: string; photo: string };
 
@@ -18,6 +22,10 @@ type Props = {
 };
 
 export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
+  const { lang } = useT();
+  const he = lang === "he";
+  const L = (h: string, e: string) => (he ? h : e);
+  const can = useCanContactTalent();
   const [projects, setProjects] = useState<Project[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -34,9 +42,11 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
     setRoles([]);
     setRoleId("");
     setDeadline("");
-    setMessage(`Hi — we'd love you to read for a role we're casting. Sides + instructions attached. Please submit your self-tape by the deadline.`);
+    setMessage(he
+      ? "היי, נשמח שתקרא/י לתפקיד שאנחנו מלהקים. הטקסט וההנחיות מצורפים. אפשר להגיש טייפ עד הדדליין."
+      : "Hi, we'd love you to read for a role we're casting. Sides and instructions attached. Please submit your self-tape by the deadline.");
     setSent(null);
-  }, [open]);
+  }, [open, he]);
 
   useEffect(() => {
     if (!project) { setRoles([]); setRoleId(""); return; }
@@ -67,7 +77,7 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
     : talents;
 
   function submit() {
-    if (!roleId) return;
+    if (!roleId || !can.ok) return;
     let invited = 0;
     let skipped = 0;
     talents.forEach((t) => {
@@ -95,27 +105,28 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
             initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
             className="relative w-full bg-bg-elevated border-t border-border rounded-t-3xl p-5 max-h-[88dvh] overflow-y-auto"
+            dir={he ? "rtl" : "ltr"}
           >
             <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
 
             {sent ? (
-              <SentConfirmation invited={sent.invited} skipped={sent.skipped} />
+              <SentConfirmation invited={sent.invited} skipped={sent.skipped} he={he} />
             ) : (
               <>
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-gold">Bulk invite</div>
+                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{L("הזמנה קבוצתית", "Bulk invite")}</div>
                     <h2 className="font-display text-xl">
-                      {talents.length} talent{talents.length !== 1 ? "s" : ""} selected
+                      {he ? `${talents.length} שחקנים נבחרו` : `${talents.length} talent${talents.length !== 1 ? "s" : ""} selected`}
                     </h2>
                   </div>
-                  <button onClick={onClose} className="p-2 -mr-2 text-text-muted">
+                  <button onClick={onClose} aria-label={L("סגירה", "Close")} className="p-2 -me-2 text-text-muted">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
                 {/* Avatar strip */}
-                <div className="flex items-center -space-x-2 mb-4">
+                <div className="flex items-center -space-x-2 mb-4" dir="ltr">
                   {talents.slice(0, 8).map((t) => (
                     <img
                       key={t.id}
@@ -126,24 +137,26 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                     />
                   ))}
                   {talents.length > 8 && (
-                    <span className="w-9 h-9 rounded-full bg-bg border-2 border-bg-elevated grid place-items-center text-[10px] font-semibold text-text-muted">
+                    <span className="w-9 h-9 rounded-full bg-bg border-2 border-bg-elevated grid place-items-center text-[0.6875rem] font-semibold text-text-muted">
                       +{talents.length - 8}
                     </span>
                   )}
                 </div>
 
-                {projects.length === 0 ? (
-                  <EmptyProjects onClose={onClose} />
+                {!can.ok ? (
+                  <NotApprovedNotice />
+                ) : projects.length === 0 ? (
+                  <EmptyProjects onClose={onClose} he={he} />
                 ) : (
                   <>
-                    <Label icon={FolderOpen}>Project</Label>
+                    <Label icon={FolderOpen}>{L("פרויקט", "Project")}</Label>
                     <div className="grid grid-cols-1 gap-2 mt-1.5">
                       {projects.map((p) => (
                         <button
                           key={p.id}
                           onClick={() => setProject(p)}
                           className={cn(
-                            "flex items-center gap-3 p-3 rounded-2xl border text-left transition-all",
+                            "flex items-center gap-3 p-3 rounded-2xl border text-start transition-all",
                             project?.id === p.id ? "border-gold bg-gold/8" : "border-border bg-bg hover:border-border-strong"
                           )}
                         >
@@ -153,7 +166,7 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                           />
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-semibold truncate">{p.title}</div>
-                            <div className="text-[10px] text-text-muted truncate">{p.type} · {p.studio}</div>
+                            <div className="text-[0.6875rem] text-text-muted truncate">{optLabel(p.type, he)}{p.studio ? ` · ${p.studio}` : ""}</div>
                           </div>
                           {project?.id === p.id && <CheckCircle2 className="w-4 h-4 text-gold shrink-0" />}
                         </button>
@@ -162,10 +175,10 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
 
                     {project && (
                       <>
-                        <Label icon={Users} className="mt-4">Role</Label>
+                        <Label icon={Users} className="mt-4">{L("תפקיד", "Role")}</Label>
                         {roles.length === 0 ? (
                           <p className="text-xs text-text-muted mt-2 px-1">
-                            This project has no roles yet — add one first.
+                            {L("בפרויקט הזה עוד אין תפקידים. צריך להוסיף אחד קודם.", "This project has no roles yet. Add one first.")}
                           </p>
                         ) : (
                           <div className="flex flex-wrap gap-2 mt-1.5">
@@ -175,7 +188,7 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                                 onClick={() => setRoleId(r.id)}
                                 className={cn(
                                   "px-3 h-9 rounded-full text-xs font-semibold border",
-                                  roleId === r.id ? "bg-gold text-bg border-gold" : "bg-bg text-text border-border"
+                                  roleId === r.id ? "bg-gold text-on-accent border-gold" : "bg-bg text-text border-border"
                                 )}
                               >{r.name}</button>
                             ))}
@@ -185,8 +198,10 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                         {alreadyOnRole.size > 0 && (
                           <div className="mt-3 p-2.5 rounded-xl bg-gold/8 border border-gold/30 flex items-start gap-2">
                             <AlertCircle className="w-3.5 h-3.5 text-gold shrink-0 mt-0.5" />
-                            <div className="text-[11px] text-text leading-relaxed flex-1">
-                              <span className="font-semibold tnum">{alreadyOnRole.size}</span> of the selected talents are already on this role.
+                            <div className="text-[0.6875rem] text-text leading-relaxed flex-1">
+                              {he
+                                ? <><span className="font-semibold tnum">{alreadyOnRole.size}</span> מהשחקנים שנבחרו כבר בתפקיד הזה.</>
+                                : <><span className="font-semibold tnum">{alreadyOnRole.size}</span> of the selected talents are already on this role.</>}
                               <label className="flex items-center gap-1.5 mt-1.5">
                                 <input
                                   type="checkbox"
@@ -194,13 +209,13 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                                   onChange={(e) => setSkipExisting(e.target.checked)}
                                   className="accent-gold"
                                 />
-                                <span className="text-text-muted">Skip them (recommended)</span>
+                                <span className="text-text-muted">{L("לדלג עליהם (מומלץ)", "Skip them (recommended)")}</span>
                               </label>
                             </div>
                           </div>
                         )}
 
-                        <Label className="mt-4">Tape deadline</Label>
+                        <Label className="mt-4">{L("דדליין להגשת טייפ", "Tape deadline")}</Label>
                         <input
                           type="date"
                           value={deadline}
@@ -208,15 +223,15 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                           className="w-full mt-1.5 h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
                         />
 
-                        <Label className="mt-4">Message (sent to all)</Label>
+                        <Label className="mt-4">{L("הודעה (נשלחת לכולם)", "Message (sent to all)")}</Label>
                         <textarea
                           value={message}
                           onChange={(e) => setMessage(e.target.value)}
-                          rows={4}
+                          rows={4} dir="auto"
                           className="w-full mt-1.5 px-3 py-2.5 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
                         />
-                        <p className="text-[10px] text-text-subtle mt-1.5 px-1">
-                          Each talent gets the same message. No personal data is shared between recipients.
+                        <p className="text-[0.6875rem] text-text-subtle mt-1.5 px-1">
+                          {L("כל שחקן מקבל את אותה הודעה, בנפרד. השחקנים לא רואים זה את זה.", "Each talent gets the same message. No personal data is shared between recipients.")}
                         </p>
                       </>
                     )}
@@ -226,10 +241,10 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
                       disabled={!roleId || willInvite.length === 0}
                       className={cn(
                         "mt-5 w-full h-12 rounded-2xl font-semibold flex items-center justify-center gap-2",
-                        roleId && willInvite.length > 0 ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+                        roleId && willInvite.length > 0 ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
                       )}
                     >
-                      Send {willInvite.length} invite{willInvite.length !== 1 ? "s" : ""} <Send className="w-4 h-4" />
+                      {he ? `שליחת ${willInvite.length} הזמנות` : `Send ${willInvite.length} invite${willInvite.length !== 1 ? "s" : ""}`} <Send className="w-4 h-4 rtl:-scale-x-100" />
                     </button>
                   </>
                 )}
@@ -244,14 +259,14 @@ export function BulkInviteSheet({ open, onClose, talents, onSent }: Props) {
 
 function Label({ children, icon: Icon, className }: { children: React.ReactNode; icon?: any; className?: string }) {
   return (
-    <div className={cn("flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-text-muted", className)}>
+    <div className={cn("flex items-center gap-1.5 text-[0.6875rem] uppercase tracking-widest text-text-muted", className)}>
       {Icon && <Icon className="w-3 h-3" />}
       {children}
     </div>
   );
 }
 
-function SentConfirmation({ invited, skipped }: { invited: number; skipped: number }) {
+function SentConfirmation({ invited, skipped, he }: { invited: number; skipped: number; he: boolean }) {
   return (
     <div className="text-center py-10">
       <motion.div
@@ -263,33 +278,33 @@ function SentConfirmation({ invited, skipped }: { invited: number; skipped: numb
         <CheckCircle2 className="w-8 h-8 text-success" />
       </motion.div>
       <h3 className="font-display text-xl">
-        {invited} invite{invited !== 1 ? "s" : ""} sent
+        {he ? `${invited} הזמנות נשלחו` : `${invited} invite${invited !== 1 ? "s" : ""} sent`}
       </h3>
       {skipped > 0 && (
         <p className="text-xs text-text-muted mt-1">
-          {skipped} skipped (already on this role)
+          {he ? `${skipped} דולגו (כבר בתפקיד)` : `${skipped} skipped (already on this role)`}
         </p>
       )}
     </div>
   );
 }
 
-function EmptyProjects({ onClose }: { onClose: () => void }) {
+function EmptyProjects({ onClose, he }: { onClose: () => void; he: boolean }) {
   return (
     <div className="text-center py-8">
       <div className="w-14 h-14 rounded-2xl bg-gold/10 text-gold grid place-items-center mx-auto mb-3">
         <FolderOpen className="w-6 h-6" />
       </div>
-      <h3 className="font-display text-lg mb-1">No projects yet</h3>
+      <h3 className="font-display text-lg mb-1">{he ? "עוד אין פרויקטים" : "No projects yet"}</h3>
       <p className="text-xs text-text-muted max-w-[260px] mx-auto">
-        Create a casting project first — then you can invite talents to read for specific roles.
+        {he ? "קודם יוצרים פרויקט ליהוק, ואז אפשר להזמין שחקנים לתפקידים ספציפיים." : "Create a casting project first, then invite talent to read for specific roles."}
       </p>
       <a
         href="/pro/projects"
         onClick={onClose}
-        className="inline-flex items-center gap-2 mt-5 px-5 h-11 rounded-full bg-gold text-bg text-sm font-semibold"
+        className="inline-flex items-center gap-2 mt-5 px-5 h-11 rounded-full bg-gold text-on-accent text-sm font-semibold"
       >
-        Create project <ArrowRight className="w-4 h-4" />
+        {he ? "יצירת פרויקט" : "Create project"} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
       </a>
     </div>
   );

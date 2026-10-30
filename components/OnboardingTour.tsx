@@ -91,7 +91,7 @@ export function OnboardingTour() {
   const [step, setStep] = useState(0);
 
   // Detect mode (pro vs talent) from URL
-  const isPro = pathname?.startsWith("/pro") ?? false;
+  const isPro = /^\/pro(\/|$)/.test(pathname ?? "");
   const steps = isPro ? PRO_STEPS : TALENT_STEPS;
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export function OnboardingTour() {
     // Don't show on share/approve public pages
     if (pathname?.startsWith("/share") || pathname?.startsWith("/approve") || pathname?.startsWith("/tour") || pathname?.startsWith("/guide")) return;
     // Don't show on signup/welcome (have their own intro)
-    if (pathname === "/welcome" || pathname === "/signup" || pathname === "/pro/signup" || pathname === "/pro/login" || pathname === "/login" || pathname === "/reset-password" || pathname === "/offline") return;
+    if (pathname === "/welcome" || pathname === "/signup" || pathname === "/pro/signup" || pathname === "/pro/login" || pathname === "/login" || pathname === "/reset-password" || pathname === "/offline" || pathname === "/install") return;
     const done = localStorage.getItem(KEY);
     if (done) return;
     const t = setTimeout(() => setOpen(true), 1200);
@@ -148,7 +148,7 @@ export function OnboardingTour() {
           {/* Skip */}
           <button
             onClick={dismiss}
-            className="absolute top-4 left-4 text-[11px] text-text-muted"
+            className="absolute top-4 left-4 text-[0.6875rem] text-text-muted"
           >
             דלג
           </button>
@@ -199,7 +199,7 @@ export function OnboardingTour() {
             )}
             <button
               onClick={next}
-              className="flex-1 h-11 rounded-full bg-gold text-bg font-semibold text-sm inline-flex items-center justify-center gap-1.5"
+              className="flex-1 h-11 rounded-full bg-gold text-on-accent font-semibold text-sm inline-flex items-center justify-center gap-1.5"
             >
               {isLast ? (
                 <><Check className="w-4 h-4" /> בואו נתחיל</>

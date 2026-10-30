@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell, FileVideo, Sparkles, ThumbsUp, MessageCircle, Heart, Briefcase,
-  Star, Megaphone, Calendar, PauseCircle, XCircle, Award,
+  Star, Megaphone, Calendar, PauseCircle, XCircle, Award, AlarmClock,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
@@ -31,13 +31,14 @@ const ICON: Record<NotifKind, typeof Bell> = {
   comment:      MessageCircle,
   casting:      Star,
   application:  Briefcase,
+  reminder:     AlarmClock,
 };
 
 const COLOR: Record<NotifKind, string> = {
-  invite:       "bg-gold/15 text-gold",
+  invite:       "bg-hi text-on-hi",
   tape_in:      "bg-gold/15 text-gold",
   callback:     "bg-success/15 text-success",
-  hold:         "bg-amber/15 text-amber",
+  hold:         "bg-hi text-on-hi",
   avail_check:  "bg-plum/15 text-plum-light",
   offered:      "bg-violet/15 text-violet",
   booked:       "bg-success/15 text-success",
@@ -48,6 +49,7 @@ const COLOR: Record<NotifKind, string> = {
   comment:      "bg-violet/15 text-violet",
   casting:      "bg-gold/15 text-gold",
   application:  "bg-success/15 text-success",
+  reminder:     "bg-hi text-on-hi",
 };
 
 function timeAgo(iso: string): string {
@@ -92,7 +94,7 @@ export default function NotificationsPage() {
             <Bell className="w-4 h-4 text-gold" />
             <span className="font-display text-lg">{t("notif.title")}</span>
             {unread > 0 && (
-              <span className="text-[10px] tnum bg-danger text-white rounded-full px-1.5 h-4 grid place-items-center">
+              <span className="text-[0.6875rem] tnum bg-danger text-white rounded-full px-1.5 h-4 grid place-items-center">
                 {unread}
               </span>
             )}
@@ -102,7 +104,7 @@ export default function NotificationsPage() {
           unread > 0 ? (
             <button
               onClick={() => { markAllRead(audience); reload(); }}
-              className="text-[11px] text-gold font-semibold"
+              className="text-[0.6875rem] text-gold font-semibold"
             >
               {t("common.markAllRead")}
             </button>
@@ -131,8 +133,8 @@ export default function NotificationsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold leading-snug">{n.title}</div>
-                      <div className="text-[11px] text-text-muted mt-0.5 leading-relaxed line-clamp-2">{n.body}</div>
-                      <div className="text-[10px] text-text-subtle mt-1 tnum">{timeAgo(n.createdAt)}</div>
+                      <div className="text-[0.6875rem] text-text-muted mt-0.5 leading-relaxed line-clamp-2">{n.body}</div>
+                      <div className="text-[0.6875rem] text-text-subtle mt-1 tnum">{timeAgo(n.createdAt)}</div>
                     </div>
                     {!n.read && (
                       <span className="w-2 h-2 rounded-full bg-gold shrink-0 mt-2" />

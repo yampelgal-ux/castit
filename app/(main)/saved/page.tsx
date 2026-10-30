@@ -5,23 +5,27 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { useStore } from "@/lib/store";
-import { REELS, TALENTS } from "@/lib/mock-data";
+import { useAllReels } from "@/lib/cloud/talents";
+import { useT } from "@/lib/i18n";
 
 export default function SavedPage() {
   const { bookmarks } = useStore();
+  const { reels: REELS, talents: TALENTS } = useAllReels();
   const saved = REELS.filter((r) => bookmarks.has(r.id));
+  const { lang } = useT();
+  const L = (h: string, e: string) => (lang === "he" ? h : e);
 
   return (
     <div className="min-h-dvh">
-      <Header back title="Saved" />
+      <Header back title={L("שמורים", "Saved")} />
 
       {saved.length === 0 ? (
         <EmptyState
           icon={Bookmark}
           tone="gold"
-          title="Nothing saved yet"
-          description="Tap the bookmark icon on any reel and find it here later."
-          ctaLabel="Open the feed"
+          title={L("עוד לא שמרת כלום", "Nothing saved yet")}
+          description={L("לחצו על סימן השמירה בכל סרטון, והוא יחכה לכם כאן.", "Tap the bookmark icon on any reel and find it here later.")}
+          ctaLabel={L("לפיד", "Open the feed")}
           ctaHref="/feed"
         />
       ) : (
@@ -41,7 +45,7 @@ export default function SavedPage() {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                   <div className="absolute bottom-2 left-2 right-2">
-                    <p className="text-[10px] text-white/80">@{talent?.username}</p>
+                    <p className="text-[0.6875rem] text-white/80">@{talent?.username}</p>
                     <p className="text-xs text-white line-clamp-2 leading-tight mt-0.5">{reel.caption}</p>
                   </div>
                   <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 backdrop-blur grid place-items-center">

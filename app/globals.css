@@ -2,9 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Theme tokens ──────────────────────────────────────
+   RGB triplets so Tailwind opacity modifiers work: rgb(var(--gold) / 0.2).
+   Every color in the app comes from here (see tailwind.config.ts).
+   "gold" = primary accent, "wine" = secondary accent. */
+:root {
+  /* "Call Sheet": paper, ink and clapperboard yellow. */
+  --bg:            250 249 245;  /* paper */
+  --bg-elevated:   255 255 255;  /* card */
+  --bg-muted:      239 237 230;  /* input / chip */
+  --bg-frame:      226 222 211;  /* desktop backdrop around the phone */
+  --border:        214 209 196;
+  --border-strong: 17 17 17;
+  --text:          17 17 17;     /* ink */
+  --text-muted:    82 79 72;
+  --text-subtle:   107 103 94;
+  /* Primary accent = ink. Solid fills are black with yellow text. */
+  --gold:          17 17 17;
+  --gold-dark:     0 0 0;
+  --gold-light:    255 212 59;
+  /* Highlight = clapperboard yellow */
+  --hi:            255 212 59;
+  --hi-soft:       255 243 196;
+  --wine:          196 43 28;
+  --wine-dark:     150 30 20;
+  --wine-light:    224 76 58;
+  --terra:         196 43 28;    /* danger / recording */
+  --terra-dark:    150 30 20;
+  --terra-light:   224 76 58;
+  --sage:          11 110 79;    /* success */
+  --sage-dark:     7 80 57;
+  --sage-light:    20 135 98;
+  --plum:          88 60 140;
+  --plum-dark:     62 40 104;
+  --plum-light:    98 68 156;
+  --violet:        42 82 230;
+  --violet-dark:   30 60 180;
+  --on-accent:     255 212 59;   /* yellow on black buttons */
+  --on-hi:         17 17 17;
+  --shadow:        17 17 17;
+  color-scheme: light;
+}
+
 html, body {
-  background: #0F0C09;
-  color: #F5EFE6;
+  background: rgb(var(--bg));
+  color: rgb(var(--text));
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   letter-spacing: -0.011em;
@@ -18,22 +60,22 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0F0C09;
+  background: rgb(var(--bg));
 }
 .device-screen {
   width: 100%;
   max-width: 440px;
   min-height: 100dvh;
   position: relative;
-  background: #0F0C09;
+  background: rgb(var(--bg));
 }
 @media (min-width: 600px) {
   .device-frame {
     background:
-      radial-gradient(ellipse 80% 60% at 30% 20%, rgba(201, 169, 97, 0.07), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(139, 58, 58, 0.08), transparent 60%),
-      radial-gradient(ellipse 50% 40% at 50% 100%, rgba(92, 72, 97, 0.06), transparent 60%),
-      #050403;
+      radial-gradient(ellipse 80% 60% at 30% 20%, rgb(var(--gold) / 0.07), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgb(var(--wine) / 0.08), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 50% 100%, rgb(var(--plum) / 0.06), transparent 60%),
+      rgb(var(--bg-frame));
     padding: 24px;
   }
   .device-screen {
@@ -42,11 +84,11 @@ html, body {
     min-height: 720px;
     border-radius: 44px;
     overflow: hidden;
-    border: 8px solid #1A1612;
+    border: 8px solid rgb(var(--text));
     box-shadow:
-      0 30px 80px -20px rgba(0, 0, 0, 0.7),
-      0 0 0 1px rgba(201, 169, 97, 0.08),
-      inset 0 0 0 1px rgba(245, 239, 230, 0.03);
+      0 30px 80px -20px rgb(var(--shadow) / 0.7),
+      0 0 0 1px rgb(var(--gold) / 0.08),
+      inset 0 0 0 1px rgb(var(--text) / 0.03);
   }
   .device-screen > * {
     height: 100%;
@@ -78,7 +120,7 @@ html, body {
 
 /* Glass effect — warmer tint */
 .glass {
-  background: rgba(26, 22, 18, 0.7);
+  background: rgb(var(--bg-elevated) / 0.7);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
 }
@@ -89,17 +131,18 @@ html, body {
   font-feature-settings: "ss01", "kern";
 }
 
-/* Gradient text — refined brass + warm light */
+/* Accent text: ink with a yellow marker stroke behind it (Call Sheet) */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #E4C57E 0%, #C9A961 50%, #9B824A 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: rgb(var(--text));
+  background: linear-gradient(transparent 58%, rgb(var(--hi)) 58%, rgb(var(--hi)) 92%, transparent 92%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding-inline: 0.08em;
 }
 
 /* Wine drama gradient for emphasis */
 .text-wine-gradient {
-  background: linear-gradient(135deg, #B25555 0%, #8B3A3A 100%);
+  background: linear-gradient(135deg, rgb(var(--wine-light)) 0%, rgb(var(--wine)) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -120,7 +163,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: #6E665C;
+  color: rgb(var(--text-subtle));
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -130,7 +173,7 @@ html, body {
   content: "";
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #2D2823, transparent);
+  background: linear-gradient(90deg, transparent, rgb(var(--border)), transparent);
 }
 
 /* Custom range slider — brass thumb */
@@ -142,30 +185,30 @@ input[type="range"] {
 }
 input[type="range"]::-webkit-slider-runnable-track {
   height: 4px;
-  background: #2D2823;
+  background: rgb(var(--border));
   border-radius: 999px;
 }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   height: 20px;
   width: 20px;
-  background: #C9A961;
+  background: rgb(var(--gold));
   border-radius: 999px;
   margin-top: -8px;
-  box-shadow: 0 0 0 4px rgba(201, 169, 97, 0.15), 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 4px rgb(var(--gold) / 0.15), 0 2px 6px rgb(var(--shadow) / 0.3);
 }
 input[type="range"]::-moz-range-track {
   height: 4px;
-  background: #2D2823;
+  background: rgb(var(--border));
   border-radius: 999px;
 }
 input[type="range"]::-moz-range-thumb {
   height: 20px;
   width: 20px;
-  background: #C9A961;
+  background: rgb(var(--gold));
   border-radius: 999px;
   border: none;
-  box-shadow: 0 0 0 4px rgba(201, 169, 97, 0.15);
+  box-shadow: 0 0 0 4px rgb(var(--gold) / 0.15);
 }
 
 /* Spotlight effect for hero areas */
@@ -177,7 +220,7 @@ input[type="range"]::-moz-range-thumb {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(201, 169, 97, 0.10), transparent 60%);
+  background: radial-gradient(ellipse 60% 80% at 50% 0%, rgb(var(--gold) / 0.10), transparent 60%);
   pointer-events: none;
   z-index: -1;
 }
@@ -197,13 +240,13 @@ input[type="range"]::-moz-range-thumb {
   animation: rec-pulse 1.4s ease-in-out infinite;
 }
 @keyframes rec-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(199, 93, 63, 0.5); }
-  50% { box-shadow: 0 0 0 14px rgba(199, 93, 63, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgb(var(--terra) / 0.5); }
+  50% { box-shadow: 0 0 0 14px rgb(var(--terra) / 0); }
 }
 
 /* Speech waveform bars */
 .wave-bar {
-  background: #C9A961;
+  background: rgb(var(--gold));
   width: 3px;
   border-radius: 999px;
   animation: wave 1.2s ease-in-out infinite;
@@ -220,8 +263,8 @@ input[type="range"]::-moz-range-thumb {
   position: absolute;
   top: -40px;
   left: 12px;
-  background: #C9A961;
-  color: #0F0C09;
+  background: rgb(var(--gold));
+  color: rgb(var(--on-accent));
   padding: 8px 14px;
   border-radius: 999px;
   font-size: 12px;
@@ -231,13 +274,14 @@ input[type="range"]::-moz-range-thumb {
 }
 .skip-link:focus {
   top: 12px;
-  outline: 2px solid #fff;
+  outline: 2px solid rgb(var(--hi));
   outline-offset: 2px;
 }
 
 /* Visible keyboard focus ring across the app — never on mouse clicks */
 *:focus-visible {
-  outline: 2px solid #C9A961;
+  outline: 3px solid rgb(var(--gold));
+  box-shadow: 0 0 0 6px rgb(var(--hi));
   outline-offset: 2px;
   border-radius: 6px;
 }
@@ -287,7 +331,7 @@ button, a, [role="button"] {
 /* ── Installed app (PWA standalone / native shell) ──────────────────────
    No fake phone bezel, and respect the notch / home-indicator areas. */
 @media (display-mode: standalone) {
-  .device-frame { background: #0F0C09; padding: 0; }
+  .device-frame { background: rgb(var(--bg)); padding: 0; }
   .device-screen {
     max-width: 640px;
     height: auto;
@@ -301,7 +345,7 @@ button, a, [role="button"] {
   .device-screen > * { height: auto; overflow: visible; }
   .device-screen nav.fixed { position: fixed !important; }
 }
-html.native-app .device-frame { background: #0F0C09; padding: 0; }
+html.native-app .device-frame { background: rgb(var(--bg)); padding: 0; }
 html.native-app .device-screen {
   max-width: 640px; height: auto; min-height: 100dvh; border: 0; border-radius: 0;
   box-shadow: none; overflow: visible; padding-top: env(safe-area-inset-top);
@@ -309,3 +353,38 @@ html.native-app .device-screen {
 html.native-app .device-screen > * { height: auto; overflow: visible; }
 html.native-app .device-screen nav.fixed { position: fixed !important; }
 html, body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+
+/* ─── Call Sheet treatments ─── */
+/* Hard offset shadow for the cards that should feel like printed sheets */
+.sheet {
+  background: rgb(var(--bg-elevated));
+  border: 2px solid rgb(var(--border-strong));
+  box-shadow: 4px 4px 0 rgb(var(--shadow));
+}
+/* Yellow/black clapper stripes */
+.clapper {
+  background: repeating-linear-gradient(-45deg, rgb(var(--text)) 0 10px, rgb(var(--hi)) 10px 20px);
+}
+/* Highlighter mark behind inline text */
+.mark-hi {
+  background: rgb(var(--hi));
+  color: rgb(var(--on-hi));
+  padding-inline: 0.2em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* ─── Accessibility settings (set by components/A11yHydrator) ─── */
+html[data-text-size="large"]  { font-size: 112.5%; }
+html[data-text-size="xlarge"] { font-size: 125%; }
+html.high-contrast {
+  --text-muted:    34 34 34;
+  --text-subtle:   52 52 52;
+  --border:        110 106 96;
+}
+html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
