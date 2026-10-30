@@ -1,6 +1,7 @@
 "use client";
 import { GuardianBanner } from "@/components/TrustBanners";
 import { PushPrompt } from "@/components/PushPrompt";
+import { ProfileCompleteness } from "@/components/ProfileCompleteness";
 import { useTrust } from "@/lib/cloud/trust";
 import { ShieldCheck, Megaphone, ChevronLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -110,6 +111,8 @@ export default function InboxPage() {
             {L("כל ההזמנות וכל הסטטוסים, במקום אחד.", "Every invite, every status, in one place.")}
           </p>
         </div>
+
+        <ProfileCompleteness compact />
 
         <Link href="/auditions" className="flex items-center gap-2.5 p-3 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40">
           <div className="w-8 h-8 rounded-lg bg-gold/15 text-gold grid place-items-center shrink-0">

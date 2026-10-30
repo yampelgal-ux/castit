@@ -1,4 +1,5 @@
 "use client";
+import { ProfileCompleteness } from "@/components/ProfileCompleteness";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -138,6 +139,7 @@ export default function ProfilePage() {
       />
 
       {isMe && <GuardianBanner />}
+      {isMe && <div className="px-4 pt-3"><ProfileCompleteness compact /></div>}
 
       {/* Cover + Avatar */}
       <div className="relative">

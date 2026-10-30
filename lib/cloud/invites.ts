@@ -27,6 +27,9 @@ export type InviteLink = {
   /** Also shown on the open auditions board. */
   listed?: boolean;
   location?: string;
+  /** Who the call is for. Matching actors get a phone notification once. */
+  target?: { genders?: string[]; ageMin?: number; ageMax?: number };
+  notifiedAt?: string;
 };
 
 const PENDING = "pending_invite"; // no castit_ prefix: it must survive sign-out wipes
@@ -145,4 +148,22 @@ export function useClaimPendingInvite() {
     forgetInvite();
     void claimInvite(code);
   }, [userId, role, name]);
+}
+
+/** Tell actors whose card matches this listed call. The server answers only once per call. */
+export async function notifyMatchingActors(link: InviteLink): Promise<number> {
+  if (!isCloudConfigured() || !link.listed || link.closed || link.notifiedAt) return 0;
+  link.notifiedAt = new Date().toISOString();
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) return 0;
+    const res = await fetch("/api/push/open-call", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+      body: JSON.stringify({ code: link.code, role: link.role.name.slice(0, 80), project: link.project?.title?.slice(0, 80) }),
+    });
+    if (!res.ok) return 0;
+    return ((await res.json()) as { sent?: number }).sent ?? 0;
+  } catch { return 0; }
 }

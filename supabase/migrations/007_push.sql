@@ -68,3 +68,59 @@ grant execute on function public.drop_push_endpoint(text) to authenticated;
 alter table public.reports drop constraint if exists reports_target_kind_check;
 alter table public.reports add constraint reports_target_kind_check
   check (target_kind in ('user', 'reel', 'comment', 'message', 'feedback'));
+
+-- ── New open audition → notify matching actors ──────────────────
+-- Called once by the casting director's phone when a role is listed on the
+-- open auditions board. Returns the phones of actors whose published card
+-- matches the call's target (data.target: genders, ageMin, ageMax), then marks
+-- the call as notified so it can't be used to spam. The "already sent" mark
+-- lives in its own table that nobody can write to directly.
+create table if not exists public.open_call_notified (
+  code text primary key,
+  owner_id uuid not null,
+  at timestamptz not null default now()
+);
+alter table public.open_call_notified enable row level security;
+revoke all on public.open_call_notified from anon, authenticated;
+
+create or replace function public.open_call_push_targets(p_code text)
+returns table (endpoint text, p256dh text, auth text, lang text, sender_name text)
+language plpgsql security definer set search_path = public as $$
+declare
+  me uuid := auth.uid();
+  inv public.shared_records;
+  genders text[];
+  amin int;
+  amax int;
+begin
+  if me is null or not public.is_approved_pro() then return; end if;
+  select * into inv from public.shared_records
+   where slug = p_code and kind = 'open_invite' and owner_id = me;
+  if inv.id is null or not coalesce((inv.data->>'listed')::boolean, false)
+     or coalesce((inv.data->>'closed')::boolean, false) then
+    return;
+  end if;
+  insert into public.open_call_notified (code, owner_id) values (p_code, me) on conflict do nothing;
+  if not found then return; end if;
+  -- At most 5 new calls a day per casting director reach phones.
+  if (select count(*) from public.open_call_notified where owner_id = me and at > now() - interval '1 day') > 5 then return; end if;
+  update public.shared_records set data = data || jsonb_build_object('notifiedAt', now()) where id = inv.id;
+
+  select array(select jsonb_array_elements_text(coalesce(inv.data->'target'->'genders', '[]'::jsonb))) into genders;
+  amin := nullif(inv.data->'target'->>'ageMin', '')::int;
+  amax := nullif(inv.data->'target'->>'ageMax', '')::int;
+
+  return query
+    select s.endpoint, s.p256dh, s.auth, s.lang, coalesce(nullif(me_p.name, ''), me_p.username, '')::text
+      from public.push_subscriptions s
+      join public.profiles t on t.id = s.user_id
+      join public.profiles me_p on me_p.id = me
+     where t.talent_card is not null and not coalesce(t.banned, false) and t.id <> me
+       and not public.is_blocked_between(me, t.id)
+       and (cardinality(genders) = 0 or t.talent_card->'typecast'->>'gender' = any(genders))
+       and (amin is null or coalesce((t.talent_card->'typecast'->'ageRange'->>1)::int, 200) >= amin)
+       and (amax is null or coalesce((t.talent_card->'typecast'->'ageRange'->>0)::int, 0) <= amax)
+     limit 3000;
+end $$;
+revoke all on function public.open_call_push_targets(text) from public, anon;
+grant execute on function public.open_call_push_targets(text) to authenticated;

@@ -27,6 +27,7 @@ import { photoToDataUrl } from "@/lib/image";
 import { isCloudConfigured, isRealUserId } from "@/lib/cloud/config";
 import { signOutEverywhere } from "@/lib/cloud/auth";
 import { FeedbackSheet } from "@/components/FeedbackSheet";
+import { ProfileCompleteness } from "@/components/ProfileCompleteness";
 import { disablePush, enablePush, pushStatus, type PushStatus } from "@/lib/cloud/push";
 import { useT } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
@@ -41,6 +42,7 @@ export default function SettingsPage() {
       <Header back title={L("הגדרות", "Settings")} />
       <GuardianBanner />
       <div className="px-4 pt-4 space-y-6">
+        <ProfileCompleteness />
         <ProfileSection L={L} />
         <VideosSection L={L} />
         <RemindersSection L={L} />

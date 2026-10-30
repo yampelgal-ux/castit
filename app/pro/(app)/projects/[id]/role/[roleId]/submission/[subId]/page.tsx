@@ -6,7 +6,9 @@ import {
   CheckCircle2, XCircle, PauseCircle, FileVideo, Calendar, ArrowRight,
   Repeat, CalendarCheck, FileSignature, PartyPopper, Undo2, Send, Clock,
   Wand2, Loader2, MapPin, Users, X as XIcon, Video as VideoIcon,
+  CalendarPlus,
 } from "lucide-react";
+import { addToCalendar, absUrl } from "@/lib/ics";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
@@ -903,6 +905,14 @@ function CallbackStatusBanner({ sub }: { sub: Submission }) {
               <MapPin className="w-3.5 h-3.5 text-text-muted" />
               <span>{sub.callbackLocation}</span>
             </div>
+          )}
+          {!isPast && (
+            <button
+              onClick={() => addToCalendar([{ uid: `cb_${sub.id}`, title: `קולבק: ${sub.talentName}`, start: sub.callbackScheduledAt!, location: sub.callbackLocation, url: absUrl(location.pathname) }], `קולבק ${sub.talentName}`)}
+              className="mt-1 h-9 px-3 rounded-full border border-border text-xs font-semibold inline-flex items-center gap-1.5"
+            >
+              <CalendarPlus className="w-3.5 h-3.5" aria-hidden /> הוספה ליומן של הטלפון
+            </button>
           )}
         </div>
       ) : (

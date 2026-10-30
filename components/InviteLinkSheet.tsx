@@ -7,7 +7,7 @@ import { useStore } from "@/lib/store";
 import type { Project, Role } from "@/lib/projects-store";
 import { isCloudConfigured } from "@/lib/cloud/config";
 import { useCanContactTalent } from "@/lib/cloud/trust";
-import { createInviteLink, inviteUrl, loadInviteLink, setInviteClosed, updateInvite, type InviteLink } from "@/lib/cloud/invites";
+import { createInviteLink, inviteUrl, loadInviteLink, setInviteClosed, updateInvite, notifyMatchingActors, type InviteLink } from "@/lib/cloud/invites";
 import { NotApprovedNotice } from "@/components/TrustBanners";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +28,10 @@ export function InviteLinkSheet({ role, project, mode = "whatsapp", onClose }: {
   const [failed, setFailed] = useState(false);
   const [copied, setCopied] = useState(false);
   const [location, setLocation] = useState("");
+  const [genders, setGenders] = useState<string[]>([]);
+  const [ageMin, setAgeMin] = useState("");
+  const [ageMax, setAgeMax] = useState("");
+  const [notified, setNotified] = useState<number | null>(null);
   const deadline = role.deadline
     ? new Date(role.deadline).toLocaleDateString(he ? "he-IL" : "en-US", { day: "numeric", month: "long" })
     : "";
@@ -38,7 +42,8 @@ export function InviteLinkSheet({ role, project, mode = "whatsapp", onClose }: {
 
   useEffect(() => {
     if (!isCloudConfigured()) { setLink(null); return; }
-    loadInviteLink(role.id).then((l) => { setLink(l); if (l?.message) setMessage(l.message); if (l?.location) setLocation(l.location); });
+    loadInviteLink(role.id).then((l) => { setLink(l); if (l?.message) setMessage(l.message); if (l?.location) setLocation(l.location);
+      if (l?.target) { setGenders(l.target.genders ?? []); setAgeMin(l.target.ageMin ? String(l.target.ageMin) : ""); setAgeMax(l.target.ageMax ? String(l.target.ageMax) : ""); } });
   }, [role.id]);
 
   async function ensureLink(): Promise<InviteLink | null> {
@@ -67,11 +72,31 @@ export function InviteLinkSheet({ role, project, mode = "whatsapp", onClose }: {
     try { await navigator.clipboard.writeText(`${message.trim()}\n${inviteUrl(l.code)}`); setCopied(true); setTimeout(() => setCopied(false), 1800); } catch {}
   }
 
+  function target(g = genders): InviteLink["target"] {
+    const n = (v: string) => { const x = parseInt(v, 10); return x > 0 && x < 120 ? x : undefined; };
+    return { genders: g.length ? g : undefined, ageMin: n(ageMin), ageMax: n(ageMax) };
+  }
+
   async function setListed(listed: boolean) {
     const l = await ensureLink();
     if (!l) return;
-    const next = await updateInvite(l, { listed, location: location.trim() || undefined, closed: false });
+    const next = await updateInvite(l, { listed, location: location.trim() || undefined, target: target(), closed: false });
+    if (!next) return;
+    setLink(next);
+    // First time on the board: a phone notification to the actors who fit.
+    if (listed && !next.notifiedAt) setNotified(await notifyMatchingActors(next));
+  }
+
+  async function saveTarget(g = genders) {
+    if (!link) return;
+    const next = await updateInvite(link, { target: target(g) });
     if (next) setLink(next);
+  }
+
+  function toggleGender(g: string) {
+    const next = genders.includes(g) ? genders.filter((x) => x !== g) : [...genders, g];
+    setGenders(next);
+    void saveTarget(next);
   }
 
   async function saveLocation() {
@@ -119,6 +144,23 @@ export function InviteLinkSheet({ role, project, mode = "whatsapp", onClose }: {
               <input value={location} onChange={(e) => setLocation(e.target.value)} onBlur={saveLocation} dir="auto"
                 placeholder={L("מיקום (למשל תל אביב, זום)", "Location (e.g. Tel Aviv, Zoom)")} aria-label={L("מיקום", "Location")}
                 className="mt-2 w-full h-10 px-3 rounded-xl bg-bg-elevated border border-border text-sm outline-none focus:border-gold/60" />
+              <p className="text-[0.6875rem] uppercase tracking-widest text-text-muted mt-3">{L("למי מתאים", "Who it's for")}</p>
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                {([["Female", "אישה", "Woman"], ["Male", "גבר", "Man"], ["Non-binary", "א-בינארי", "Non-binary"]] as const).map(([g, h, e]) => (
+                  <button key={g} type="button" onClick={() => toggleGender(g)} aria-pressed={genders.includes(g)}
+                    className={cn("h-8 px-3 rounded-full border text-xs font-semibold", genders.includes(g) ? "bg-gold text-black border-gold" : "border-border")}>{L(h, e)}</button>
+                ))}
+                <span className="inline-flex items-center gap-1 text-xs text-text-muted ms-1">
+                  {L("גיל", "Age")}
+                  <input inputMode="numeric" value={ageMin} onChange={(e) => setAgeMin(e.target.value.replace(/\D/g, "").slice(0, 2))} onBlur={() => saveTarget()}
+                    aria-label={L("גיל מינימלי", "Minimum age")} placeholder="18" className="w-11 h-8 px-1 text-center rounded-lg bg-bg-elevated border border-border" />
+                  –
+                  <input inputMode="numeric" value={ageMax} onChange={(e) => setAgeMax(e.target.value.replace(/\D/g, "").slice(0, 2))} onBlur={() => saveTarget()}
+                    aria-label={L("גיל מקסימלי", "Maximum age")} placeholder="99" className="w-11 h-8 px-1 text-center rounded-lg bg-bg-elevated border border-border" />
+                </span>
+              </div>
+              {!link?.notifiedAt && <p className="text-[0.6875rem] text-text-subtle mt-1.5">{L("כשמפרסמים, שחקנים שמתאימים מקבלים התראה לטלפון. בלי בחירה, כולם.", "When you list it, actors who fit get a phone notification. Nothing picked means everyone.")}</p>}
+              {notified !== null && <p className="text-[0.6875rem] text-sage mt-1.5" role="status">{notified ? L(`נשלחה התראה ל-${notified} שחקנים מתאימים.`, `Notified ${notified} matching actors.`) : L("פורסם. אין כרגע שחקנים מתאימים עם התראות פעילות.", "Listed. No matching actors with notifications on right now.")}</p>}
               {link?.listed && !link.closed && <p className="text-[0.6875rem] text-text-muted mt-1.5">{L(`${link.joined ?? 0} הגישו עד עכשיו. ההגשות מופיעות ברשימת התפקיד.`, `${link.joined ?? 0} applied so far. Applications show in this role's list.`)}</p>}
             </div>
             <label htmlFor="invite-msg" className="block text-[0.6875rem] uppercase tracking-widest text-text-muted mt-4">{L("ההודעה", "Message")}</label>

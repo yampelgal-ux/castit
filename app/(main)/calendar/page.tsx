@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Plus, Trash2, MapPin, AlertCircle, Video, Clapperboard, Bell, CalendarDays, Ban, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, MapPin, AlertCircle, Video, Clapperboard, Bell, CalendarDays, Ban, Check, CalendarPlus } from "lucide-react";
+import { addToCalendar, absUrl, type IcsEvent } from "@/lib/ics";
 import { Header } from "@/components/Header";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
@@ -187,6 +188,12 @@ export default function CalendarPage() {
           {upcoming.length === 0
             ? <p className="text-sm text-text-muted">{L("היומן ריק. אפשר להוסיף אירוע, או לבקש מ-Aria לסדר לך את השבוע.", "Your calendar is empty. Add an event, or ask Aria to plan your week.")}</p>
             : upcoming.map((e) => <EventRow key={e.id} e={e} time={`${fmtDay(localIso(new Date(eventTime(e))))} · ${fmtTime(e)}`} L={L} />)}
+          {upcoming.length > 1 && (
+            <button onClick={() => addToCalendar(upcoming.map(toIcs), L("האודישנים שלי", "My auditions"))}
+              className="w-full h-11 rounded-lg border-2 border-border-strong text-sm font-semibold flex items-center justify-center gap-2">
+              <CalendarPlus className="w-4 h-4" aria-hidden /> {L(`הוספת כל ${upcoming.length} האירועים ליומן של הטלפון`, `Add all ${upcoming.length} to my phone's calendar`)}
+            </button>
+          )}
           <Link href="/studio/agent" className="block text-center text-sm font-semibold underline pt-1">{L("לבקש מ-Aria לסדר את היומן", "Ask Aria to organize my calendar")}</Link>
         </section>
       </div>
@@ -198,6 +205,8 @@ export default function CalendarPage() {
     </div>
   );
 }
+
+const toIcs = (e: AgendaEvent): IcsEvent => ({ uid: e.id, title: e.title, start: e.start, end: e.end, location: e.location, description: e.note, url: absUrl(e.href) });
 
 function EventRow({ e, time, onRemove, L }: { e: AgendaEvent; time: string; onRemove?: () => void; L: (h: string, e: string) => string }) {
   const Icon = e.kind === "self_tape" ? Video : e.kind === "reminder" ? Bell : e.kind === "personal" ? CalendarDays : Clapperboard;
@@ -214,6 +223,10 @@ function EventRow({ e, time, onRemove, L }: { e: AgendaEvent; time: string; onRe
   return (
     <div className="sheet rounded-xl flex items-center gap-3 p-2.5">
       {e.href ? <Link href={e.href} className="flex items-center gap-3 flex-1 min-w-0">{body}</Link> : <div className="flex items-center gap-3 flex-1 min-w-0">{body}</div>}
+      <button onClick={() => addToCalendar([toIcs(e)], e.title)} aria-label={L("הוספה ליומן של הטלפון", "Add to my phone's calendar")} title={L("הוספה ליומן של הטלפון", "Add to my phone's calendar")}
+        className="w-11 h-11 grid place-items-center text-text-muted shrink-0">
+        <CalendarPlus className="w-4 h-4" />
+      </button>
       {onRemove && (
         <button onClick={onRemove} aria-label={L("מחיקת האירוע", "Delete event")} className="w-11 h-11 grid place-items-center text-terra shrink-0">
           <Trash2 className="w-4 h-4" />

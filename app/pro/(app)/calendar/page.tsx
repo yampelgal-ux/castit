@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Calendar as CalIcon, Clock, Film, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Calendar as CalIcon, Clock, Film, CheckCircle2, AlertTriangle, CalendarPlus } from "lucide-react";
+import { addToCalendar, absUrl } from "@/lib/ics";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
@@ -176,7 +177,10 @@ function DayGroup({ day, events }: { day: string; events: Event[] }) {
   );
 }
 
+const localDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
 function EventRow({ e, i }: { e: Event; i: number }) {
+  const he = useT().lang === "he";
   const tone = {
     deadline: { icon: Clock,         cls: "bg-gold/10 text-gold border-gold/30" },
     shoot:    { icon: Film,          cls: "bg-violet/15 text-violet border-violet/30" },
@@ -186,14 +190,26 @@ function EventRow({ e, i }: { e: Event; i: number }) {
   const Icon = tone.icon;
   return (
     <motion.div initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
-      <Link href={e.href} className={cn("flex items-center gap-2.5 p-2.5 rounded-xl border", tone.cls)}>
-        <Icon className="w-4 h-4 shrink-0" />
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold truncate">{e.title}</div>
-          <div className="text-[0.6875rem] opacity-80 truncate">{e.subtitle}</div>
-        </div>
-        {e.urgent && <AlertTriangle className="w-3.5 h-3.5 shrink-0" />}
-      </Link>
+      <div className={cn("flex items-center rounded-xl border", tone.cls)}>
+        <Link href={e.href} className="flex items-center gap-2.5 p-2.5 flex-1 min-w-0">
+          <Icon className="w-4 h-4 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold truncate">{e.title}</div>
+            <div className="text-[0.6875rem] opacity-80 truncate">{e.subtitle}</div>
+          </div>
+          {e.urgent && <AlertTriangle className="w-3.5 h-3.5 shrink-0" />}
+        </Link>
+        <button
+          onClick={() => addToCalendar([{
+            uid: `${e.kind}_${e.href}_${e.date.getTime()}`, title: e.title, description: e.subtitle, url: absUrl(e.href),
+            start: e.kind === "callback" ? e.date.toISOString() : localDay(e.date),
+          }], e.title)}
+          aria-label={he ? "הוספה ליומן של הטלפון" : "Add to my phone's calendar"}
+          className="w-11 h-11 grid place-items-center shrink-0 opacity-80"
+        >
+          <CalendarPlus className="w-4 h-4" />
+        </button>
+      </div>
     </motion.div>
   );
 }
