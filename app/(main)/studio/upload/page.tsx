@@ -8,6 +8,7 @@ import { useMyReels, MAX_REEL_BYTES } from "@/lib/reels-store";
 import { lastUploadError } from "@/lib/cloud/media";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 import { canCompress, compressVideo, videoDuration, MAX_REEL_SECONDS } from "@/lib/video-compress";
 
 // Big files are fine when we can shrink them on the phone before upload.
@@ -15,6 +16,8 @@ const MAX_PICK_BYTES = 400 * 1024 * 1024;
 
 export default function UploadReelPage() {
   const router = useRouter();
+  const { lang, dir } = useT();
+  const L = (h: string, e: string) => (lang === "he" ? h : e);
   const addReel = useMyReels((s) => s.add);
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -30,15 +33,16 @@ export default function UploadReelPage() {
     e.target.value = "";
     if (!f) return;
     if (!f.type.startsWith("video/")) {
-      setError("אפשר להעלות רק קובצי וידאו (MP4, MOV).");
+      setError(L("אפשר להעלות רק קובצי וידאו (MP4, MOV).", "Only video files can be uploaded (MP4, MOV)."));
       return;
     }
-    if (f.size > (canCompress() ? MAX_PICK_BYTES : MAX_REEL_BYTES)) {
-      setError(`הקובץ גדול מ-${MAX_REEL_BYTES / 1048576}MB. כדאי לקצר אותו או לייצא באיכות נמוכה יותר ולנסות שוב.`);
+    const limit = canCompress() ? MAX_PICK_BYTES : MAX_REEL_BYTES;
+    if (f.size > limit) {
+      setError(L(`הקובץ גדול מ-${limit / 1048576}MB. כדאי לקצר אותו או לייצא באיכות נמוכה יותר ולנסות שוב.`, `The file is over ${limit / 1048576}MB. Trim it or export at a lower quality and try again.`));
       return;
     }
     if ((await videoDuration(f)) > MAX_REEL_SECONDS + 0.5) {
-      setError(`הסרטון ארוך מ-${MAX_REEL_SECONDS} שניות. כדאי לקצר אותו ולנסות שוב.`);
+      setError(L(`הסרטון ארוך מ-${MAX_REEL_SECONDS} שניות. כדאי לקצר אותו ולנסות שוב.`, `The video is longer than ${MAX_REEL_SECONDS} seconds. Trim it and try again.`));
       return;
     }
     setError("");
@@ -57,7 +61,7 @@ export default function UploadReelPage() {
     const small = await compressVideo(file, { onProgress: (p) => setProgress(p * 100) });
     if (small.size > MAX_REEL_BYTES) {
       setState("error");
-      setError(`גם אחרי כיווץ הסרטון גדול מ-${MAX_REEL_BYTES / 1048576}MB. כדאי לקצר אותו ולנסות שוב.`);
+      setError(L(`גם אחרי כיווץ הסרטון גדול מ-${MAX_REEL_BYTES / 1048576}MB. כדאי לקצר אותו ולנסות שוב.`, `Even after shrinking, the video is over ${MAX_REEL_BYTES / 1048576}MB. Trim it and try again.`));
       return;
     }
     setState("uploading");
@@ -74,7 +78,7 @@ export default function UploadReelPage() {
       const reel = await addReel(small, caption);
       onlyLocal = !reel.cloud;
     } catch (e) {
-      upError = e instanceof Error ? e.message : "ההעלאה נכשלה. נסו שוב.";
+      upError = e instanceof Error ? e.message : L("ההעלאה נכשלה. אפשר לנסות שוב.", "The upload failed. Try again.");
     }
     clearInterval(interval);
     setProgress(100);
@@ -90,9 +94,9 @@ export default function UploadReelPage() {
     if (onlyLocal) {
       const why = lastUploadError();
       setError(
-        why === "signed-out" ? "הסרטון נשמר רק במכשיר הזה כי לא התחברת לחשבון. התחברי ואז לחצי \"פרסום\" ליד הסרטון בהגדרות."
-        : why === "too-large" ? "הסרטון נשמר רק במכשיר הזה כי הוא גדול מדי לענן. כדאי לקצר אותו ולהעלות שוב."
-        : `הסרטון נשמר במכשיר, אבל ההעלאה לענן לא הצליחה, אז אחרים עוד לא רואים אותו. אפשר לנסות שוב מההגדרות. (${why || "unknown"})`,
+        why === "signed-out" ? L("הסרטון נשמר רק במכשיר הזה כי לא התחברת לחשבון. אחרי ההתחברות אפשר ללחוץ \"פרסום\" ליד הסרטון בהגדרות.", "The video is saved on this device only because you're not signed in. Sign in, then tap \"Publish\" next to it in settings.")
+        : why === "too-large" ? L("הסרטון נשמר רק במכשיר הזה כי הוא גדול מדי לענן. כדאי לקצר אותו ולהעלות שוב.", "The video is saved on this device only because it's too big for the cloud. Trim it and upload again.")
+        : L("הסרטון נשמר במכשיר, אבל ההעלאה לענן לא הצליחה, אז אחרים עוד לא רואים אותו. אפשר לנסות שוב מההגדרות.", "The video is saved on this device, but the cloud upload failed, so others can't see it yet. You can retry from settings.") + (why ? ` (${why})` : ""),
       );
       setTimeout(() => router.push("/settings#videos"), 4000);
       return;
@@ -109,15 +113,15 @@ export default function UploadReelPage() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col bg-bg">
-      <Header back title="סרטון חדש" />
+    <div className="min-h-dvh flex flex-col bg-bg" dir={dir}>
+      <Header back title={L("סרטון חדש", "New video")} />
 
       <div className="flex-1 px-5 pt-4 pb-6 flex flex-col">
         {!file ? (
           <div className="flex-1 flex flex-col gap-3">
             <div className="text-center mb-2">
-              <p className="font-display text-2xl tracking-editorial">איך תרצה ליצור את הריל?</p>
-              <p className="text-xs text-text-muted mt-1">{`MP4 / MOV · עד ${MAX_REEL_SECONDS} שניות · מומלץ פורמט אנכי`}</p>
+              <p className="font-display text-2xl tracking-editorial">{L("איך מוסיפים את הריל?", "How do you want to add your reel?")}</p>
+              <p className="text-xs text-text-muted mt-1">{L(`MP4 / MOV · עד ${MAX_REEL_SECONDS} שניות · עדיף לצלם לאורך`, `MP4 / MOV · up to ${MAX_REEL_SECONDS} seconds · vertical works best`)}</p>
             </div>
 
             {/* Option 1: Camera — opens phone camera directly */}
@@ -129,8 +133,8 @@ export default function UploadReelPage() {
                 <Camera className="w-7 h-7 text-gold" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-display text-lg">צלם עם המצלמה</div>
-                <div className="text-[0.6875rem] text-text-muted">פתיחת מצלמת הטלפון להקלטה ישירה</div>
+                <div className="font-display text-lg">{L("צילום במצלמה", "Record with the camera")}</div>
+                <div className="text-[0.6875rem] text-text-muted">{L("פתיחת מצלמת הטלפון להקלטה ישירה", "Opens your phone camera")}</div>
               </div>
             </button>
 
@@ -143,13 +147,13 @@ export default function UploadReelPage() {
                 <ImageIcon className="w-7 h-7 text-plum-light" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-display text-lg">בחר מהגלריה / קבצים</div>
-                <div className="text-[0.6875rem] text-text-muted">סרטון שכבר צילמת — במכשיר או ב-Cloud</div>
+                <div className="font-display text-lg">{L("בחירה מהגלריה או מהקבצים", "Pick from gallery or files")}</div>
+                <div className="text-[0.6875rem] text-text-muted">{L("סרטון שכבר צילמת, מהטלפון או מהענן", "A video you already shot, on your phone or in the cloud")}</div>
               </div>
             </button>
 
             <div className="text-[0.6875rem] text-text-subtle text-center mt-3 leading-relaxed">
-              צילמת במצלמה מקצועית? בחר "גלריה / קבצים" והעלה את ה-MP4 הסופי.
+              {L("צילמת במצלמה מקצועית? אפשר לבחור \"גלריה או קבצים\" ולהעלות את קובץ ה-MP4 הסופי.", "Shot on a pro camera? Choose \"gallery or files\" and upload the final MP4.")}
             </div>
           </div>
         ) : (
@@ -159,7 +163,8 @@ export default function UploadReelPage() {
               {state === "idle" && (
                 <button
                   onClick={reset}
-                  className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/60 backdrop-blur grid place-items-center"
+                  className="absolute top-3 end-3 w-9 h-9 rounded-full bg-black/60 backdrop-blur grid place-items-center"
+                  aria-label={L("הסרת הסרטון", "Remove video")}
                 >
                   <X className="w-4 h-4 text-white" />
                 </button>
@@ -173,7 +178,7 @@ export default function UploadReelPage() {
                       transition={{ duration: 0.3 }}
                     />
                   </div>
-                  <p className="text-[0.6875rem] text-white/80 mt-2 tnum">{state === "compressing" ? `מכווץ לאיכות שמתאימה לטלפון… ${Math.round(progress)}%` : `${Math.round(progress)}% הועלה`}</p>
+                  <p className="text-[0.6875rem] text-white/80 mt-2 tnum">{state === "compressing" ? L(`מכווץ לאיכות שמתאימה לטלפון… ${Math.round(progress)}%`, `Shrinking for phones… ${Math.round(progress)}%`) : L(`${Math.round(progress)}% הועלה`, `${Math.round(progress)}% uploaded`)}</p>
                 </div>
               )}
               {state === "done" && (
@@ -191,17 +196,18 @@ export default function UploadReelPage() {
             </div>
 
             <div className="mt-5">
-              <label className="text-[0.6875rem] uppercase tracking-wider text-text-muted">כיתוב</label>
+              <label htmlFor="reel-caption" className="text-[0.6875rem] uppercase tracking-wider text-text-muted">{L("כיתוב", "Caption")}</label>
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 disabled={state === "uploading" || state === "compressing" || state === "done"}
-                aria-label="כיתוב לסרטון"
-                placeholder="ספרי מה רואים בסרטון…"
+                id="reel-caption"
+                dir="auto"
+                placeholder={L("מה רואים בסרטון?", "What's in the video?")}
                 rows={3}
                 className="mt-1.5 w-full px-4 py-3 rounded-2xl bg-bg-elevated border border-border outline-none text-sm focus:border-gold/40 resize-none disabled:opacity-60"
               />
-              <div className="text-[0.6875rem] text-text-subtle text-right mt-1 tnum">{caption.length}/280</div>
+              <div className="text-[0.6875rem] text-text-subtle text-end mt-1 tnum">{caption.length}/280</div>
             </div>
           </>
         )}
@@ -226,11 +232,11 @@ export default function UploadReelPage() {
                 : "bg-bg-elevated text-text-subtle"
             )}
           >
-            {state === "compressing" && "מכווץ…"}
-            {state === "uploading" && "מעלה…"}
-            {state === "done" && (<><Check className="w-4 h-4" /> נשמר!</>)}
-            {state === "error" && "לנסות שוב"}
-            {state === "idle" && (<><Film className="w-4 h-4" /> פרסום הסרטון</>)}
+            {state === "compressing" && L("מכווץ…", "Shrinking…")}
+            {state === "uploading" && L("מעלה…", "Uploading…")}
+            {state === "done" && (<><Check className="w-4 h-4" aria-hidden /> {L("נשמר!", "Saved!")}</>)}
+            {state === "error" && L("לנסות שוב", "Try again")}
+            {state === "idle" && (<><Film className="w-4 h-4" aria-hidden /> {L("פרסום הסרטון", "Publish video")}</>)}
           </button>
         </div>
       </div>

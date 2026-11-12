@@ -236,8 +236,8 @@ export async function POST(req: Request) {
     }
     return Response.json({
       text: body.lang === 'en'
-        ? "Aria isn't connected yet (no ANTHROPIC_API_KEY on the server). Your calendar and reminders still work."
-        : 'Aria עדיין לא מחוברת (חסר ANTHROPIC_API_KEY בשרת). היומן והתזכורות עובדים גם בלעדיה.',
+        ? "Aria isn't available yet. Your calendar and reminders still work."
+        : 'Aria עוד לא זמינה. היומן והתזכורות עובדים גם בלעדיה.',
     })
   }
 

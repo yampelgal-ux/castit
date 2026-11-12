@@ -11,6 +11,7 @@ import {
   type Project, type Role, type Submission,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { TalentPhoto } from "@/components/TalentPhoto";
 
 // Chemistry mode: pro picks one submission from each of two different roles
 // in the same project and plays the tapes side-by-side to gauge chemistry.
@@ -126,7 +127,7 @@ export default function ChemistryPage() {
             </div>
             <div className="flex items-center justify-center gap-3">
               <div className="flex items-center gap-2 min-w-0">
-                <img src={subA.talentPhoto} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                <TalentPhoto src={subA.talentPhoto} name={subA.talentName} className="w-10 h-10 rounded-full shrink-0" />
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate">{subA.talentName}</div>
                   <div className="text-[0.6875rem] text-text-muted truncate">as {roles.find((r) => r.id === subA.roleId)?.name}</div>
@@ -134,7 +135,7 @@ export default function ChemistryPage() {
               </div>
               <div className="text-text-subtle">×</div>
               <div className="flex items-center gap-2 min-w-0">
-                <img src={subB.talentPhoto} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                <TalentPhoto src={subB.talentPhoto} name={subB.talentName} className="w-10 h-10 rounded-full shrink-0" />
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate">{subB.talentName}</div>
                   <div className="text-[0.6875rem] text-text-muted truncate">as {roles.find((r) => r.id === subB.roleId)?.name}</div>
@@ -207,7 +208,7 @@ function ChemistryColumn({
             )}
           </div>
           <div className="flex items-center gap-1.5 mt-1.5">
-            <img src={picked.talentPhoto} alt="" className="w-6 h-6 rounded-full object-cover" />
+            <TalentPhoto src={picked.talentPhoto} name={picked.talentName} className="w-6 h-6 rounded-full" />
             <span className="text-xs font-semibold truncate flex-1">{picked.talentName}</span>
             <button onClick={() => onPick("")} className="text-text-muted hover:text-danger p-0.5">
               <X className="w-3 h-3" />
@@ -229,7 +230,7 @@ function ChemistryColumn({
                   onClick={() => onPick(s.id)}
                   className="w-full flex items-center gap-2 p-1.5 rounded-lg bg-bg border border-border hover:border-gold/40 text-left"
                 >
-                  <img src={s.talentPhoto} alt="" className="w-7 h-7 rounded-md object-cover shrink-0" />
+                  <TalentPhoto src={s.talentPhoto} name={s.talentName} className="w-7 h-7 rounded-md shrink-0" />
                   <span className="text-[0.6875rem] font-semibold truncate flex-1">{s.talentName}</span>
                 </button>
               ))}

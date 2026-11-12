@@ -94,6 +94,10 @@ export default function CalendarPage() {
     : new Date(e.start).toLocaleTimeString(he ? "he-IL" : "en-US", { hour: "2-digit", minute: "2-digit" });
   const fmtDay = (iso: string) => new Date(`${iso}T12:00`).toLocaleDateString(he ? "he-IL" : "en-US", { weekday: "long", day: "numeric", month: "long" });
 
+  // The page is pre-rendered at build time, so "today" on the server is the
+  // build date. Draw the dates only on the phone.
+  if (!mounted) return <div className="min-h-dvh bg-bg" dir={dir}><Header back title={L("היומן שלי", "My calendar")} /></div>;
+
   return (
     <div className="min-h-dvh bg-bg" dir={dir}>
       <Header back title={L("היומן שלי", "My calendar")} right={

@@ -678,3 +678,13 @@ export function projectOverview(projectId: string) {
     urgency: toReview * 3 + callbacksThisWeek * 2 + (deadlines[0] && new Date(deadlines[0]).getTime() < week ? 2 : 0),
   };
 }
+
+const PROJECT_TYPE_HE: Record<string, string> = {
+  "Feature Film": "סרט קולנוע", "TV Series": "סדרה", "Commercial": "פרסומת",
+  "Short Film": "סרט קצר", "Theater": "תיאטרון", "Music Video": "קליפ",
+};
+/** The project type as shown on screen. Stored values stay in English. */
+export function projectTypeLabel(type: string | undefined, lang: "he" | "en"): string {
+  if (!type) return "";
+  return lang === "he" ? PROJECT_TYPE_HE[type] ?? type : type;
+}

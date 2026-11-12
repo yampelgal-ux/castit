@@ -2,113 +2,97 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useT } from "@/lib/i18n";
+import { useStore } from "@/lib/store";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Sparkles, Search, Video, Inbox, Wand2, ChevronLeft, ChevronRight,
-  X, Check, Users, Megaphone, Zap, ClipboardCheck, Disc, Camera,
-} from "lucide-react";
+import { Sparkles, Video, ChevronLeft, ChevronRight, Check, Users, Megaphone, ClipboardCheck, Camera } from "lucide-react";
 
 const KEY = "castit_onboarding_done_v1";
 
 type Step = {
   icon: typeof Sparkles;
   tone: "gold" | "plum" | "sage";
-  title: string;
-  body: string;
-  cta?: { label: string; href: string };
+  title: [string, string];
+  body: [string, string];
+  cta?: { label: [string, string]; href: string };
 };
 
+// [Hebrew, English]. Only features that work in the live app.
 const TALENT_STEPS: Step[] = [
   {
-    icon: Sparkles,
-    tone: "gold",
-    title: "ברוך הבא ל-CastIt",
-    body: "פלטפורמת הליהוק הראשונה שעובדת בשבילך — לא בשבילם. נראה לך מה נמצא היכן ב-60 שניות.",
+    icon: Sparkles, tone: "gold",
+    title: ["ברוכים הבאים ל-CastIt", "Welcome to CastIt"],
+    body: ["המקום שבו שחקנים ומלהקים נפגשים. ככה זה עובד, בחצי דקה.", "Where actors and casting directors meet. Here's how it works, in 30 seconds."],
   },
   {
-    icon: Camera,
-    tone: "gold",
-    title: "Self-tape בתוך האפליקציה",
-    body: "כשתקבל הזמנה, תוכל להקליט טייפ עם framing guide, sides על המסך, וכמה לקיחות. Aria אפילו תיתן לך הוראות בימוי לפני שתתחיל.",
-    cta: { label: "Audition Inbox", href: "/inbox" },
+    icon: Camera, tone: "gold",
+    title: ["פרופיל שמלהקים מוצאים", "A profile casting directors find"],
+    body: ["תמונה, ריל ופרטים כמו גיל, גובה ושפות. ככל שהפרופיל מלא יותר, כך מופיעים יותר בחיפוש.", "A photo, a reel and details like age, height and languages. The fuller your profile, the more you show up in search."],
+    cta: { label: ["העלאת ריל", "Upload a reel"], href: "/studio/upload" },
   },
   {
-    icon: Wand2,
-    tone: "plum",
-    title: "AI Coach להכנה",
-    body: "העלה סצנה (תמונה או טקסט) → בחר את התפקיד שלך, את הקול והטונציה של השותף → תרגל איתה כמו עם מאמן אמיתי. נשמר בספרייה.",
-    cta: { label: "פתח Coach", href: "/studio/coach" },
+    icon: Megaphone, tone: "plum",
+    title: ["אודישנים פתוחים", "Open auditions"],
+    body: ["מלהקים מפרסמים תפקידים, ואפשר להגיש בלחיצה.", "Casting directors post roles, and you can apply in one tap."],
+    cta: { label: ["ללוח האודישנים", "See open auditions"], href: "/auditions" },
   },
   {
-    icon: Search,
-    tone: "sage",
-    title: "אתה גלוי בחיפוש",
-    body: "מלהקים מחפשים לפי 17 פרמטרים — גובה, שפות, מבטאים, כישורים. ככל שהפרופיל שלך מלא יותר, כך תופיע יותר.",
-    cta: { label: "Typecast Profile", href: "/typecast" },
+    icon: Video, tone: "sage",
+    title: ["הזמנות וסלף-טייפ", "Invites and self-tapes"],
+    body: ["הזמנות מגיעות לתיבה. מקליטים טייפ ישר מהטלפון ושולחים, ורואים מתי יש קולבק.", "Invites land in your inbox. Record a tape right on your phone, send it, and see when you get a callback."],
+    cta: { label: ["לתיבה", "Open inbox"], href: "/inbox" },
   },
 ];
 
 const PRO_STEPS: Step[] = [
   {
-    icon: Sparkles,
-    tone: "gold",
-    title: "ברוך הבא ל-CastIt Pro",
-    body: "Pipeline ליהוק מלא + AI שעובד בשבילך. נסקור 4 כלים שתשתמש בהם כל יום.",
+    icon: Sparkles, tone: "gold",
+    title: ["ברוכים הבאים ל-CastIt", "Welcome to CastIt"],
+    body: ["כל הליהוק במקום אחד: פרויקטים, תפקידים, טייפים והחלטות. ככה זה עובד.", "All your casting in one place: projects, roles, tapes and decisions. Here's how it works."],
   },
   {
-    icon: Inbox,
-    tone: "gold",
-    title: "Action Inbox מאוחד",
-    body: "כל הפעולות הדורשות תשומת לב — חוצה פרויקטים — במקום אחד. Holds שעומדים לפוג, טייפים לסקירה, offers שמחכים.",
-    cta: { label: "Action Inbox", href: "/pro/inbox" },
+    icon: Users, tone: "gold",
+    title: ["פרויקט ותפקידים", "Projects and roles"],
+    body: ["פותחים פרויקט, מוסיפים תפקידים, ומחפשים שחקנים לפי גיל, מראה, שפות וכישורים.", "Create a project, add roles, and search actors by age, look, languages and skills."],
+    cta: { label: ["לפרויקטים", "Go to projects"], href: "/pro/projects" },
   },
   {
-    icon: Zap,
-    tone: "plum",
-    title: "Tape Triage Mode",
-    body: "החלק ימינה=Callback, שמאלה=Pass, למעלה=Hold. סקור 50 טייפים ב-5 דקות במקום שעה.",
-    cta: { label: "Triage", href: "/pro/triage" },
+    icon: Megaphone, tone: "plum",
+    title: ["הזמנה בוואטסאפ או אודישן פתוח", "Invite on WhatsApp, or post an open audition"],
+    body: ["שולחים קישור לתפקיד גם לשחקנים שעוד לא באפליקציה, או מפרסמים בלוח ושחקנים מתאימים מקבלים התראה.", "Send a role link to actors who aren't on the app yet, or post it on the board and matching actors get notified."],
   },
   {
-    icon: Wand2,
-    tone: "plum",
-    title: "AI לכל שלב",
-    body: "Bulk Roles מקבלים breakdown ובונים את כל התפקידים. Tape Analysis סורק כל טייפ ומכין דוח. Comm Automation כותב הודעות במקומך.",
-    cta: { label: "פרויקטים", href: "/pro/projects" },
-  },
-  {
-    icon: ClipboardCheck,
-    tone: "sage",
-    title: "Director Reviews",
-    body: "בוחר 5 טייפים → שולח קישור לבמאי → הוא מצביע 👍/🤔/👎 → אתה רואה בזמן אמת. בלי WeTransfer, בלי שיחות.",
-    cta: { label: "Director Reviews", href: "/pro/approvals" },
+    icon: ClipboardCheck, tone: "sage",
+    title: ["טייפים והחלטות", "Tapes and decisions"],
+    body: ["הטייפים מגיעים לתפקיד. מסמנים קולבק, שולחים לבמאי להצבעה, ומודיעים לשחקן.", "Tapes arrive in the role. Mark callbacks, send picks to the director to vote, and let the actor know."],
+    cta: { label: ["אישורי במאי", "Director reviews"], href: "/pro/approvals" },
   },
 ];
 
+/** The tour opens once, on the first home screen after signing up. */
+const HOME = new Set(["/feed", "/inbox", "/profile/me", "/pro/dashboard", "/pro/projects"]);
+
 export function OnboardingTour() {
   const pathname = usePathname();
+  const { lang, dir } = useT();
+  const he = lang === "he";
+  const i = he ? 0 : 1;
+  const authed = useStore((s) => s.isAuthed);
+  const role = useStore((s) => s.profile.role);
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-
-  // Detect mode (pro vs talent) from URL
-  const isPro = /^\/pro(\/|$)/.test(pathname ?? "");
-  const steps = isPro ? PRO_STEPS : TALENT_STEPS;
+  const steps = role === "Casting Pro" ? PRO_STEPS : TALENT_STEPS;
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    // Don't show on share/approve public pages
-    if (pathname?.startsWith("/share") || pathname?.startsWith("/approve") || pathname?.startsWith("/tour") || pathname?.startsWith("/guide")) return;
-    // Don't show on signup/welcome (have their own intro)
-    if (pathname === "/welcome" || pathname === "/signup" || pathname === "/pro/signup" || pathname === "/pro/login" || pathname === "/login" || pathname === "/reset-password" || pathname === "/offline" || pathname === "/install") return;
-    const done = localStorage.getItem(KEY);
-    if (done) return;
+    if (!authed || !HOME.has(pathname ?? "")) return;
+    try { if (localStorage.getItem(KEY)) return; } catch { return; }
     const t = setTimeout(() => setOpen(true), 1200);
     return () => clearTimeout(t);
-  }, [pathname]);
+  }, [pathname, authed]);
 
   function dismiss() {
     if (typeof window !== "undefined") {
-      localStorage.setItem(KEY, "1");
+      try { localStorage.setItem(KEY, "1"); } catch {}
     }
     setOpen(false);
   }
@@ -134,7 +118,7 @@ export function OnboardingTour() {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] grid place-items-center p-4 max-w-[440px] mx-auto">
+      <div className="fixed inset-0 z-[100] grid place-items-center p-4 max-w-[440px] mx-auto" dir={dir} role="dialog" aria-modal="true" aria-labelledby="tour-title">
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={dismiss} />
 
         <motion.div
@@ -148,9 +132,9 @@ export function OnboardingTour() {
           {/* Skip */}
           <button
             onClick={dismiss}
-            className="absolute top-4 left-4 text-[0.6875rem] text-text-muted"
+            className="absolute top-3 end-3 px-2 py-1 text-xs text-text-muted"
           >
-            דלג
+            {he ? "דילוג" : "Skip"}
           </button>
 
           {/* Progress dots */}
@@ -171,9 +155,9 @@ export function OnboardingTour() {
           </div>
 
           {/* Title + body */}
-          <h2 className="font-display text-2xl tracking-editorial text-center">{current.title}</h2>
+          <h2 id="tour-title" className="font-display text-2xl tracking-editorial text-center">{current.title[i]}</h2>
           <p className="text-sm text-text-muted text-center mt-2 leading-relaxed">
-            {current.body}
+            {current.body[i]}
           </p>
 
           {/* Optional CTA */}
@@ -183,7 +167,7 @@ export function OnboardingTour() {
               onClick={dismiss}
               className="block mt-4 h-10 rounded-full bg-bg border border-gold/30 text-xs font-semibold text-gold inline-flex items-center justify-center gap-1.5 w-full"
             >
-              {current.cta.label} <ChevronLeft className="w-3 h-3" />
+              {current.cta.label[i]} <ChevronLeft className="w-3 h-3 ltr:rotate-180" aria-hidden />
             </Link>
           )}
 
@@ -194,7 +178,7 @@ export function OnboardingTour() {
                 onClick={prev}
                 className="h-11 px-4 rounded-full bg-bg border border-border text-xs font-semibold inline-flex items-center justify-center gap-1.5 text-text-muted"
               >
-                <ChevronRight className="w-3.5 h-3.5" /> חזור
+                <ChevronRight className="w-3.5 h-3.5 ltr:rotate-180" aria-hidden /> {he ? "חזרה" : "Back"}
               </button>
             )}
             <button
@@ -202,9 +186,9 @@ export function OnboardingTour() {
               className="flex-1 h-11 rounded-full bg-gold text-on-accent font-semibold text-sm inline-flex items-center justify-center gap-1.5"
             >
               {isLast ? (
-                <><Check className="w-4 h-4" /> בואו נתחיל</>
+                <><Check className="w-4 h-4" aria-hidden /> {he ? "יאללה, מתחילים" : "Let's go"}</>
               ) : (
-                <>הבא ({step + 1}/{steps.length}) <ChevronLeft className="w-4 h-4" /></>
+                <>{he ? "הבא" : "Next"} ({step + 1}/{steps.length}) <ChevronLeft className="w-4 h-4 ltr:rotate-180" aria-hidden /></>
               )}
             </button>
           </div>

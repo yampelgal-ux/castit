@@ -13,6 +13,9 @@ import {
 import { getTapePlaybackUrl } from "@/lib/tape-storage";
 import { castPublicVote, fetchPublicLink, logPublicView } from "@/lib/cloud/shared";
 import { notifyProDirectorVote } from "@/lib/notifications-store";
+import { useT } from "@/lib/i18n";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { TalentPhoto } from "@/components/TalentPhoto";
 
 export default function ApprovePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -22,6 +25,9 @@ export default function ApprovePage() {
   const [pendingVote, setPendingVote] = useState<{ submissionId: string; vote: ApprovalVote } | null>(null);
 
   const [isRemote, setIsRemote] = useState(false);
+  const { lang, dir } = useT();
+  const he = lang === "he";
+  const L = (h: string, e: string) => (he ? h : e);
 
   useEffect(() => {
     const s = getApprovalBySlug(slug);
@@ -87,7 +93,7 @@ export default function ApprovePage() {
       <div className="min-h-dvh bg-bg grid place-items-center p-6 text-center">
         <div>
           <AlertCircle className="w-10 h-10 text-text-subtle mx-auto opacity-60" />
-          <h1 className="font-display text-2xl mt-4">Link not found</h1>
+          <h1 className="font-display text-2xl mt-4">{L("הקישור לא נמצא", "Link not found")}</h1>
         </div>
       </div>
     );
@@ -97,8 +103,8 @@ export default function ApprovePage() {
       <div className="min-h-dvh bg-bg grid place-items-center p-6 text-center">
         <div>
           <AlertCircle className="w-10 h-10 text-text-subtle mx-auto opacity-60" />
-          <h1 className="font-display text-2xl mt-4">This session has expired</h1>
-          <p className="text-sm text-text-muted mt-1">Ask the sender for a new link.</p>
+          <h1 className="font-display text-2xl mt-4">{L("תוקף הקישור פג", "This session has expired")}</h1>
+          <p className="text-sm text-text-muted mt-1">{L("אפשר לבקש קישור חדש ממי ששלח/ה אותו.", "Ask the sender for a new link.")}</p>
         </div>
       </div>
     );
@@ -107,30 +113,33 @@ export default function ApprovePage() {
   const voted = session.talents.filter((t) => t.vote).length;
 
   return (
-    <div className="min-h-dvh bg-bg pb-12">
+    <div className="min-h-dvh bg-bg pb-12" dir={dir}>
       {/* Header band */}
       <div className="border-b border-border bg-bg-elevated/60">
         <div className="max-w-[640px] mx-auto px-5 py-6">
-          <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">
-            Director Review
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">
+              {L("בחירת שחקנים לבמאי/ת", "Director review")}
+            </div>
+            <LanguageToggle />
           </div>
           <h1 className="font-display text-3xl tracking-editorial mt-1">{session.projectTitle}</h1>
           {session.roleName && (
             <p className="text-sm text-text-muted mt-1">{session.roleName}</p>
           )}
           {session.greeting && (
-            <div className="mt-3 p-3 rounded-2xl bg-gold/8 border border-gold/30 text-xs leading-relaxed">
+            <div className="mt-3 p-3 rounded-2xl bg-gold/8 border border-gold/30 text-xs leading-relaxed" dir="auto">
               {session.greeting}
             </div>
           )}
           <div className="text-[0.6875rem] text-text-subtle mt-3 inline-flex items-center gap-2">
-            <span>{session.talents.length} tapes</span>
+            <span>{L(`${session.talents.length} טייפים`, `${session.talents.length} tapes`)}</span>
             <span>·</span>
-            <span className="text-gold font-semibold tnum">{voted} voted</span>
+            <span className="text-gold font-semibold tnum">{L(`${voted} הצבעות`, `${voted} voted`)}</span>
             {voterName && (
               <>
                 <span>·</span>
-                <span>Voting as <strong>{voterName}</strong></span>
+                <span>{L("מצביע/ה בתור", "Voting as")} <strong>{voterName}</strong></span>
               </>
             )}
           </div>
@@ -146,28 +155,29 @@ export default function ApprovePage() {
 
       <div className="max-w-[640px] mx-auto px-5 mt-10 text-center">
         <div className="inline-flex items-center gap-1.5 text-[0.6875rem] text-text-subtle">
-          <Sparkles className="w-3 h-3" /> Curated on CastIt · auto-syncs to the casting director
+          <Sparkles className="w-3 h-3" aria-hidden /> {L("נשלח דרך CastIt · ההצבעות מגיעות ישר למלהק/ת", "Sent with CastIt · votes go straight to the casting director")}
         </div>
       </div>
 
       {/* Name prompt */}
       <AnimatePresence>
         {askName && (
-          <div className="fixed inset-0 z-50 grid place-items-end max-w-[440px] mx-auto">
+          <div className="fixed inset-0 z-50 grid place-items-end max-w-[440px] mx-auto" dir={dir}>
             <div className="absolute inset-0 bg-black/60" onClick={() => setAskName(false)} />
             <motion.div
               initial={{ y: "100%" }} animate={{ y: 0 }}
+              role="dialog" aria-modal="true" aria-labelledby="voter-name-title"
               className="relative w-full bg-bg-elevated border-t border-border rounded-t-3xl p-5"
             >
               <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
-              <h2 className="font-display text-xl mb-1">Your name</h2>
+              <h2 id="voter-name-title" className="font-display text-xl mb-1">{L("איך קוראים לך?", "Your name")}</h2>
               <p className="text-xs text-text-muted mb-4">
-                The casting director will see who voted on each tape.
+                {L("המלהק/ת יראה מי הצביע על כל טייפ.", "The casting director will see who voted on each tape.")}
               </p>
               <input
                 value={voterName}
                 onChange={(e) => setVoterName(e.target.value)}
-                placeholder="Full name"
+                placeholder={L("שם מלא", "Full name")} aria-label={L("שם מלא", "Full name")} dir="auto"
                 autoFocus
                 className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
               />
@@ -176,7 +186,7 @@ export default function ApprovePage() {
                 disabled={!voterName.trim()}
                 className="w-full mt-3 h-12 rounded-2xl bg-gold text-on-accent font-semibold disabled:opacity-40"
               >
-                Save & Vote
+                {L("שמירה והצבעה", "Save & vote")}
               </button>
             </motion.div>
           </div>
@@ -186,15 +196,17 @@ export default function ApprovePage() {
   );
 }
 
-const VOTE_META: Record<ApprovalVote, { label: string; cls: string; icon: typeof ThumbsUp }> = {
-  yes:   { label: "Yes",   cls: "bg-success text-on-accent",      icon: ThumbsUp },
-  maybe: { label: "Maybe", cls: "bg-gold text-on-accent",         icon: HelpCircle },
-  no:    { label: "No",    cls: "bg-danger text-white",    icon: ThumbsDown },
+const VOTE_META: Record<ApprovalVote, { label: [string, string]; cls: string; icon: typeof ThumbsUp }> = {
+  yes:   { label: ["כן", "Yes"],      cls: "bg-success text-on-accent", icon: ThumbsUp },
+  maybe: { label: ["אולי", "Maybe"],  cls: "bg-gold text-on-accent",    icon: HelpCircle },
+  no:    { label: ["לא", "No"],       cls: "bg-danger text-white",      icon: ThumbsDown },
 };
 
 function TalentCard({ t, i, onVote }: { t: ApprovalTalent; i: number; onVote: (v: ApprovalVote) => void }) {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [muted, setMuted] = useState(true);
+  const { lang } = useT();
+  const k = lang === "he" ? 0 : 1;
 
   useEffect(() => {
     let revoke: (() => void) | undefined;
@@ -228,12 +240,13 @@ function TalentCard({ t, i, onVote }: { t: ApprovalTalent; i: number; onVote: (v
           />
         ) : (
           <div className="w-full h-full grid place-items-center text-text-subtle text-xs">
-            Loading tape...
+            {k === 0 ? "טוען טייפ…" : "Loading tape…"}
           </div>
         )}
         <button
           onClick={() => setMuted((m) => !m)}
-          className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-black/60 backdrop-blur grid place-items-center text-white"
+          className="absolute bottom-3 end-3 w-9 h-9 rounded-full bg-black/60 backdrop-blur grid place-items-center text-white"
+          aria-label={muted ? (k === 0 ? "הפעלת קול" : "Unmute") : (k === 0 ? "השתקה" : "Mute")}
         >
           {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
         </button>
@@ -241,14 +254,14 @@ function TalentCard({ t, i, onVote }: { t: ApprovalTalent; i: number; onVote: (v
 
       {/* Talent info */}
       <div className="p-4 flex items-center gap-3">
-        <img src={t.talentPhoto} alt={t.talentName} className="w-12 h-12 rounded-xl object-cover shrink-0" />
+        <TalentPhoto src={t.talentPhoto} name={t.talentName} className="w-12 h-12 rounded-xl shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-sm truncate">{t.talentName}</div>
           <div className="text-[0.6875rem] text-text-muted truncate">{t.roleName}</div>
           {t.vote && t.voterName && (
             <div className="text-[0.6875rem] mt-1 inline-flex items-center gap-1 text-text-muted">
               {(() => { const Icon = VOTE_META[t.vote].icon; return <Icon className="w-2.5 h-2.5" />; })()}
-              <strong className="text-text">{t.voterName}</strong> marked {VOTE_META[t.vote].label}
+              <strong className="text-text">{t.voterName}</strong> {k === 0 ? "סימן/ה" : "marked"} {VOTE_META[t.vote].label[k]}
             </div>
           )}
         </div>
@@ -268,7 +281,7 @@ function TalentCard({ t, i, onVote }: { t: ApprovalTalent; i: number; onVote: (v
                 active ? meta.cls : "bg-bg border border-border text-text-muted"
               }`}
             >
-              <Icon className="w-3.5 h-3.5" /> {meta.label}
+              <Icon className="w-3.5 h-3.5" aria-hidden /> {meta.label[k]}
             </button>
           );
         })}

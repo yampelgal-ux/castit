@@ -19,6 +19,7 @@ import {
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
 import { useSavedSearchAlerts } from "@/lib/pro-search";
+import { TalentPhoto } from "@/components/TalentPhoto";
 
 export default function ProDashboardPage() {
   const { profile } = useStore();
@@ -356,7 +357,7 @@ function PendingRow({ s, i }: { s: Submission; i: number }) {
         href={`/pro/projects`}
         className="flex items-center gap-3 p-2.5 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40"
       >
-        <img src={s.talentPhoto} alt={s.talentName} className="w-10 h-10 rounded-xl object-cover" />
+        <TalentPhoto src={s.talentPhoto} name={s.talentName} className="w-10 h-10 rounded-xl" />
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold truncate">{s.talentName}</div>
           <div className="text-[0.6875rem] text-text-muted">{timeAgo(s.createdAt, t)}</div>

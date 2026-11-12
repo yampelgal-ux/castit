@@ -19,13 +19,15 @@ type LangState = {
 };
 
 function initialLang(): Lang {
-  if (typeof window === "undefined") return "en";
-  const stored = window.localStorage.getItem(KEY);
-  return stored === "he" || stored === "en" ? stored : "en";
+  // Hebrew first: the audience is Israeli, and many Israeli phones run in English.
+  if (typeof window === "undefined") return "he";
+  let stored: string | null = null;
+  try { stored = window.localStorage.getItem(KEY); } catch {}
+  return stored === "he" || stored === "en" ? stored : "he";
 }
 
 export const useLangStore = create<LangState>((set, get) => ({
-  lang: "en",
+  lang: "he",
   setLang: (l) => {
     if (typeof window !== "undefined") window.localStorage.setItem(KEY, l);
     set({ lang: l });
@@ -83,10 +85,10 @@ const DICT: Record<string, Entry> = {
   "common.next":       { en: "Next",     he: "הבא" },
   "common.back":       { en: "Back",     he: "חזור" },
   "common.skip":       { en: "Skip",     he: "דלג" },
-  "common.save":       { en: "Save",     he: "שמור" },
+  "common.save":       { en: "Save",     he: "שמירה" },
   "common.cancel":     { en: "Cancel",   he: "ביטול" },
   "common.done":       { en: "Done",     he: "סיום" },
-  "common.send":       { en: "Send",     he: "שלח" },
+  "common.send":       { en: "Send",     he: "שליחה" },
   "common.upload":     { en: "Upload",   he: "העלאה" },
   "common.continue":   { en: "Continue", he: "המשך" },
   "common.markAllRead":{ en: "Mark all read", he: "סמן הכל כנקרא" },
@@ -94,7 +96,7 @@ const DICT: Record<string, Entry> = {
   // Notifications
   "notif.title":       { en: "Notifications", he: "התראות" },
   "notif.empty":       { en: "No notifications", he: "אין התראות" },
-  "notif.emptyDesc":   { en: "When a pro invites you, sends a callback, or something important happens — you'll see it here.", he: "כשמלהק יזמין אותך, ישלח callback, או יקרה משהו חשוב — תקבל כאן עדכון." },
+  "notif.emptyDesc":   { en: "When a pro invites you, sends a callback, or something important happens — you'll see it here.", he: "כשמלהק/ת מזמין/ה אותך, שולח/ת קולבק, או כשקורה משהו חשוב, העדכון יופיע כאן." },
 
   // Language toggle
   "lang.label":        { en: "Language", he: "שפה" },
@@ -103,14 +105,14 @@ const DICT: Record<string, Entry> = {
 
   // Onboarding
   "ob.step":           { en: "Step {n} of 3", he: "שלב {n} מתוך 3" },
-  "ob.role.title":     { en: "Who are you on", he: "מי אתה ב־" },
-  "ob.role.sub":       { en: "Pick the one that fits today — you can switch later.", he: "בחר את מה שמתאים היום — אפשר להחליף בהמשך." },
+  "ob.role.title":     { en: "Who are you on", he: "מה התפקיד שלך ב־" },
+  "ob.role.sub":       { en: "Pick the one that fits today — you can switch later.", he: "בוחרים מה שמתאים היום. אפשר להחליף בהמשך." },
   "ob.role.talent":    { en: "Talent", he: "כישרון" },
   "ob.role.talentDesc":{ en: "Actor, model, creator. Post reels, get cast.", he: "שחקן, דוגמן, יוצר. פרסם רילים, היבחר לתפקידים." },
   "ob.role.pro":       { en: "Casting Pro", he: "איש ליהוק" },
-  "ob.role.proDesc":   { en: "Director, agent, producer. Discover talent.", he: "במאי, סוכן, מפיק. גלה כישרונות." },
+  "ob.role.proDesc":   { en: "Director, agent, producer. Discover talent.", he: "ליהוק, בימוי, הפקה. מוצאים כישרונות." },
   "ob.goals.title":    { en: "What are you here for?", he: "מה הביא אותך לכאן?" },
-  "ob.goals.sub":      { en: "Pick any — we'll tailor your feed.", he: "בחר כמה שתרצה — נתאים לך את הפיד." },
+  "ob.goals.sub":      { en: "Pick any — we'll tailor your feed.", he: "אפשר לבחור כמה. נתאים לך את הפיד." },
   "ob.goal.discovered":{ en: "Get discovered", he: "להתגלות" },
   "ob.goal.discoveredDesc": { en: "Show your reels to casting pros", he: "הצג את הרילים שלך למלהקים" },
   "ob.goal.scenes":    { en: "Practice scenes", he: "לתרגל סצנות" },
@@ -118,18 +120,18 @@ const DICT: Record<string, Entry> = {
   "ob.goal.castings":  { en: "Apply to roles", he: "להגיש לתפקידים" },
   "ob.goal.castingsDesc": { en: "Match with paid opportunities", he: "התאמה להזדמנויות בתשלום" },
   "ob.goal.network":   { en: "Build a network", he: "לבנות רשת קשרים" },
-  "ob.goal.networkDesc": { en: "Connect with other creatives", he: "התחבר ליוצרים אחרים" },
-  "ob.photo.title":    { en: "Add a face to the name", he: "תוסיף פנים לשם" },
+  "ob.goal.networkDesc": { en: "Connect with other creatives", he: "חיבור ליוצרים אחרים" },
+  "ob.photo.title":    { en: "Add a face to the name", he: "תמונה לפרופיל" },
   "ob.photo.sub":      { en: "A profile photo boosts your discovery rate 5×.", he: "תמונת פרופיל מגבירה את סיכויי הגילוי שלך פי 5." },
-  "ob.photo.tap":      { en: "Tap to upload", he: "הקש להעלאה" },
+  "ob.photo.tap":      { en: "Tap to upload", he: "הקשה להעלאה" },
   "ob.photo.change":   { en: "Change photo", he: "החלף תמונה" },
-  "ob.photo.add":      { en: "Add a profile photo", he: "הוסף תמונת פרופיל" },
+  "ob.photo.add":      { en: "Add a profile photo", he: "הוספת תמונת פרופיל" },
   "ob.photo.later":    { en: "You can skip this and add a photo later from your profile settings.", he: "אפשר לדלג ולהוסיף תמונה מאוחר יותר מהגדרות הפרופיל." },
   "ob.enter":          { en: "Enter CastIt", he: "כניסה ל-CastIt" },
   "ob.skipNow":        { en: "Skip for now", he: "דלג לבינתיים" },
 
   // PhotoPicker (shared — appears on onboarding, typecast, etc.)
-  "picker.title":      { en: "Choose a source", he: "בחר מקור תמונה" },
+  "picker.title":      { en: "Choose a source", he: "מאיפה התמונה?" },
   "picker.camera":     { en: "Camera", he: "מצלמה" },
   "picker.cameraSub":  { en: "Take one now", he: "צילום ישיר עכשיו" },
   "picker.gallery":    { en: "Gallery / Files", he: "גלריה / קבצים" },
@@ -143,8 +145,8 @@ const DICT: Record<string, Entry> = {
   "fab.chat":          { en: "Chat with Aria", he: "שיחה עם Aria" },
   "fab.chatSub":       { en: "Casting strategy · negotiations · scheduling", he: "אסטרטגיית ליהוק · משא ומתן · יומן" },
   "fab.practice":      { en: "Practice with Aria", he: "תרגל עם Aria" },
-  "fab.practiceSub":   { en: "Upload sides (image / text / file) and rehearse", he: "העלה sides (תמונה / טקסט / קובץ) ותרגל" },
-  "fab.studio":        { en: "Open Studio", he: "פתח סטודיו" },
+  "fab.practiceSub":   { en: "Upload sides (image / text / file) and rehearse", he: "מעלים סצנה (תמונה, טקסט או קובץ) ומתרגלים" },
+  "fab.studio":        { en: "Open Studio", he: "פתיחת הסטודיו" },
   "fab.studioSub":     { en: "Scene library · reel upload", he: "ספריית סצנות · העלאת ריל" },
 
   // Upload sources (reels + auditions)
@@ -162,7 +164,7 @@ const DICT: Record<string, Entry> = {
   "pd.urgentActions":  { en: "{n} urgent actions", he: "{n} פעולות דחופות" },
   "pd.itemsWaiting":   { en: "{n} items waiting", he: "{n} פריטים ממתינים" },
   "pd.tapesToReviewShort": { en: "{n} tapes to review · ", he: "{n} טייפים לסקירה · " },
-  "pd.tapOpen":        { en: "Tap to open", he: "הקש לפתיחה" },
+  "pd.tapOpen":        { en: "Tap to open", he: "הקשה לפתיחה" },
   "pd.triage":         { en: "Tape Triage Mode", he: "מצב סקירת טייפים" },
   "pd.triageSub":      { en: "Swipe right/left to fly through {n} tapes", he: "החלק ימינה/שמאלה כדי לעבור מהר על {n} טייפים" },
   "pd.kpi.projects":   { en: "Active projects", he: "פרויקטים פעילים" },
@@ -179,9 +181,9 @@ const DICT: Record<string, Entry> = {
   "pd.awaiting":       { en: "Awaiting your call", he: "ממתין להחלטתך" },
   "pd.seeAll":         { en: "See all →", he: "הצג הכל →" },
   "pd.review":         { en: "Review", he: "סקירה" },
-  "pd.empty.title":    { en: "Start your first project", he: "התחל את הפרויקט הראשון" },
-  "pd.empty.sub":      { en: "Create a casting folder, add roles, then send audition invites to talents you find via search or reels.", he: "צור תיקיית ליהוק, הוסף תפקידים, ושלח הזמנות לאודישן לכישרונות שתמצא בחיפוש או ברילים." },
-  "pd.empty.cta":      { en: "Create project", he: "צור פרויקט" },
+  "pd.empty.title":    { en: "Start your first project", he: "הפרויקט הראשון שלך" },
+  "pd.empty.sub":      { en: "Create a casting folder, add roles, then send audition invites to talents you find via search or reels.", he: "פותחים תיקיית ליהוק, מוסיפים תפקידים, ושולחים הזמנות לאודישן לשחקנים מהחיפוש או מהרילים." },
+  "pd.empty.cta":      { en: "Create project", he: "יצירת פרויקט" },
   "time.ago.d":        { en: "{n}d ago", he: "לפני {n} ימים" },
   "time.ago.h":        { en: "{n}h ago", he: "לפני {n} שעות" },
   "time.now":          { en: "just now", he: "הרגע" },
@@ -190,10 +192,10 @@ const DICT: Record<string, Entry> = {
   "feed.following":    { en: "Following", he: "עוקב" },
   "feed.forYou":       { en: "For You", he: "בשבילך" },
   "feed.follow":       { en: "Follow", he: "עקוב" },
-  "feed.save":         { en: "Save", he: "שמור" },
+  "feed.save":         { en: "Save", he: "שמירה" },
   "feed.saved":        { en: "Saved", he: "נשמר" },
-  "feed.send":         { en: "Send", he: "שלח" },
-  "feed.sendToPro":    { en: "Send to a Casting Pro", he: "שלח למלהק" },
+  "feed.send":         { en: "Send", he: "שליחה" },
+  "feed.sendToPro":    { en: "Send to a Casting Pro", he: "שליחה למלהק/ת" },
   "feed.originalAudio":{ en: "Original audio", he: "אודיו מקורי" },
   "feed.eyes":         { en: "Eyes", he: "עיניים" },
   "feed.hair":         { en: "hair", he: "שיער" },
@@ -262,23 +264,23 @@ const DICT: Record<string, Entry> = {
   // Messages
   "msg.title":         { en: "Messages", he: "הודעות" },
   "msg.empty":         { en: "No conversations yet", he: "עדיין אין שיחות" },
-  "msg.emptyDesc":     { en: "Message a talent from their profile or a reel — chats appear here.", he: "שלח הודעה לטאלנט מהפרופיל או מריל — השיחות יופיעו כאן." },
-  "msg.placeholder":   { en: "Write a message…", he: "כתוב הודעה…" },
+  "msg.emptyDesc":     { en: "Message a talent from their profile or a reel — chats appear here.", he: "אפשר לשלוח הודעה מפרופיל או מריל. השיחות יופיעו כאן." },
+  "msg.placeholder":   { en: "Write a message…", he: "כתיבת הודעה…" },
   "msg.searchPh":      { en: "Search messages", he: "חפש בהודעות" },
 
   // Self-tape record
   "rec.studio":        { en: "Self-tape studio", he: "אולפן Self-tape" },
   "rec.cameraOff":     { en: "Camera unavailable", he: "המצלמה לא זמינה" },
-  "rec.cameraOffDesc": { en: "Open the app over HTTPS and allow camera + microphone — or upload an existing file below.", he: "פתח את האפליקציה ב-HTTPS ואשר מצלמה + מיקרופון — או העלה קובץ קיים למטה." },
-  "rec.shootWith":     { en: "Shot on a pro camera / studio? Choose \"Gallery / files\".", he: "צילמת במצלמה מקצועית / סטודיו? בחר \"גלריה / קבצים\"." },
-  "rec.phoneCam":      { en: "Record with phone camera", he: "צלם עם מצלמת הטלפון" },
-  "rec.pickGallery":   { en: "Pick from gallery / files", he: "בחר מהגלריה / קבצים" },
+  "rec.cameraOffDesc": { en: "Allow camera and microphone access in your browser settings, or upload an existing file below.", he: "צריך לאשר גישה למצלמה ולמיקרופון בהגדרות הדפדפן. אפשר גם להעלות קובץ קיים למטה." },
+  "rec.shootWith":     { en: "Shot on a pro camera / studio? Choose \"Gallery / files\".", he: "צילמת במצלמה מקצועית? אפשר לבחור \"גלריה או קבצים\"." },
+  "rec.phoneCam":      { en: "Record with phone camera", he: "צילום במצלמת הטלפון" },
+  "rec.pickGallery":   { en: "Pick from gallery / files", he: "בחירה מהגלריה או מהקבצים" },
   "rec.loading":       { en: "Loading…", he: "טוען…" },
   "rec.saving":        { en: "Saving…", he: "שומר…" },
   "rec.phoneCamShort": { en: "Phone camera", he: "מצלמת טלפון" },
   "rec.galleryShort":  { en: "Gallery / file", he: "גלריה / קובץ" },
   "rec.errVideoOnly":  { en: "Video files only (MP4, MOV, WEBM, etc.)", he: "רק קבצי וידאו (MP4, MOV, WEBM וכו')" },
-  "rec.errTooBig":     { en: "File too large (max 500MB). Try a compressed MP4.", he: "הקובץ גדול מדי (מקסימום 500MB). נסה להמיר ל-MP4 דחוס." },
+  "rec.errTooBig":     { en: "File too large (max 500MB). Try a compressed MP4.", he: "הקובץ גדול מדי (עד 500MB). אפשר לנסות קובץ MP4 קטן יותר." },
   "rec.practiceAria":  { en: "Practice the scene with Aria", he: "תרגל את הסצנה עם Aria" },
   "rec.ariaPreparing": { en: "Aria is preparing notes…", he: "Aria מכינה הוראות…" },
   "rec.show":          { en: "Show", he: "הצג" },
@@ -289,16 +291,16 @@ const DICT: Record<string, Entry> = {
   "rec.headHere":      { en: "Head here", he: "ראש כאן" },
   "rec.sides":         { en: "Sides", he: "Sides" },
   "rec.instructions":  { en: "Instructions", he: "הוראות" },
-  "rec.sendTape":      { en: "Send tape", he: "שלח טייפ" },
+  "rec.sendTape":      { en: "Send tape", he: "שליחת הטייפ" },
   "rec.anotherTake":   { en: "Another take", he: "טייק נוסף" },
 
   // Profile completeness / discoverability meter
   "pp.title":          { en: "Profile", he: "פרופיל" },
   "pp.discoverability":{ en: "Discoverability", he: "סיכויי גילוי" },
   "pp.high":           { en: "High — casting pros will find you", he: "גבוהים — מלהקים ימצאו אותך" },
-  "pp.mid":            { en: "Medium — add more to stand out", he: "בינוניים — הוסף עוד כדי לבלוט" },
+  "pp.mid":            { en: "Medium — add more to stand out", he: "בינוני. כדאי להוסיף עוד כדי לבלוט" },
   "pp.low":            { en: "Low — complete your profile to get found", he: "נמוכים — השלם פרופיל כדי להתגלות" },
-  "pp.add":            { en: "Add", he: "הוסף" },
+  "pp.add":            { en: "Add", he: "הוספה" },
   "pp.more":           { en: "+ {n} more", he: "+ עוד {n}" },
   "pp.toGetFound":     { en: "to get found by more castings.", he: "כדי להופיע ביותר חיפושי ליהוק." },
   "pp.f.name":         { en: "display name", he: "שם תצוגה" },
@@ -320,7 +322,7 @@ const DICT: Record<string, Entry> = {
   "report.label":      { en: "Casting Report", he: "דוח ליהוק" },
   "report.talents":    { en: "{n} talents", he: "{n} כישרונות" },
   "report.talent1":    { en: "1 talent", he: "כישרון 1" },
-  "report.print":      { en: "Save / Print", he: "שמור / הדפס" },
+  "report.print":      { en: "Save / Print", he: "שמירה או הדפסה" },
   "report.notFound":   { en: "Link not found", he: "הקישור לא נמצא" },
   "report.removed":    { en: "This shortlist may have been removed.", he: "ייתכן שה-shortlist הוסר." },
   "report.expired":    { en: "This link has expired", he: "תוקף הקישור פג" },
@@ -342,7 +344,7 @@ const DICT: Record<string, Entry> = {
   "srch.showMatches":  { en: "Show {n} matches", he: "הצג {n} התאמות" },
 
   // Projects — casting mode picker
-  "proj.fullDesc":     { en: "Full 8-stage pipeline. Leads, support, day-players — with callback/hold/avail/offer.", he: "Pipeline מלא 8 שלבים. לידים, סופורט, יומיים — עם callback/hold/avail/offer." },
+  "proj.fullDesc":     { en: "Full 8-stage pipeline. Leads, support, day-players — with callback/hold/avail/offer.", he: "תהליך מלא ב-8 שלבים: תפקידים ראשיים, משניים ויומיים, עם קולבק, הולד, בדיקת זמינות והצעה." },
   "proj.quickDesc":    { en: "Just 3 stages. For extras, models, commercials — Select/Pass.", he: "3 שלבים בלבד. לניצבים, דוגמנים, פרסומות — Select/Pass." },
   "proj.sidesFileLabel": { en: "Sides file (optional)", he: "קובץ Sides (אופציונלי)" },
   "proj.sidesFileHint":  { en: "PDF / DOC / TXT the talents can download", he: "קובץ PDF / DOC / TXT שהשחקנים יוכלו להוריד" },
@@ -352,15 +354,15 @@ const DICT: Record<string, Entry> = {
   "ap.back":           { en: "Back", he: "חזור" },
   "ap.empty":          { en: "No review sessions yet", he: "עדיין אין סשני אישור" },
   "ap.emptyDesc":      { en: 'After reviewing tapes, create a "Director Review" — pick a few tapes and send a link to the director. They vote 👍/🤔/👎 on each, and it syncs back to you.', he: 'לאחר שאתה מסקור טייפים, צור "Director Review" — בחר 5 טייפים ושלח קישור לבמאי. הוא מצביע 👍/🤔/👎 על כל אחד, וההצבעה מסתנכרנת אליך.' },
-  "ap.createFirst":    { en: "Create first session", he: "צור סשן ראשון" },
+  "ap.createFirst":    { en: "Create first session", he: "יצירת סשן ראשון" },
   "ap.copied":         { en: "Copied", he: "הועתק" },
   "ap.copyLink":       { en: "Copy link", he: "העתק קישור" },
-  "ap.open":           { en: "Open", he: "פתח" },
-  "ap.noProjects":     { en: "No projects. Create one first.", he: "אין פרויקטים. צור פרויקט קודם." },
+  "ap.open":           { en: "Open", he: "פתיחה" },
+  "ap.noProjects":     { en: "No projects. Create one first.", he: "אין פרויקטים עדיין. קודם יוצרים פרויקט." },
   "ap.roleOptional":   { en: "Role (optional)", he: "תפקיד (אופציונלי)" },
   "ap.noTapesYet":     { en: "No tapes in this role yet.", he: "אין טייפים עדיין בתפקיד הזה." },
   "ap.greetingOptional": { en: "Greeting (optional)", he: "ברכה (אופציונלי)" },
-  "ap.createLink":     { en: "Create director link", he: "צור קישור לבמאי" },
+  "ap.createLink":     { en: "Create director link", he: "יצירת קישור לבמאי" },
   "ap.deleteConfirm":  { en: 'Delete session "{title}"?', he: 'למחוק סשן "{title}"?' },
 };
 

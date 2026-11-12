@@ -528,7 +528,7 @@ export default function CoachPage() {
       }
       const data: ParsedScene = await res.json();
       if (!data.lines?.length || !data.characters?.length) {
-        throw new Error("לא הצלחתי לזהות דיאלוג. נסה להעלות תמונה ברורה יותר או להדביק טקסט בפורמט: שם: שורה.");
+        throw new Error("לא הצלחתי לזהות דיאלוג. אפשר להעלות תמונה ברורה יותר, או להדביק טקסט בפורמט: שם: שורה.");
       }
       setScene(data);
       setYourCharacter(data.characters[0]);

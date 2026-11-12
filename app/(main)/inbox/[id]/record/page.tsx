@@ -7,6 +7,7 @@ import {
   Video, Circle, Square, RotateCcw, Send, AlertCircle, CheckCircle2, ScrollText,
   Camera, Wand2, Loader2, Sparkles, Upload, FileVideo, SwitchCamera, ChevronDown, X,
 } from "lucide-react";
+import { useAriaReady } from "@/lib/aria-ready";
 import { Header } from "@/components/Header";
 import {
   getSubmission, getRole, getProject, addTape,
@@ -32,6 +33,7 @@ export default function SelfTapeStudioPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { t, lang, dir } = useT();
+  const ariaReady = useAriaReady();
   const L = (he: string, en: string) => (lang === "he" ? he : en);
 
   const [sub, setSub] = useState<Submission | null>(null);
@@ -493,18 +495,18 @@ export default function SelfTapeStudioPage() {
 
         {mode !== "sent" && (
           <div className="grid gap-2">
-            <button
+            {ariaReady && <button
               onClick={async () => { if (!coaching) await loadCoaching(); setCoachingOpen((o) => !o); }}
               aria-expanded={coachingOpen}
               className="w-full h-11 rounded-lg border border-border bg-bg-elevated text-sm font-semibold inline-flex items-center justify-center gap-2">
               {coachingLoading
                 ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden /> {t("rec.ariaPreparing")}</>
                 : <><Sparkles className="w-4 h-4" aria-hidden /> {coaching ? `${coachingOpen ? t("rec.hide") : t("rec.show")} ${t("rec.ariaDirections")}` : t("rec.askAria")}</>}
-            </button>
+            </button>}
             {coachingOpen && coaching && (
               <div className="rounded-lg bg-hi-soft border border-border p-3 text-sm leading-relaxed whitespace-pre-wrap">{coaching}</div>
             )}
-            {(role.sides || role.sidesFile) && (
+            {ariaReady && (role.sides || role.sidesFile) && (
               <button onClick={practiceWithAria} className="w-full h-11 rounded-lg border border-border text-sm font-semibold inline-flex items-center justify-center gap-2">
                 <Wand2 className="w-4 h-4" aria-hidden /> {t("rec.practiceAria")}
               </button>

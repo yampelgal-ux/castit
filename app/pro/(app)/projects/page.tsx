@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { FolderOpen, Plus, ArrowRight, Film, Tv, Megaphone, Clock, Zap, Sparkles, Search } from "lucide-react";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
-import { loadProjects, projectOverview, addProject, updateProject, STAGE_META, type Project, type Stage } from "@/lib/projects-store";
+import { loadProjects, projectOverview, addProject, updateProject, STAGE_META, projectTypeLabel, type Project, type Stage } from "@/lib/projects-store";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -167,7 +167,7 @@ function ProjectCard({ p, o, i, L, he, onChange }: {
           </span>
           <div className="flex-1 min-w-0">
             <h3 className="font-display text-lg leading-tight truncate">{p.title}</h3>
-            <p className="text-xs text-text-muted truncate">{p.studio} · {p.type}{p.mode === "quick" ? " · Quick Cast" : ""}</p>
+            <p className="text-xs text-text-muted truncate">{[p.studio, projectTypeLabel(p.type, he ? "he" : "en"), p.mode === "quick" ? L("ליהוק מהיר", "Quick Cast") : ""].filter(Boolean).join(" · ")}</p>
           </div>
           <StatusBadge status={p.status} L={L} />
         </div>
@@ -312,7 +312,7 @@ function NewProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreate
                     "px-3 h-9 rounded-full border text-xs font-medium",
                     type === t ? "bg-gold text-on-accent border-gold" : "bg-bg text-text border-border"
                   )}
-                >{t}</button>
+                >{projectTypeLabel(t, lang)}</button>
               ))}
             </div>
           </div>

@@ -3,6 +3,7 @@ import { Assistant, Secular_One } from "next/font/google";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OnboardingTour } from "@/components/OnboardingTour";
+import { SkipLink } from "@/components/SkipLink";
 import { DemoSeeder } from "@/components/DemoSeeder";
 import { LanguageHydrator } from "@/components/LanguageToggle";
 import { CloudSync } from "@/components/CloudSync";
@@ -84,9 +85,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${assistant.variable} ${secularOne.variable}`}>
+    <html lang="he" className={`${assistant.variable} ${secularOne.variable}`}>
       <body className="font-sans">
-        <a href="#main-content" className="skip-link">דילוג לתוכן</a>
+        <SkipLink />
         <div className="device-frame">
           <div className="device-screen">
             <main id="main-content">

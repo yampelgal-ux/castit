@@ -13,10 +13,11 @@ import { BulkRolesSheet } from "@/components/BulkRolesSheet";
 import { SidesFileInput } from "@/components/SidesFileInput";
 import type { RoleSidesFile } from "@/lib/projects-store";
 import {
-  getProject, getRolesByProject, addRole, deleteRole, roleCounts, deleteProject,
+  getProject, getRolesByProject, addRole, deleteRole, roleCounts, deleteProject, projectTypeLabel,
   type Project, type Role,
 } from "@/lib/projects-store";
 import { useT } from "@/lib/i18n";
+import { DEMO_MODE } from "@/lib/cloud/config";
 import { cn } from "@/lib/utils";
 
 export default function ProjectDetailPage() {
@@ -26,6 +27,8 @@ export default function ProjectDetailPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [showNew, setShowNew] = useState(false);
   const [showBulk, setShowBulk] = useState(false);
+  const { lang, dir } = useT();
+  const L = (h: string, e: string) => (lang === "he" ? h : e);
 
   function reload() {
     setProject(getProject(id) ?? null);
@@ -36,27 +39,27 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="min-h-dvh bg-bg">
-        <Header back title="Project" />
-        <EmptyState icon={Users} title="Not found" description="This project may have been removed." />
+      <div className="min-h-dvh bg-bg" dir={dir}>
+        <Header back title={L("פרויקט", "Project")} />
+        <EmptyState icon={Users} title={L("הפרויקט לא נמצא", "Not found")} description={L("ייתכן שהפרויקט נמחק.", "This project may have been removed.")} />
       </div>
     );
   }
 
   function removeRole(roleId: string) {
-    if (!confirm("Delete this role and all its submissions?")) return;
+    if (!confirm(L("למחוק את התפקיד ואת כל ההגשות שלו?", "Delete this role and all its submissions?"))) return;
     deleteRole(roleId);
     reload();
   }
 
   function removeProject() {
-    if (!confirm("Delete this whole project? This cannot be undone.")) return;
+    if (!confirm(L("למחוק את כל הפרויקט? אי אפשר לבטל את זה.", "Delete this whole project? This cannot be undone."))) return;
     deleteProject(project!.id);
     router.replace("/pro/projects");
   }
 
   return (
-    <div className="min-h-dvh bg-bg pb-24">
+    <div className="min-h-dvh bg-bg pb-24" dir={dir}>
       <Header back title={project.title} />
 
       <div
@@ -66,11 +69,11 @@ export default function ProjectDetailPage() {
         <div className="absolute inset-0 flex flex-col justify-end p-5">
           <div className="flex items-center gap-2">
             <span className="text-[0.6875rem] uppercase tracking-widest text-white/80 font-semibold">
-              {project.type} · {project.studio}
+              {[projectTypeLabel(project.type, lang), project.studio].filter(Boolean).join(" · ")}
             </span>
             {project.mode === "quick" && (
               <span className="inline-flex items-center gap-1 text-[0.6875rem] px-2 py-0.5 rounded-full bg-plum/40 text-white font-bold uppercase tracking-wider">
-                <Zap className="w-2.5 h-2.5" /> Quick Cast
+                <Zap className="w-2.5 h-2.5" aria-hidden /> {L("ליהוק מהיר", "Quick Cast")}
               </span>
             )}
           </div>
@@ -87,20 +90,20 @@ export default function ProjectDetailPage() {
 
         <div className="flex items-center justify-between">
           <h2 className="text-xs uppercase tracking-widest text-text-muted">
-            Roles <span className="text-text font-semibold tnum">({roles.length})</span>
+            {L("תפקידים", "Roles")} <span className="text-text font-semibold tnum">({roles.length})</span>
           </h2>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowBulk(true)}
               className="text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1"
             >
-              <Wand2 className="w-3 h-3" /> AI Bulk
+              <Wand2 className="w-3 h-3" aria-hidden /> {L("כמה תפקידים יחד", "Bulk add")}
             </button>
             <button
               onClick={() => setShowNew(true)}
               className="text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1"
             >
-              <Plus className="w-3 h-3" /> Add role
+              <Plus className="w-3 h-3" aria-hidden /> {L("הוספת תפקיד", "Add role")}
             </button>
           </div>
         </div>
@@ -109,9 +112,9 @@ export default function ProjectDetailPage() {
           <EmptyState
             icon={Users}
             tone="gold"
-            title="No roles yet"
-            description="Add roles (characters) to start collecting audition tapes for each one."
-            ctaLabel="Add first role"
+            title={L("עוד אין תפקידים", "No roles yet")}
+            description={L("מוסיפים תפקידים (דמויות), ומתחילים לאסוף טייפים לכל אחד.", "Add roles (characters) to start collecting audition tapes for each one.")}
+            ctaLabel={L("הוספת התפקיד הראשון", "Add first role")}
             ctaOnClick={() => setShowNew(true)}
           />
         ) : (
@@ -137,24 +140,25 @@ export default function ProjectDetailPage() {
               <Heart className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-semibold">Chemistry mode</div>
-              <div className="text-[0.6875rem] text-text-muted">Pair tapes from two roles side-by-side to test the match.</div>
+              <div className="text-sm font-semibold">{L("בדיקת כימיה", "Chemistry mode")}</div>
+              <div className="text-[0.6875rem] text-text-muted">{L("טייפים משני תפקידים זה לצד זה, כדי לבדוק התאמה.", "Pair tapes from two roles side by side to test the match.")}</div>
             </div>
-            <ArrowRight className="w-4 h-4 text-gold" />
+            <ArrowRight className="w-4 h-4 text-gold rtl:rotate-180" aria-hidden />
           </Link>
         )}
 
         {/* Optional add-on panels — all collapsed by default */}
         <div className="space-y-2 pt-2">
           <ProjectInsights projectId={project.id} />
-          <ProjectTeam projectId={project.id} />
+          {/* Team invites are still local-only, so only the demo shows them. */}
+          {DEMO_MODE && <ProjectTeam projectId={project.id} />}
         </div>
 
         <button
           onClick={removeProject}
           className="w-full mt-6 h-11 rounded-2xl border border-danger/30 text-danger text-xs font-semibold flex items-center justify-center gap-2"
         >
-          <Trash2 className="w-3.5 h-3.5" /> Delete project
+          <Trash2 className="w-3.5 h-3.5" aria-hidden /> {L("מחיקת הפרויקט", "Delete project")}
         </button>
       </div>
 
@@ -180,6 +184,8 @@ export default function ProjectDetailPage() {
 
 function RoleCard({ role, i, onDelete }: { role: Role; i: number; onDelete: () => void }) {
   const c = roleCounts(role.id);
+  const { lang } = useT();
+  const L = (h: string, e: string) => (lang === "he" ? h : e);
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -195,16 +201,16 @@ function RoleCard({ role, i, onDelete }: { role: Role; i: number; onDelete: () =
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <h3 className="font-semibold text-sm truncate">{role.name}</h3>
-              <ChevronRight className="w-4 h-4 text-text-muted shrink-0" />
+              <ChevronRight className="w-4 h-4 text-text-muted shrink-0 rtl:rotate-180" aria-hidden />
             </div>
             <p className="text-[0.6875rem] text-text-muted leading-relaxed line-clamp-2 mt-0.5">{role.description}</p>
             <div className="flex items-center gap-3 mt-2 text-[0.6875rem] flex-wrap">
               <span className="inline-flex items-center gap-1 text-text-muted">
-                <FileVideo className="w-3 h-3" /> {c.total} {c.total === 1 ? "submission" : "submissions"}
+                <FileVideo className="w-3 h-3" aria-hidden /> {L(c.total === 1 ? "הגשה אחת" : `${c.total} הגשות`, `${c.total} ${c.total === 1 ? "submission" : "submissions"}`)}
               </span>
-              {c.submitted > 0 && <span className="text-gold font-semibold">{c.submitted} to review</span>}
-              {c.callback > 0 && <span className="text-success font-semibold">{c.callback} callback{c.callback > 1 ? "s" : ""}</span>}
-              {c.booked > 0 && <span className="text-success font-semibold">{c.booked} booked</span>}
+              {c.submitted > 0 && <span className="text-gold font-semibold">{L(`${c.submitted} לצפייה`, `${c.submitted} to review`)}</span>}
+              {c.callback > 0 && <span className="text-success font-semibold">{L(`${c.callback} קולבק`, `${c.callback} callback${c.callback > 1 ? "s" : ""}`)}</span>}
+              {c.booked > 0 && <span className="text-success font-semibold">{L(`${c.booked} נבחרו`, `${c.booked} booked`)}</span>}
             </div>
           </div>
         </div>
@@ -213,19 +219,20 @@ function RoleCard({ role, i, onDelete }: { role: Role; i: number; onDelete: () =
         onClick={onDelete}
         className="w-full h-8 text-[0.6875rem] text-text-muted border-t border-border hover:text-danger"
       >
-        Remove role
+        {L("הסרת התפקיד", "Remove role")}
       </button>
     </motion.div>
   );
 }
 
 function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; onClose: () => void; onCreated: () => void }) {
-  const { t } = useT();
+  const { t, lang, dir } = useT();
+  const L = (h: string, e: string) => (lang === "he" ? h : e);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [sides, setSides] = useState("");
   const [sidesFile, setSidesFile] = useState<RoleSidesFile | undefined>(undefined);
-  const [instructions, setInstructions] = useState("Slate first (name + height). Vertical, well-lit. Two takes max.");
+  const [instructions, setInstructions] = useState(() => L("סלייט בהתחלה (שם וגובה). לצלם לאורך, באור טוב. עד שתי לקיחות.", "Slate first (name + height). Vertical, well-lit. Two takes max."));
   const [deadline, setDeadline] = useState("");
   const [shootDates, setShootDates] = useState("");
   const [payRange, setPayRange] = useState("");
@@ -252,40 +259,41 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end max-w-[440px] mx-auto">
+    <div className="fixed inset-0 z-50 grid place-items-end max-w-[440px] mx-auto" dir={dir}>
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
+        role="dialog" aria-modal="true" aria-labelledby="new-role-title"
         className="relative w-full bg-bg-elevated border-t border-border rounded-t-3xl p-5 max-h-[90dvh] overflow-y-auto"
       >
         <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
-        <h2 className="font-display text-2xl mb-4">Add a role</h2>
+        <h2 id="new-role-title" className="font-display text-2xl mb-4">{L("תפקיד חדש", "Add a role")}</h2>
 
         <div className="space-y-3">
-          <Sect label="Role name">
+          <Sect label={L("שם התפקיד", "Role name")}>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Maya — Lead"
+              placeholder={L("למשל: מאיה, תפקיד ראשי", "e.g. Maya, lead")} dir="auto"
               className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
             />
           </Sect>
-          <Sect label="Character brief">
+          <Sect label={L("תיאור הדמות", "Character brief")}>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Age, gender, languages, key traits…"
+              placeholder={L("גיל, מגדר, שפות, תכונות עיקריות…", "Age, gender, languages, key traits…")} dir="auto"
               className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
             />
           </Sect>
-          <Sect label="Sides (scene text)" hint="Paste the scene or instructions for what they should perform">
+          <Sect label={L("הסצנה (טקסט)", "Sides (scene text)")} hint={L("מדביקים את הסצנה או הנחיות למה שצריך לבצע", "Paste the scene or instructions for what they should perform")}>
             <textarea
               value={sides}
               onChange={(e) => setSides(e.target.value)}
               rows={4}
-              placeholder="INT. KITCHEN — NIGHT&#10;MAYA: I told you I'm not doing it…"
+              placeholder={L("פנים. מטבח. לילה\nמאיה: אמרתי לך שאני לא עושה את זה…", "INT. KITCHEN. NIGHT\nMAYA: I told you I'm not doing it…")} dir="auto"
               className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60 font-mono"
             />
           </Sect>
@@ -296,7 +304,7 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
               onChange={setSidesFile}
             />
           </Sect>
-          <Sect label="Self-tape instructions">
+          <Sect label={L("הנחיות לסלף-טייפ", "Self-tape instructions")}>
             <textarea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
@@ -305,7 +313,7 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
             />
           </Sect>
           <div className="grid grid-cols-2 gap-2.5">
-            <Sect label="Tape deadline">
+            <Sect label={L("הגשה עד", "Tape deadline")}>
               <input
                 type="date"
                 value={deadline}
@@ -313,20 +321,20 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
                 className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
               />
             </Sect>
-            <Sect label="Shoot dates">
+            <Sect label={L("תאריכי צילום", "Shoot dates")}>
               <input
                 value={shootDates}
                 onChange={(e) => setShootDates(e.target.value)}
-                placeholder="Aug 12 – Sep 25"
+                placeholder={L("12.8 עד 25.9", "Aug 12 to Sep 25")} dir="auto"
                 className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
               />
             </Sect>
           </div>
-          <Sect label="Pay / Rate (optional)">
+          <Sect label={L("תשלום (לא חובה)", "Pay / Rate (optional)")}>
             <input
               value={payRange}
               onChange={(e) => setPayRange(e.target.value)}
-              placeholder="$1.5–2K/day + travel"
+              placeholder={L("למשל 1,500 ₪ ליום צילום", "e.g. $1,500/day + travel")} dir="auto"
               className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
             />
           </Sect>
@@ -340,7 +348,7 @@ function NewRoleSheet({ projectId, onClose, onCreated }: { projectId: string; on
             name.trim() ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
           )}
         >
-          Add role <ArrowRight className="w-4 h-4" />
+          {L("הוספת התפקיד", "Add role")} <ArrowRight className="w-4 h-4 rtl:rotate-180" aria-hidden />
         </button>
       </motion.div>
     </div>

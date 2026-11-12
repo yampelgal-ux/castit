@@ -335,7 +335,7 @@ export default function TypecastPage() {
       <div className="fixed bottom-0 inset-x-0 max-w-[440px] mx-auto p-4 glass border-t border-border">
         <button
           onClick={next}
-          className="w-full h-14 rounded-2xl bg-gold text-on-accent font-semibold hover:bg-gold-light flex items-center justify-center gap-2"
+          className="w-full h-14 rounded-2xl bg-gold text-on-accent font-semibold hover:bg-gold-dark flex items-center justify-center gap-2"
         >
           {step < STEPS.length - 1 ? L("המשך", "Continue") : L("שמירה וכניסה", "Save and enter")}
           <ArrowRight className="w-4 h-4" />

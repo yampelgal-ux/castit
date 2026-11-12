@@ -67,7 +67,7 @@ export default function TalentDossierPage() {
     return (
       <div className="min-h-dvh bg-bg">
         <Header back title="Talent" />
-        <EmptyState icon={Sparkles} title="Talent not found" />
+        <EmptyState icon={Sparkles} title={lang === "en" ? "Talent not found" : "השחקן/ית לא נמצא/ה"} />
       </div>
     );
   }

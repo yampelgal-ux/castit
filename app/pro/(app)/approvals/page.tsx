@@ -19,6 +19,7 @@ import {
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { TalentPhoto } from "@/components/TalentPhoto";
 
 type Step = "list" | "build";
 
@@ -286,7 +287,7 @@ function BuildSession({ onCreated }: { onCreated: () => void }) {
                 )}>
                   {selected.has(s.id) && <Check className="w-3 h-3 text-on-accent" strokeWidth={3} />}
                 </div>
-                <img src={s.talentPhoto} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                <TalentPhoto src={s.talentPhoto} name={s.talentName} className="w-10 h-10 rounded-lg shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold truncate">{s.talentName}</div>
                   <div className="text-[0.6875rem] text-text-muted">

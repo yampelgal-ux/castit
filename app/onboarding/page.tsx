@@ -60,12 +60,9 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-dvh flex flex-col bg-bg" dir={dir}>
-      {/* Language toggle */}
-      <div className="absolute top-4 right-4 z-20">
-        <LanguageToggle />
-      </div>
-      {/* Progress bar */}
-      <div className="px-5 pt-6 flex items-center gap-2">
+      {/* Progress bar + language toggle */}
+      <div className="px-5 pt-5 flex items-center gap-3">
+        <div className="flex-1 flex items-center gap-2">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
@@ -75,6 +72,8 @@ export default function OnboardingPage() {
             )}
           />
         ))}
+        </div>
+        <LanguageToggle />
       </div>
 
       <div className="flex-1 px-6 pt-10 pb-6 flex flex-col">

@@ -236,7 +236,7 @@ export default function ScenePage() {
               "flex-1 h-14 rounded-2xl font-semibold flex items-center justify-center gap-3 transition-all",
               recording
                 ? "bg-terra text-text recording-pulse"
-                : "bg-gold text-on-accent hover:bg-gold-light"
+                : "bg-gold text-on-accent hover:bg-gold-dark"
             )}
           >
             <Mic className="w-5 h-5" />

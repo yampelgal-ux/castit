@@ -4,10 +4,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TrendingUp, ArrowRight, Users, Clock, Award } from "lucide-react";
 import { loadSubmissions, getRolesByProject, projectCounts } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 // Optional analytics panel for a project. Collapsed by default.
 export function ProjectInsights({ projectId }: { projectId: string }) {
   const [open, setOpen] = useState(false);
+  const { lang } = useT();
+  const L = (h: string, e: string) => (lang === "he" ? h : e);
   const roles = getRolesByProject(projectId);
   const allSubs = loadSubmissions().filter((s) => roles.some((r) => r.id === s.roleId));
   const counts = projectCounts(projectId);
@@ -33,14 +36,14 @@ export function ProjectInsights({ projectId }: { projectId: string }) {
 
   return (
     <div className="rounded-2xl border border-border bg-bg-elevated overflow-hidden">
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-2 p-3">
+      <button onClick={() => setOpen(!open)} aria-expanded={open} className="w-full flex items-center gap-2 p-3">
         <div className="w-8 h-8 rounded-lg bg-bg grid place-items-center shrink-0">
           <TrendingUp className="w-4 h-4 text-text-muted" />
         </div>
-        <div className="flex-1 text-left">
-          <div className="text-sm font-semibold">Project insights</div>
+        <div className="flex-1 text-start">
+          <div className="text-sm font-semibold">{L("נתוני הפרויקט", "Project insights")}</div>
           <div className="text-[0.6875rem] text-text-muted">
-            Optional analytics · funnel, response time, fill rate
+            {L("כמה הגישו, כמה התקדמו, כמה מהר מחליטים", "Funnel, response time, fill rate")}
           </div>
         </div>
         <span className={cn("text-text-muted text-xs transition-transform", open ? "rotate-180" : "")}>▾</span>
@@ -56,19 +59,19 @@ export function ProjectInsights({ projectId }: { projectId: string }) {
               {/* Funnel */}
               <div>
                 <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2">
-                  Conversion funnel
+                  {L("מהגשה לליהוק", "Conversion funnel")}
                 </div>
-                <FunnelRow label="Submissions"  value={allSubs.length} total={Math.max(allSubs.length, 1)} tone="muted" />
-                <FunnelRow label="Tapes received"  value={submitted} total={Math.max(allSubs.length, 1)} tone="gold" />
-                <FunnelRow label="Advanced (callback+)"  value={advanced} total={Math.max(submitted, 1)} pct={callbackRate} tone="plum" />
-                <FunnelRow label="Booked"  value={counts.booked} total={Math.max(submitted, 1)} pct={bookedRate} tone="success" />
+                <FunnelRow label={L("הוזמנו", "Submissions")}  value={allSubs.length} total={Math.max(allSubs.length, 1)} tone="muted" />
+                <FunnelRow label={L("שלחו טייפ", "Tapes received")}  value={submitted} total={Math.max(allSubs.length, 1)} tone="gold" />
+                <FunnelRow label={L("התקדמו (קולבק ומעלה)", "Advanced (callback+)")}  value={advanced} total={Math.max(submitted, 1)} pct={callbackRate} tone="plum" />
+                <FunnelRow label={L("נבחרו", "Booked")}  value={counts.booked} total={Math.max(submitted, 1)} pct={bookedRate} tone="success" />
               </div>
 
               {/* Numbers */}
               <div className="grid grid-cols-3 gap-2">
-                <Stat icon={Users} label="Roles" value={`${filledRoles}/${roles.length}`} hint={`${openRoles} open`} />
-                <Stat icon={Clock} label="Avg response" value={avgResponseDays > 0 ? `${avgResponseDays.toFixed(1)}d` : "—"} hint="to decide" />
-                <Stat icon={Award} label="Hit rate" value={bookedRate > 0 ? `${bookedRate}%` : "—"} hint="of tapes" />
+                <Stat icon={Users} label={L("תפקידים", "Roles")} value={`${filledRoles}/${roles.length}`} hint={L(`${openRoles} פתוחים`, `${openRoles} open`)} />
+                <Stat icon={Clock} label={L("זמן החלטה", "Avg response")} value={avgResponseDays > 0 ? L(`${avgResponseDays.toFixed(1)} ימים`, `${avgResponseDays.toFixed(1)}d`) : "—"} hint={L("בממוצע", "to decide")} />
+                <Stat icon={Award} label={L("אחוז ליהוק", "Hit rate")} value={bookedRate > 0 ? `${bookedRate}%` : "—"} hint={L("מהטייפים", "of tapes")} />
               </div>
             </div>
           </motion.div>
