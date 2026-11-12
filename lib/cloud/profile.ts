@@ -4,11 +4,22 @@ import { supabase } from "@/lib/supabase";
 import type { useStore } from "@/lib/store";
 import type { Talent } from "@/lib/mock-data";
 import { toDbRole } from "./auth";
-import { dataUrlToBlob, uploadMedia } from "./media";
+import { dataUrlToBlob, uploadMedia, mediaPublicUrl } from "./media";
+import type { MyReel } from "@/lib/reels-store";
+import { posterPathFor } from "@/lib/video-poster";
 
 type Profile = ReturnType<typeof useStore.getState>["profile"];
 
 let lastHash = "";
+
+/** Outcome of the latest public-profile publish, for the settings screen. */
+export type PublishStatus = { ok: boolean; error?: string; at: number; reels: number } | null;
+let status: PublishStatus = null;
+export function lastPublishStatus(): PublishStatus { return status; }
+function report(next: PublishStatus) {
+  status = next;
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("castit:profile-published"));
+}
 const uploadedPhotos = new Map<string, string>(); // data-URL fingerprint → public URL
 
 async function resolvePhoto(userId: string, photo?: string): Promise<string | undefined> {
@@ -25,7 +36,11 @@ async function resolvePhoto(userId: string, photo?: string): Promise<string | un
   return undefined;
 }
 
-function toTalentCard(userId: string, p: Profile, photo?: string): Talent {
+function isMinor(p: Profile): boolean {
+  return !!p.birthYear && new Date().getFullYear() - p.birthYear < 18;
+}
+
+function toTalentCard(userId: string, p: Profile, photo?: string, reels: MyReel[] = [], headshots: string[] = []): Talent {
   const tc = p.typecast || {};
   const min = tc.ageRangeMin ?? 20;
   const max = tc.ageRangeMax ?? Math.max(min + 10, 30);
@@ -40,12 +55,21 @@ function toTalentCard(userId: string, p: Profile, photo?: string): Talent {
     followers: 0,
     likes: 0,
     submissions: 0,
+    headshots,
+    ...(isMinor(p) ? { minor: true } : {}),
+    reels: reels
+      .filter((r) => r.cloud)
+      .map((r) => ({
+        id: r.id, url: mediaPublicUrl(`tapes/${r.blobKey}`) || "", caption: r.caption, createdAt: r.createdAt,
+        ...(r.poster ? { poster: mediaPublicUrl(posterPathFor(r.blobKey)) || undefined } : {}),
+      }))
+      .filter((r) => r.url),
     typecast: {
       heightCm: tc.heightCm ?? 170,
       weightKg: tc.weightKg ?? 65,
       ageRange: [min, max],
       gender: (tc.gender as Talent["typecast"]["gender"]) || "Female",
-      ethnicity: "",
+      ethnicity: tc.ethnicity || "",
       skinTone: tc.skinTone || "#C89366",
       eyeColor: tc.eyeColor || "#5A3520",
       hairColor: tc.hairColor || "#3A2418",
@@ -53,18 +77,35 @@ function toTalentCard(userId: string, p: Profile, photo?: string): Talent {
       languages: tc.languages || ["Hebrew"],
       skills: tc.skills || [],
       genres: tc.genres || [],
-      location: "Israel",
+      location: tc.location || "",
+      bodyType: (tc.bodyType as Talent["typecast"]["bodyType"]) || undefined,
+      features: tc.features || [],
+      accents: tc.accents || [],
+      voiceType: (tc.voiceType as Talent["typecast"]["voiceType"]) || undefined,
+      unionStatus: (tc.unionStatus as Talent["typecast"]["unionStatus"]) || undefined,
+      experienceLevel: (tc.experienceLevel as Talent["typecast"]["experienceLevel"]) || undefined,
+      willingToTravel: tc.willingToTravel,
+      hairType: tc.hairType,
+      facialHair: tc.facialHair,
+      clothingSize: tc.clothingSize,
+      shoeSizeEU: tc.shoeSizeEU,
+      driverLicense: tc.driverLicense,
+      hasAgent: tc.hasAgent,
+      workPermits: tc.workPermits || [],
     },
   };
 }
 
 /** Upsert the signed-in user's public profile (+ talent card for talents). */
-export async function publishMyProfile(userId: string, p: Profile) {
-  if (!p.name) return;
-  const hash = JSON.stringify([userId, p]);
+export async function publishMyProfile(userId: string, p: Profile, reels: MyReel[] = []) {
+  if (!p.name) { report({ ok: false, error: "missing-name", at: Date.now(), reels: 0 }); return; }
+  const hash = JSON.stringify([userId, p, reels]);
   if (hash === lastHash) return;
 
   const photo = await resolvePhoto(userId, p.photoUrl);
+  // Photos added while offline are still data URLs; upload them now.
+  const headshots = (await Promise.all((p.headshots ?? []).map((h) => resolvePhoto(userId, h))))
+    .filter((u): u is string => !!u && /^https?:/.test(u));
   const isTalent = p.role !== "Casting Pro";
   const baseUsername = (p.username || p.name).toLowerCase().replace(/[^a-z0-9_]/g, "") || `user${userId.slice(0, 6)}`;
 
@@ -75,16 +116,23 @@ export async function publishMyProfile(userId: string, p: Profile) {
     bio: p.bio ?? null,
     photo_url: photo ?? null,
     role: toDbRole(p.role),
-    talent_card: isTalent ? toTalentCard(userId, p, photo) : null,
+    talent_card: isTalent ? toTalentCard(userId, p, photo, reels, headshots) : null,
     updated_at: new Date().toISOString(),
   };
 
-  let { error } = await supabase.from("profiles").upsert(row, { onConflict: "id" });
+  // is_minor exists once migration 005 ran; without it, publish as before.
+  let { error } = await supabase.from("profiles").upsert((isMinor(p) ? { ...row, is_minor: true } : row) as Record<string, unknown>, { onConflict: "id" });
+  if (error && /is_minor/i.test(error.message)) ({ error } = await supabase.from("profiles").upsert(row, { onConflict: "id" }));
   if (error && /username|duplicate|unique/i.test(error.message)) {
     const retry = { ...row, username: `${baseUsername}${userId.slice(0, 4)}` };
     ({ error } = await supabase.from("profiles").upsert(retry, { onConflict: "id" }));
   }
-  if (error) { console.warn("[profile] publish failed", error.message); return; }
+  if (error) {
+    console.warn("[profile] publish failed", error.message);
+    report({ ok: false, error: error.message, at: Date.now(), reels: 0 });
+    return;
+  }
+  report({ ok: true, at: Date.now(), reels: row.talent_card?.reels?.length ?? 0 });
 
   if (isTalent) {
     const tc = p.typecast || {};

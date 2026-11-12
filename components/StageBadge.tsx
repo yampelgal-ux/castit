@@ -1,6 +1,7 @@
 "use client";
 import { STAGE_META, type Stage } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 const TONES = {
   gold:    "bg-gold/15 text-gold border-gold/30",
@@ -14,13 +15,14 @@ const TONES = {
 
 export function StageBadge({ stage, size = "sm" }: { stage: Stage; size?: "sm" | "md" }) {
   const m = STAGE_META[stage];
+  const { lang } = useT();
   return (
     <span className={cn(
       "rounded-full border font-semibold uppercase tracking-wider whitespace-nowrap",
       TONES[m.tone],
-      size === "sm" ? "text-[9px] px-1.5 py-0.5" : "text-[10px] px-2.5 py-1",
+      size === "sm" ? "text-[0.6875rem] px-1.5 py-0.5" : "text-[0.6875rem] px-2.5 py-1",
     )}>
-      {m.label}
+      {lang === "he" ? m.he : m.label}
     </span>
   );
 }

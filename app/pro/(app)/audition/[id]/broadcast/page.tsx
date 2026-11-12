@@ -1,4 +1,5 @@
 "use client";
+import { useAllTalents } from "@/lib/cloud/talents";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -6,12 +7,13 @@ import { Send, Megaphone, Check, Sparkles, Users } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Avatar } from "@/components/Avatar";
 import { getAudition } from "@/lib/auditions-store";
-import { TALENTS, type Audition, type Talent } from "@/lib/mock-data";
+import { type Audition, type Talent } from "@/lib/mock-data";
 import { matchTalent } from "@/lib/matching";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 export default function BroadcastPage() {
+  const TALENTS = useAllTalents();
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [audition, setAudition] = useState<Audition | undefined>();
@@ -35,7 +37,7 @@ export default function BroadcastPage() {
       .map((t) => ({ t, m: matchTalent(t, audition.targetTypecast) }))
       .filter((r) => r.m.passes && r.m.score >= minScore)
       .sort((a, b) => b.m.score - a.m.score);
-  }, [audition, minScore]);
+  }, [TALENTS, audition, minScore]);
 
   // Auto-select all on first match update
   useEffect(() => {
@@ -66,7 +68,7 @@ export default function BroadcastPage() {
           </p>
           <button
             onClick={() => router.push(`/pro/audition/${id}`)}
-            className="mt-7 w-full h-12 rounded-full bg-gold text-bg font-semibold"
+            className="mt-7 w-full h-12 rounded-full bg-gold text-on-accent font-semibold"
           >
             Back to audition
           </button>
@@ -92,8 +94,8 @@ export default function BroadcastPage() {
         {/* Quality threshold */}
         <div className="rounded-2xl bg-bg-elevated border border-border p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] text-text-muted">Minimum match quality</div>
-            <span className="text-[11px] tnum text-gold font-semibold">{minScore}%+</span>
+            <div className="text-[0.6875rem] text-text-muted">Minimum match quality</div>
+            <span className="text-[0.6875rem] tnum text-gold font-semibold">{minScore}%+</span>
           </div>
           <input
             type="range"
@@ -102,7 +104,7 @@ export default function BroadcastPage() {
             onChange={(e) => setMinScore(+e.target.value)}
             className="w-full accent-gold"
           />
-          <div className="flex items-center justify-between mt-2 text-[10px] text-text-subtle">
+          <div className="flex items-center justify-between mt-2 text-[0.6875rem] text-text-subtle">
             <span>Wider reach</span>
             <span>Premium matches</span>
           </div>
@@ -110,7 +112,7 @@ export default function BroadcastPage() {
 
         {/* Message editor */}
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2 px-1">Your message</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2 px-1">Your message</div>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -123,7 +125,7 @@ export default function BroadcastPage() {
               setMessage(`Hi {name} — your reels caught our eye for "${audition.title}". Your typecast fits perfectly. Self-tape due ${audition.deadline}. ${audition.fee ? `Fee: ${audition.fee}.` : ""}`);
               haptic("light");
             }}
-            className="mt-2 text-[11px] text-gold font-semibold inline-flex items-center gap-1"
+            className="mt-2 text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1"
           >
             <Sparkles className="w-3 h-3" /> Personalize with Aria
           </button>
@@ -133,8 +135,8 @@ export default function BroadcastPage() {
         <div>
           <div className="flex items-center justify-between mb-3 px-1">
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-text-muted">Recipients</div>
-              <div className="text-[13px] tnum">
+              <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted">Recipients</div>
+              <div className="text-[0.8125rem] tnum">
                 <span className="font-semibold text-gold">{selected.size}</span>
                 <span className="text-text-muted"> of {matches.length} matched</span>
               </div>
@@ -142,13 +144,13 @@ export default function BroadcastPage() {
             <div className="flex gap-1.5">
               <button
                 onClick={() => setSelected(new Set(matches.map((r) => r.t.id)))}
-                className="text-[10px] px-2 py-1 rounded-full bg-bg-elevated border border-border"
+                className="text-[0.6875rem] px-2 py-1 rounded-full bg-bg-elevated border border-border"
               >
                 Select all
               </button>
               <button
                 onClick={() => setSelected(new Set())}
-                className="text-[10px] px-2 py-1 rounded-full bg-bg-elevated border border-border"
+                className="text-[0.6875rem] px-2 py-1 rounded-full bg-bg-elevated border border-border"
               >
                 Clear
               </button>
@@ -159,7 +161,7 @@ export default function BroadcastPage() {
             <div className="text-center py-10 px-6 rounded-2xl bg-bg-elevated border border-border">
               <Users className="w-8 h-8 text-text-subtle mx-auto opacity-50" />
               <p className="text-sm mt-3">No talents above {minScore}% match.</p>
-              <p className="text-[11px] text-text-muted mt-1">Lower the threshold above.</p>
+              <p className="text-[0.6875rem] text-text-muted mt-1">Lower the threshold above.</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -182,7 +184,7 @@ export default function BroadcastPage() {
         <button
           onClick={() => { haptic("success"); setSent(true); }}
           disabled={selected.size === 0 || !message.trim()}
-          className="w-full h-12 rounded-full bg-gold text-bg font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-40"
+          className="w-full h-12 rounded-full bg-gold text-on-accent font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-40"
         >
           <Send className="w-4 h-4" /> Send to {selected.size} talent{selected.size === 1 ? "" : "s"}
         </button>
@@ -206,17 +208,17 @@ function Row({ t, score, selected, onToggle, delay }: { t: Talent; score: number
         "w-5 h-5 rounded-md border-2 grid place-items-center shrink-0",
         selected ? "bg-gold border-gold" : "border-border-strong"
       )}>
-        {selected && <Check className="w-3 h-3 text-bg" strokeWidth={3} />}
+        {selected && <Check className="w-3 h-3 text-on-accent" strokeWidth={3} />}
       </div>
       <img src={t.photo} alt="" className="w-10 h-10 rounded-xl object-cover" />
       <div className="flex-1 min-w-0 text-left">
         <div className="text-sm font-semibold truncate">{t.name}</div>
-        <div className="text-[10px] text-text-muted truncate">
+        <div className="text-[0.6875rem] text-text-muted truncate">
           {t.typecast.gender} · {t.typecast.ageRange[0]}–{t.typecast.ageRange[1]} · {t.typecast.location}
         </div>
       </div>
       <span className={cn(
-        "text-[10px] tnum font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
+        "text-[0.6875rem] tnum font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
         score >= 85 ? "bg-success/15 text-success" : "bg-gold/15 text-gold"
       )}>
         {score}%

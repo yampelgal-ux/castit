@@ -85,10 +85,18 @@ export function newTapeKey(submissionId: string): string {
 
 // ── Cloud-aware API (IndexedDB first, Supabase Storage as the shared copy) ──
 
-/** Save on this device and upload to the cloud so other devices/accounts can open it. */
-export async function saveTapeVideo(key: string, blob: Blob): Promise<void> {
-  await saveTapeVideoLocal(key, blob);
-  void uploadMedia(`tapes/${key}`, blob);
+/**
+ * Save on this device and upload to the cloud so other devices/accounts can
+ * open it. Resolves once the upload finished: "cloud" when it reached Storage,
+ * "local" when it only lives on this device (guest / offline / no backend).
+ */
+export async function saveTapeVideo(key: string, blob: Blob): Promise<"cloud" | "local"> {
+  let savedLocally = true;
+  try { await saveTapeVideoLocal(key, blob); } catch (e) { savedLocally = false; console.warn("[tapes] local save failed", e); }
+  const url = await uploadMedia(`tapes/${key}`, blob);
+  if (url) return "cloud";
+  if (!savedLocally) throw new Error("The video could not be saved. Check free space and your connection, then try again.");
+  return "local";
 }
 
 /** Load from this device; if missing (other device / other account), fetch from the cloud and cache. */

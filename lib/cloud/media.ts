@@ -14,16 +14,45 @@ export function mediaPublicUrl(path: string): string | null {
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path.split("/").map(encodeURIComponent).join("/")}`;
 }
 
+/** Start of every public media URL; what follows is the object path. */
+export function SUPABASE_PUBLIC_PREFIX(): string {
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
+}
+
+let lastError = "";
+/** Why the most recent upload didn't reach the cloud ("" when it did). */
+export function lastUploadError(): string { return lastError; }
+
 /** Upload (best-effort). Only signed-in users can upload; guests stay local. */
 export async function uploadMedia(path: string, blob: Blob): Promise<string | null> {
-  if (!isCloudConfigured() || !currentSyncUser()) return null;
+  lastError = "";
+  if (!isCloudConfigured()) { lastError = "no-backend"; return null; }
+  if (!currentSyncUser()) {
+    // Sync may still be starting; what Storage needs is a live auth session.
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) { lastError = "signed-out"; return null; }
+  }
+  // No upsert: Storage then also demands SELECT/UPDATE rights on the object,
+  // which the media bucket's policies don't grant. Every key here is unique,
+  // so a plain insert is enough; "already exists" means it's already there.
   const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
-    upsert: true,
+    upsert: false,
     contentType: blob.type || undefined,
     cacheControl: "31536000",
   });
-  if (error) { console.warn("[media] upload failed", path, error.message); return null; }
+  if (error && /exists|duplicate/i.test(error.message)) return mediaPublicUrl(path);
+  if (error) {
+    console.warn("[media] upload failed", path, error.message);
+    lastError = /size|large|413|maximum/i.test(error.message) ? "too-large" : error.message || "failed";
+    return null;
+  }
   return mediaPublicUrl(path);
+}
+
+/** Remove an object this user uploaded (best-effort). */
+export async function removeMedia(path: string): Promise<void> {
+  if (!isCloudConfigured()) return;
+  try { await supabase.storage.from(BUCKET).remove([path]); } catch {}
 }
 
 /** Download a previously uploaded object (e.g. on another device). */

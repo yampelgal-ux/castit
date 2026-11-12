@@ -4,11 +4,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { StickyNote, Tag, X, Check, Plus, Lock, UserRound, Mail, Phone } from "lucide-react";
 import { getTalentNote, setTalentNote, getAllTags, setTalentAgent, type AgentContact } from "@/lib/talent-notes-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 // Optional pro-only notes & tags about a talent.
 // Renders collapsed by default — pro can ignore it entirely.
 export function TalentNotes({ talentId, talentName }: { talentId: string; talentName?: string }) {
   const [open, setOpen] = useState(false);
+  const { lang } = useT();
+  const L = (h: string, e: string) => (lang === "en" ? e : h);
   const [note, setNote] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [existingTags, setExistingTags] = useState<string[]>([]);
@@ -59,19 +62,19 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
         </div>
         <div className="flex-1 text-left min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-sm font-semibold">Private notes</span>
+            <span className="text-sm font-semibold">{L("הערות פרטיות", "Private notes")}</span>
             <Lock className="w-3 h-3 text-text-subtle" />
           </div>
-          <div className="text-[10px] text-text-muted">
+          <div className="text-[0.6875rem] text-text-muted">
             {hasContent
-              ? `${tags.length} tag${tags.length === 1 ? "" : "s"}${note ? " · note saved" : ""}`
-              : "Optional — only you see these"}
+              ? L(`${tags.length} תגיות${note ? " · יש הערה" : ""}`, `${tags.length} tag${tags.length === 1 ? "" : "s"}${note ? " · note saved" : ""}`)
+              : L("רק את/ה רואה אותן", "Only you see these")}
           </div>
         </div>
         {tags.length > 0 && !open && (
           <div className="flex gap-1 max-w-[120px] overflow-hidden">
             {tags.slice(0, 2).map((t) => (
-              <span key={t} className="text-[9px] px-1.5 py-0.5 rounded-full bg-gold/10 text-gold border border-gold/30 truncate">
+              <span key={t} className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-gold/10 text-gold border border-gold/30 truncate">
                 {t}
               </span>
             ))}
@@ -94,13 +97,13 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
             <div className="px-3 pb-3 space-y-3 border-t border-border pt-3">
               {/* Tags */}
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5 flex items-center gap-1">
-                  <Tag className="w-3 h-3" /> Tags
+                <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1.5 flex items-center gap-1">
+                  <Tag className="w-3 h-3" aria-hidden /> {L("תגיות", "Tags")}
                 </div>
                 {tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {tags.map((t) => (
-                      <span key={t} className="inline-flex items-center gap-1 h-7 pl-2.5 pr-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-[11px]">
+                      <span key={t} className="inline-flex items-center gap-1 h-7 pl-2.5 pr-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-[0.6875rem]">
                         {t}
                         <button onClick={() => removeTag(t)} className="w-5 h-5 grid place-items-center rounded-full hover:bg-gold/20">
                           <X className="w-3 h-3" />
@@ -114,7 +117,7 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(newTag); } }}
-                    placeholder="e.g. July avail, Strong reader…"
+                    placeholder={L("למשל: פנוי/ה ביולי, קריאה חזקה…", "e.g. July avail, strong reader…")} dir="auto"
                     className="flex-1 h-9 px-3 rounded-full bg-bg border border-border text-xs outline-none focus:border-gold/60"
                   />
                   <button
@@ -122,10 +125,10 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
                     disabled={!newTag.trim()}
                     className={cn(
                       "h-9 px-3 rounded-full text-xs font-semibold inline-flex items-center gap-1",
-                      newTag.trim() ? "bg-gold text-bg" : "bg-bg text-text-subtle"
+                      newTag.trim() ? "bg-gold text-on-accent" : "bg-bg text-text-subtle"
                     )}
                   >
-                    <Plus className="w-3 h-3" /> Add
+                    <Plus className="w-3 h-3" aria-hidden /> {L("הוספה", "Add")}
                   </button>
                 </div>
                 {/* Suggested existing tags */}
@@ -135,7 +138,7 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
                       <button
                         key={t}
                         onClick={() => addTag(t)}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted hover:border-gold/40 hover:text-gold"
+                        className="text-[0.6875rem] px-2 py-0.5 rounded-full bg-bg border border-border text-text-muted hover:border-gold/40 hover:text-gold"
                       >+ {t}</button>
                     ))}
                   </div>
@@ -144,49 +147,49 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
 
               {/* Agent contact */}
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5 flex items-center gap-1">
-                  <UserRound className="w-3 h-3" /> Agent contact
+                <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1.5 flex items-center gap-1">
+                  <UserRound className="w-3 h-3" aria-hidden /> {L("פרטי הסוכן/ת", "Agent contact")}
                 </div>
                 <div className="space-y-1.5">
                   <input
                     value={agent?.name ?? ""}
                     onChange={(e) => updateAgent({ name: e.target.value })}
-                    placeholder="Agent name"
+                    placeholder={L("שם הסוכן/ת", "Agent name")} dir="auto"
                     className="w-full h-9 px-3 rounded-xl bg-bg border border-border text-xs outline-none focus:border-gold/60"
                   />
                   <div className="grid grid-cols-2 gap-1.5">
                     <input
                       value={agent?.email ?? ""}
                       onChange={(e) => updateAgent({ email: e.target.value })}
-                      placeholder="email"
+                      placeholder={L("מייל", "Email")}
                       type="email"
                       className="h-9 px-3 rounded-xl bg-bg border border-border text-xs outline-none focus:border-gold/60"
                     />
                     <input
                       value={agent?.phone ?? ""}
                       onChange={(e) => updateAgent({ phone: e.target.value })}
-                      placeholder="phone"
+                      placeholder={L("טלפון", "Phone")}
                       className="h-9 px-3 rounded-xl bg-bg border border-border text-xs outline-none focus:border-gold/60"
                     />
                   </div>
                   <input
                     value={agent?.agency ?? ""}
                     onChange={(e) => updateAgent({ agency: e.target.value })}
-                    placeholder="Agency"
+                    placeholder={L("סוכנות", "Agency")} dir="auto"
                     className="w-full h-9 px-3 rounded-xl bg-bg border border-border text-xs outline-none focus:border-gold/60"
                   />
                   {agent && (agent.email || agent.phone) && (
                     <div className="flex gap-1.5 mt-1">
                       {agent.email && (
                         <a href={`mailto:${agent.email}`}
-                          className="flex-1 h-8 rounded-full bg-gold/10 text-gold border border-gold/30 text-[11px] font-semibold inline-flex items-center justify-center gap-1">
-                          <Mail className="w-3 h-3" /> Email
+                          className="flex-1 h-8 rounded-full bg-gold/10 text-gold border border-gold/30 text-[0.6875rem] font-semibold inline-flex items-center justify-center gap-1">
+                          <Mail className="w-3 h-3" aria-hidden /> {L("מייל", "Email")}
                         </a>
                       )}
                       {agent.phone && (
                         <a href={`tel:${agent.phone}`}
-                          className="flex-1 h-8 rounded-full bg-success/10 text-success border border-success/30 text-[11px] font-semibold inline-flex items-center justify-center gap-1">
-                          <Phone className="w-3 h-3" /> Call
+                          className="flex-1 h-8 rounded-full bg-success/10 text-success border border-success/30 text-[0.6875rem] font-semibold inline-flex items-center justify-center gap-1">
+                          <Phone className="w-3 h-3" aria-hidden /> {L("שיחה", "Call")}
                         </a>
                       )}
                     </div>
@@ -196,14 +199,14 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
 
               {/* Note */}
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5">
-                  Note {talentName && <span className="text-text-subtle">about {talentName.split(" ")[0]}</span>}
+                <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1.5">
+                  {L("הערה", "Note")} {talentName && <span className="text-text-subtle">{L("על", "about")} {talentName.split(" ")[0]}</span>}
                 </div>
                 <textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   rows={3}
-                  placeholder="Anything you want to remember — strengths, dates, references…"
+                  placeholder={L("כל מה שחשוב לזכור: חוזקות, תאריכים, המלצות…", "Anything to remember: strengths, dates, references…")} dir="auto"
                   className="w-full px-3 py-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
                 />
               </div>
@@ -212,10 +215,10 @@ export function TalentNotes({ talentId, talentName }: { talentId: string; talent
                 onClick={save}
                 className={cn(
                   "w-full h-10 rounded-2xl text-sm font-semibold inline-flex items-center justify-center gap-2",
-                  saved ? "bg-success text-bg" : "bg-gold text-bg"
+                  saved ? "bg-success text-on-accent" : "bg-gold text-on-accent"
                 )}
               >
-                {saved ? <><Check className="w-4 h-4" /> Saved</> : "Save notes"}
+                {saved ? <><Check className="w-4 h-4" aria-hidden /> {L("נשמר", "Saved")}</> : L("שמירת ההערות", "Save notes")}
               </button>
             </div>
           </motion.div>

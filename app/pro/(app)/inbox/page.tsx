@@ -99,7 +99,7 @@ export default function ProInboxPage() {
         right={counts.review > 0 && (
           <Link
             href="/pro/triage"
-            className="text-[11px] text-gold font-semibold inline-flex items-center gap-1"
+            className="text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1"
           >
             <Zap className="w-3 h-3" /> Triage
           </Link>
@@ -119,7 +119,7 @@ export default function ProInboxPage() {
             className={cn(
               "px-3 h-8 rounded-full text-xs font-semibold transition",
               filter === f.k
-                ? "bg-gold text-bg"
+                ? "bg-gold text-on-accent"
                 : "bg-bg-elevated border border-border text-text-muted"
             )}
           >
@@ -165,17 +165,17 @@ export default function ProInboxPage() {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className={cn("inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full border font-semibold whitespace-nowrap", cls)}>
+                        <span className={cn("inline-flex items-center gap-1 text-[0.6875rem] px-1.5 py-0.5 rounded-full border font-semibold whitespace-nowrap", cls)}>
                           <Icon className="w-2.5 h-2.5" /> {meta.label}
                         </span>
-                        <span className="text-[10px] text-text-subtle tnum">
+                        <span className="text-[0.6875rem] text-text-subtle tnum">
                           {formatUrgency(item.reason, item.urgencyMs)}
                         </span>
                       </div>
                       <div className="text-sm font-semibold mt-1 truncate">
                         {item.submission.talentName}
                       </div>
-                      <div className="text-[11px] text-text-muted mt-0.5 truncate">
+                      <div className="text-[0.6875rem] text-text-muted mt-0.5 truncate">
                         {item.project.title} · {item.role.name}
                       </div>
                     </div>

@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, RefreshCw, X, Info } from "lucide-react";
-import { seedDemo, resetDemo, isDemoSeeded } from "@/lib/demo-seed";
-import { CLOUD_UID_KEY } from "@/lib/cloud/config";
+import { seedDemo, resetDemo, isDemoSeeded, clearDemoData } from "@/lib/demo-seed";
+import { CLOUD_UID_KEY, DEMO_MODE } from "@/lib/cloud/config";
 
 const BADGE_DISMISSED = "castit_demo_badge_dismissed_v1";
 
@@ -15,6 +15,12 @@ export function DemoSeeder() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Live app (real backend): no demo at all. A guest browser that was seeded
+    // before the backend existed gets its demo data cleared.
+    if (!DEMO_MODE) {
+      if (!localStorage.getItem(CLOUD_UID_KEY) && isDemoSeeded()) clearDemoData();
+      return;
+    }
     // Signed-in (cloud) accounts hold real data — never seed or show the demo badge.
     if (localStorage.getItem(CLOUD_UID_KEY)) return;
     // Run seed on first mount (idempotent — won't override real data)
@@ -51,11 +57,11 @@ export function DemoSeeder() {
           >
             <button
               onClick={() => { setShowSheet(true); dismissBadge(); }}
-              className="rounded-2xl bg-gold/95 backdrop-blur text-bg px-4 py-3 shadow-2xl flex items-center gap-2.5 text-right"
+              className="rounded-2xl bg-gold/95 backdrop-blur text-on-accent px-4 py-3 shadow-2xl flex items-center gap-2.5 text-right"
             >
               <Sparkles className="w-4 h-4 shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] uppercase tracking-widest font-bold">דמו חי</div>
+                <div className="text-[0.6875rem] uppercase tracking-widest font-bold">דמו חי</div>
                 <div className="text-xs font-semibold">לחץ למידע</div>
               </div>
               <button
@@ -91,7 +97,7 @@ export function DemoSeeder() {
               </p>
 
               <div className="rounded-2xl bg-bg border border-border p-4 space-y-2 text-xs">
-                <div className="text-[10px] uppercase tracking-widest text-gold font-semibold mb-1">מה כלול בדמו</div>
+                <div className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold mb-1">מה כלול בדמו</div>
                 <Row label="3 פרויקטים" value="Feature Film, TV Series, Commercial (Quick Cast)" />
                 <Row label="5 תפקידים" value="Lead, Support, Day-player, Background" />
                 <Row label="13 submissions" value="פרושים בכל שלבי ה-pipeline" />
@@ -102,7 +108,7 @@ export function DemoSeeder() {
 
               <div className="rounded-2xl bg-plum/8 border border-plum/30 p-3 mt-3 flex items-start gap-2">
                 <Info className="w-3.5 h-3.5 text-plum-light shrink-0 mt-0.5" />
-                <p className="text-[11px] text-text-muted leading-relaxed">
+                <p className="text-[0.6875rem] text-text-muted leading-relaxed">
                   כל ה-AI עובד במצב fallback (Aria כותבת הודעות, מנתחת טייפים, מציעה directions) — בלי תלות במפתחות API.
                   למעבר לAI אמיתי, צריך להוסיף ANTHROPIC_API_KEY ב-Vercel.
                 </p>

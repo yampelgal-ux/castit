@@ -71,6 +71,9 @@ export function matchTalent(
   if (f.mustTravel && tc.willingToTravel === false) {
     blockers.push("travel");
   }
+  if (f.needsLicense && !tc.driverLicense) blockers.push("license");
+  if (f.needsAgent && !tc.hasAgent) blockers.push("agent");
+  if (f.workPermits?.length && !arrayContainsAny(tc.workPermits, f.workPermits)) blockers.push("permit");
 
   // ── Soft scores ──
   const add = (s: number) => { total += s; count++; };
@@ -100,6 +103,14 @@ export function matchTalent(
   if (f.locations?.length && tc.location) {
     add(f.locations.some((l) => l.toLowerCase() === tc.location?.toLowerCase()) ? 1 : 0);
   }
+
+  if (f.weightRange) add(inRange(tc.weightKg, f.weightRange, 6));
+  if (f.hairTypes?.length) add(tc.hairType && f.hairTypes.includes(tc.hairType) ? 1 : 0);
+  if (f.facialHair?.length) add(f.facialHair.includes(tc.facialHair || "None") ? 1 : 0);
+  if (f.features?.length) add(arrayOverlap(tc.features, f.features));
+  if (f.genres?.length) add(arrayContainsAny(tc.genres, f.genres));
+  if (f.clothingSizes?.length) add(tc.clothingSize && f.clothingSizes.includes(tc.clothingSize) ? 1 : 0);
+  if (f.shoeRange) add(tc.shoeSizeEU ? inRange(tc.shoeSizeEU, f.shoeRange, 2) : 0);
 
   const avg = count === 0 ? 1 : total / count;
   const score = Math.round(avg * 100);

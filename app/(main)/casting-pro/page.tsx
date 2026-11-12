@@ -60,7 +60,7 @@ export default function CastingProPage() {
         right={
           <button
             onClick={() => { haptic("medium"); setShowNew(true); }}
-            className="inline-flex items-center gap-1 h-9 px-3 rounded-full bg-gold text-bg text-xs font-semibold"
+            className="inline-flex items-center gap-1 h-9 px-3 rounded-full bg-gold text-on-accent text-xs font-semibold"
           >
             <Plus className="w-3.5 h-3.5" /> Post role
           </button>
@@ -80,14 +80,14 @@ export default function CastingProPage() {
           <button
             onClick={() => setTab("posts")}
             className={cn("flex-1 h-9 rounded-xl text-xs font-medium transition-all",
-              tab === "posts" ? "bg-gold text-bg" : "text-text-muted")}
+              tab === "posts" ? "bg-gold text-on-accent" : "text-text-muted")}
           >
             My posts
           </button>
           <button
             onClick={() => setTab("applicants")}
             className={cn("flex-1 h-9 rounded-xl text-xs font-medium transition-all",
-              tab === "applicants" ? "bg-gold text-bg" : "text-text-muted")}
+              tab === "applicants" ? "bg-gold text-on-accent" : "text-text-muted")}
           >
             Applicants
           </button>
@@ -116,15 +116,15 @@ export default function CastingProPage() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] uppercase tracking-widest text-gold">{c.type}</div>
+                    <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{c.type}</div>
                     <div className="font-display text-lg leading-tight mt-0.5">{c.title}</div>
-                    <div className="flex items-center gap-3 text-[11px] text-text-muted mt-1.5">
+                    <div className="flex items-center gap-3 text-[0.6875rem] text-text-muted mt-1.5">
                       <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> {c.location}</span>
                       <span className="inline-flex items-center gap-1"><Calendar className="w-3 h-3" /> {c.deadline}</span>
                       {c.paid && <span className="text-success font-semibold">PAID</span>}
                     </div>
                   </div>
-                  <span className="text-[11px] tnum text-gold font-semibold whitespace-nowrap">
+                  <span className="text-[0.6875rem] tnum text-gold font-semibold whitespace-nowrap">
                     {c.applicants} applied
                   </span>
                 </div>
@@ -155,7 +155,7 @@ export default function CastingProPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm truncate">{a.talent.name}</span>
-                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-semibold",
+                    <span className={cn("text-[0.6875rem] px-1.5 py-0.5 rounded-full font-semibold",
                       a.matchScore >= 85 ? "bg-success/15 text-success"
                         : a.matchScore >= 70 ? "bg-gold/15 text-gold"
                         : "bg-bg text-text-muted"
@@ -163,13 +163,13 @@ export default function CastingProPage() {
                       {a.matchScore}% match
                     </span>
                   </div>
-                  <div className="text-[11px] text-text-muted truncate mt-0.5">
+                  <div className="text-[0.6875rem] text-text-muted truncate mt-0.5">
                     Applied to <span className="text-text">{a.castingTitle}</span> · {a.submittedAt}
                   </div>
                 </div>
                 <Link
                   href={`/profile/${a.talent.username}`}
-                  className="h-8 px-3 rounded-full bg-gold text-bg text-xs font-semibold inline-flex items-center"
+                  className="h-8 px-3 rounded-full bg-gold text-on-accent text-xs font-semibold inline-flex items-center"
                 >
                   View
                 </Link>
@@ -198,7 +198,7 @@ function Stat({ label, value, icon: Icon, tone }: { label: string; value: number
         <Icon className="w-4 h-4" />
       </div>
       <div className="text-xl font-display tnum">{value}</div>
-      <div className="text-[10px] text-text-muted uppercase tracking-wider">{label}</div>
+      <div className="text-[0.6875rem] text-text-muted uppercase tracking-wider">{label}</div>
     </div>
   );
 }
@@ -255,7 +255,7 @@ function NewRoleSheet({ onClose, onSave }: { onClose: () => void; onSave: (c: My
             <span className="text-sm">Paid role</span>
           </label>
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 px-1">Description</div>
+            <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5 px-1">Description</div>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -271,7 +271,7 @@ function NewRoleSheet({ onClose, onSave }: { onClose: () => void; onSave: (c: My
             onClick={submit}
             disabled={!valid}
             className={cn("w-full h-12 rounded-2xl font-semibold",
-              valid ? "bg-gold text-bg" : "bg-bg text-text-subtle")}
+              valid ? "bg-gold text-on-accent" : "bg-bg text-text-subtle")}
           >
             Publish role
           </button>
@@ -284,7 +284,7 @@ function NewRoleSheet({ onClose, onSave }: { onClose: () => void; onSave: (c: My
 function Input({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider text-text-muted mb-1.5 px-1">{label}</div>
+      <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5 px-1">{label}</div>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}

@@ -1,9 +1,10 @@
 "use client";
 import type { Audition } from "./mock-data";
+import { DEMO_MODE } from "./cloud/config";
 
 const KEY = "castit_auditions_v1";
 
-const SEED: Audition[] = [
+const DEMO_SEED: Audition[] = [
   {
     id: "a-seed-1",
     postedBy: "pro-demo",
@@ -51,6 +52,8 @@ const SEED: Audition[] = [
   },
 ];
 
+const SEED: Audition[] = DEMO_MODE ? DEMO_SEED : [];
+
 export function loadAuditions(): Audition[] {
   if (typeof window === "undefined") return SEED;
   try {
@@ -59,7 +62,9 @@ export function loadAuditions(): Audition[] {
       localStorage.setItem(KEY, JSON.stringify(SEED));
       return SEED;
     }
-    return JSON.parse(raw);
+    const list: Audition[] = JSON.parse(raw);
+    // Live app: drop demo castings saved before the backend was connected.
+    return DEMO_MODE ? list : list.filter((a) => !a.id.startsWith("a-seed-"));
   } catch {
     return SEED;
   }

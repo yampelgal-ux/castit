@@ -12,6 +12,8 @@ import { TALENTS } from "@/lib/mock-data";
 import { loadSubmissions, loadRoles, loadProjects, type Submission, type Role, type Project } from "@/lib/projects-store";
 import { ShieldCheck, FolderOpen } from "lucide-react";
 import Link from "next/link";
+import { isRealUserId } from "@/lib/cloud/config";
+import { useHiddenUsers } from "@/lib/cloud/safety";
 
 type Convo = {
   id: string;
@@ -19,6 +21,8 @@ type Convo = {
   photo: string;
   lastMessage: string;
   lastAt: string;
+  /** The other person's account id, when known. */
+  otherId?: string;
   // Pro-mode metadata: which project/role the conversation is tied to
   projectTitle?: string;
   roleName?: string;
@@ -55,8 +59,11 @@ function MessagesContent() {
   const router = useRouter();
   const params = useSearchParams();
   const { userId, profile } = useStore();
-  const { t, dir } = useT();
-  const [convos, setConvos] = useState<Convo[]>([]);
+  const { t, dir, lang } = useT();
+  const he = lang === "he";
+  const hidden = useHiddenUsers();
+  const [allConvos, setConvos] = useState<Convo[]>([]);
+  const convos = hidden.size ? allConvos.filter((c) => !c.otherId || !hidden.has(c.otherId)) : allConvos;
   const [loading, setLoading] = useState(true);
 
   const isPro = profile.role === "Casting Pro";
@@ -98,9 +105,10 @@ function MessagesContent() {
 
         const list: Convo[] = [...byTalent.values()].map(({ s, role, proj }) => ({
           id: s.talentId,
+          otherId: s.talentId,
           name: s.talentName,
           photo: s.talentPhoto,
-          lastMessage: s.proMessage || s.inviteMessage || `Active on ${role?.name ?? "your role"}`,
+          lastMessage: s.proMessage || s.inviteMessage || (he ? `פעיל/ה בתפקיד ${role?.name ?? ""}` : `Active on ${role?.name ?? "your role"}`),
           lastAt: timeShort(s.decidedAt ?? s.createdAt),
           projectTitle: proj?.title,
           roleName: role?.name,
@@ -121,7 +129,8 @@ function MessagesContent() {
                   : c.participant_a_profile;
               return {
                 id: c.id,
-                name: other?.name || "Unknown",
+                otherId: c.participant_a === userId ? c.participant_b : c.participant_a,
+                name: other?.name || other?.username || (he ? "משתמש/ת" : "Unknown"),
                 photo: other?.photo_url || "",
                 lastMessage: c.last_message || "",
                 lastAt: c.last_at
@@ -148,8 +157,8 @@ function MessagesContent() {
       {isPro && (
         <div className="mx-4 mt-3 p-2.5 rounded-xl bg-bg-elevated border border-border flex items-start gap-2">
           <ShieldCheck className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-          <p className="text-[11px] text-text-muted leading-relaxed">
-            Only talents tied to your active projects can message you. Cold DMs are blocked.
+          <p className="text-[0.6875rem] text-text-muted leading-relaxed">
+            {he ? "רק שחקנים שקשורים לפרויקטים הפעילים שלך יכולים לשלוח לך הודעות. אין פניות מזדמנות." : "Only talents tied to your active projects can message you. Cold DMs are blocked."}
           </p>
         </div>
       )}
@@ -194,7 +203,10 @@ function MessagesContent() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              onClick={() => router.push(`/messages/${c.id}`)}
+              onClick={() =>
+                // In casting mode the list is keyed by talent; open (or start) the real chat with them.
+                router.push(isPro && userId && isRealUserId(c.id) ? `/messages?with=${c.id}` : `/messages/${c.id}`)
+              }
               className="w-full flex items-center gap-3 p-3 rounded-2xl bg-bg-elevated border border-border text-left"
             >
               {c.photo ? (
@@ -207,10 +219,10 @@ function MessagesContent() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold text-sm truncate">{c.name}</span>
-                  <span className="text-[10px] text-text-subtle shrink-0">{c.lastAt}</span>
+                  <span className="text-[0.6875rem] text-text-subtle shrink-0">{c.lastAt}</span>
                 </div>
                 {c.projectTitle && c.roleName && (
-                  <div className="flex items-center gap-1 text-[10px] text-gold mt-0.5">
+                  <div className="flex items-center gap-1 text-[0.6875rem] text-gold mt-0.5">
                     <FolderOpen className="w-2.5 h-2.5" />
                     <span className="truncate">{c.projectTitle} · {c.roleName}</span>
                   </div>

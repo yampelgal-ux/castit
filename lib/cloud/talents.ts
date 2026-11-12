@@ -1,4 +1,5 @@
 "use client";
+import { posterPathFor } from "@/lib/video-poster";
 
 // Real registered talents (Supabase `profiles.talent_card`) — merged into the
 // Pro search / talent pages next to the curated demo roster, and the signed-in
@@ -7,7 +8,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { isCloudConfigured } from "./config";
-import { TALENTS, type Talent } from "@/lib/mock-data";
+import { mediaPublicUrl } from "./media";
+import { useMyReels } from "@/lib/reels-store";
+import { useStore } from "@/lib/store";
+import { TALENTS, REELS, type Talent, type ReelPost } from "@/lib/mock-data";
+import { useHiddenUsers } from "./safety";
 
 let cache: Talent[] = [];
 let inflight: Promise<Talent[]> | null = null;
@@ -19,7 +24,7 @@ export function getCachedRealTalents(): Talent[] {
 
 export async function fetchRealTalents(force = false): Promise<Talent[]> {
   if (!isCloudConfigured()) return [];
-  if (!force && Date.now() - fetchedAt < 60_000) return cache;
+  if (!force && Date.now() - fetchedAt < 10_000) return cache;
   if (inflight) return inflight;
   inflight = (async () => {
     const { data, error } = await supabase
@@ -48,10 +53,47 @@ export function useAllTalents(): Talent[] {
     fetchRealTalents().then((t) => { if (alive) setReal(t); });
     return () => { alive = false; };
   }, []);
-  return real.length ? [...real, ...TALENTS.filter((t) => !real.some((r) => r.id === t.id))] : TALENTS;
+  const hidden = useHiddenUsers();
+  const visible = hidden.size ? real.filter((t) => !hidden.has(t.id)) : real;
+  return visible.length ? [...visible, ...TALENTS.filter((t) => !visible.some((r) => r.id === t.id))] : TALENTS;
 }
 
 export function useTalentById(id: string | undefined): Talent | undefined {
   const all = useAllTalents();
   return id ? all.find((t) => t.id === id) : undefined;
+}
+
+/** Reels from real talents' published cards (newest first), plus the demo reels in demo mode. */
+export function reelsFromTalents(talents: Talent[]): ReelPost[] {
+  const real: ReelPost[] = talents
+    .flatMap((t) => (t.reels ?? []).map((r) => ({
+      id: r.id, talentId: t.id, videoUrl: r.url, poster: r.poster || "", caption: r.caption,
+      likes: 0, comments: 0, shares: 0, createdAt: r.createdAt,
+    })))
+    .sort((a, b) => b.createdAt - a.createdAt);
+  return [...real, ...REELS.filter((r) => !real.some((x) => x.id === r.id))];
+}
+
+export function useAllReels(): { reels: ReelPost[]; talents: Talent[] } {
+  const talents = useAllTalents();
+  // My own published videos show up right away, before the shared list refreshes.
+  const mine = useMyReels((s) => s.reels);
+  const userId = useStore((s) => s.userId);
+  const profile = useStore((s) => s.profile);
+  const myCloud = mine.filter((r) => r.cloud);
+  if (!userId || myCloud.length === 0) return { reels: reelsFromTalents(talents), talents };
+  const existing = talents.find((t) => t.id === userId);
+  const me: Talent = {
+    ...(existing ?? {
+      id: userId, username: profile.username || "me", name: profile.name || "", verified: false,
+      photo: profile.photoUrl || "", cover: "", bio: profile.bio || "", followers: 0, likes: 0, submissions: 0,
+      typecast: { heightCm: 170, weightKg: 65, ageRange: [20, 30], gender: "Female", ethnicity: "", skinTone: "", eyeColor: "", hairColor: "", hairLength: "Medium", languages: [], skills: [], genres: [] },
+    }),
+    reels: myCloud.map((r) => ({
+      id: r.id, url: mediaPublicUrl(`tapes/${r.blobKey}`) || "", caption: r.caption, createdAt: r.createdAt,
+      poster: r.poster ? mediaPublicUrl(posterPathFor(r.blobKey)) || undefined : undefined,
+    })),
+  };
+  const merged = [me, ...talents.filter((t) => t.id !== userId)];
+  return { reels: reelsFromTalents(merged), talents: merged };
 }

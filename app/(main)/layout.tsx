@@ -2,6 +2,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { AriaFAB } from "@/components/AriaFAB";
 import { TypecastGuard } from "@/components/TypecastGuard";
 import { ProRouteGuard } from "@/components/ProRouteGuard";
+import { InstallBanner } from "@/components/InstallBanner";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           {children}
           <AriaFAB />
           <BottomNav />
+          <InstallBanner />
         </div>
       </TypecastGuard>
     </ProRouteGuard>

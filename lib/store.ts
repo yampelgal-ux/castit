@@ -1,6 +1,7 @@
 "use client";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { DEMO_MODE } from "@/lib/cloud/config";
 
 // Pro-only public profile fields (visible to talents browsing a pro)
 export type ProPublicCredit = {
@@ -16,6 +17,10 @@ type Profile = {
   role: "Talent" | "Casting Pro";
   username: string;
   photoUrl?: string;
+  /** Extra photos (headshots, full body…): public URLs, or data URLs on a device without the cloud. */
+  headshots?: string[];
+  /** Talent's birth year; under 18 means a parent has to approve the profile. */
+  birthYear?: number;
   bio?: string;
   typecast: Partial<{
     heightCm: number;
@@ -30,6 +35,22 @@ type Profile = {
     ageRangeMin: number;
     ageRangeMax: number;
     genres: string[];
+    ethnicity: string;
+    bodyType: string;
+    hairType: string;
+    facialHair: string;
+    features: string[];
+    accents: string[];
+    voiceType: string;
+    unionStatus: string;
+    experienceLevel: string;
+    location: string;
+    willingToTravel: boolean;
+    clothingSize: string;
+    shoeSizeEU: number;
+    driverLicense: boolean;
+    hasAgent: boolean;
+    workPermits: string[];
   }>;
   avatarSeed: string;
   // Pro-only public profile
@@ -94,7 +115,7 @@ export const useStore = create<State>()(persist((set, get) => ({
   shortlist: new Set(),
   unreadNotifications: 0,
   onboarded: false,
-  streak: 14,
+  streak: DEMO_MODE ? 14 : 0,
   ariaCredits: 20,
   savedSearches: [],
   setProfile: (p) => set((s) => ({ profile: { ...s.profile, ...p } })),

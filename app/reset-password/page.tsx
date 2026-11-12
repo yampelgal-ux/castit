@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
           disabled={!ready || password.length < 6 || saving}
           className={cn(
             "flex items-center justify-center gap-2 w-full h-14 rounded-2xl font-semibold",
-            ready && password.length >= 6 ? "bg-gold text-bg" : "bg-bg-elevated text-text-subtle"
+            ready && password.length >= 6 ? "bg-gold text-on-accent" : "bg-bg-elevated text-text-subtle"
           )}
         >
           {saving ? "Saving…" : "Save password"} {!saving && <ArrowRight className="w-4 h-4" />}

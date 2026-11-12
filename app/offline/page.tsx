@@ -10,7 +10,7 @@ export default function OfflinePage() {
         <p className="text-text-muted text-sm" dir="rtl">
           אין חיבור לאינטרנט כרגע. מסכים שכבר פתחת זמינים גם בלי רשת, ושינויים יסונכרנו אוטומטית כשהחיבור יחזור.
         </p>
-        <a href="/welcome" className="inline-flex h-12 px-6 items-center rounded-2xl bg-gold text-bg font-semibold">Try again</a>
+        <a href="/welcome" className="inline-flex h-12 px-6 items-center rounded-2xl bg-gold text-on-accent font-semibold">Try again</a>
       </div>
     </div>
   );

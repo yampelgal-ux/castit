@@ -79,7 +79,7 @@ export async function POST(req: Request) {
         lines: parsed,
       })
     }
-    return Response.json({ error: 'Vision parsing requires ANTHROPIC_API_KEY' }, { status: 503 })
+    return Response.json({ error: 'קריאת סצנה מתמונה עוד לא זמינה. בינתיים אפשר להדביק את הטקסט, שורה לכל דמות: שם: טקסט.' }, { status: 503 })
   }
 
   const client = new Anthropic({ apiKey })

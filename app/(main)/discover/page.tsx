@@ -3,7 +3,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, X, Sparkles, Bookmark, BookmarkCheck, Star } from "lucide-react";
-import { TALENTS } from "@/lib/mock-data";
+import type { Talent } from "@/lib/mock-data";
+import { useAllTalents } from "@/lib/cloud/talents";
+import { DEMO_MODE } from "@/lib/cloud/config";
 import { SKIN_TONES, EYE_COLORS, HAIR_COLORS } from "@/lib/typecast-palette";
 import { ColorSwatchPicker } from "@/components/ColorSwatchPicker";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
@@ -49,7 +51,7 @@ function colorScore(a: string, b: string): number {
   return Math.max(0, 1 - dist / 441);
 }
 
-function calculateMatch(talent: typeof TALENTS[number], filters: Filters): number {
+function calculateMatch(talent: Talent, filters: Filters): number {
   const scores: number[] = [];
 
   if (filters.gender) scores.push(talent.typecast.gender === filters.gender ? 1 : 0);
@@ -96,12 +98,13 @@ function countActiveFilters(f: Filters): number {
   return n;
 }
 
-// Featured/sponsored talent slot — injected at grid position 3
-const FEATURED_TALENT = TALENTS[0];
 
 export default function DiscoverPage() {
   const { savedSearches, saveSearch, deleteSavedSearch } = useStore();
-  const { t } = useT();
+  const { t, lang } = useT();
+  const TALENTS = useAllTalents();
+  // Featured/sponsored slot (grid position 3) — a demo-only showcase.
+  const FEATURED_TALENT = DEMO_MODE ? TALENTS[0] : undefined;
   const [quick, setQuick] = useState("All");
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -125,7 +128,7 @@ export default function DiscoverPage() {
 
     if (filtersActive) scored.sort((a, b) => b.score - a.score);
     return scored;
-  }, [search, quick, filters, filtersActive]);
+  }, [TALENTS, search, quick, filters, filtersActive]);
 
   function filtersAsRecord(): Record<string, unknown> {
     return { ...filters, quick, search };
@@ -148,7 +151,7 @@ export default function DiscoverPage() {
 
   // Insert featured card at index 3 if no active filters
   function buildGrid() {
-    if (filtersActive || results.length === 0) return { items: results, featuredIdx: -1 };
+    if (filtersActive || results.length === 0 || !FEATURED_TALENT) return { items: results, featuredIdx: -1 };
     return { items: results, featuredIdx: Math.min(3, results.length) };
   }
 
@@ -165,6 +168,8 @@ export default function DiscoverPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t("disc.searchPh")}
+              aria-label={t("disc.searchPh")}
+              type="search"
               className="flex-1 bg-transparent outline-none text-sm placeholder:text-text-subtle"
             />
           </div>
@@ -173,12 +178,14 @@ export default function DiscoverPage() {
               onClick={() => setShowSaveModal(true)}
               className="w-11 h-11 grid place-items-center rounded-full bg-bg-elevated border border-gold/30 text-gold"
               title="Save this search"
+              aria-label={lang === "he" ? "שמירת החיפוש" : "Save this search"}
             >
               <Bookmark className="w-4 h-4" />
             </button>
           )}
           <button
             onClick={() => setShowFilters(true)}
+            aria-label={lang === "he" ? "סינון" : "Filters"}
             className={cn(
               "relative w-11 h-11 grid place-items-center rounded-full border transition-colors",
               filtersActive ? "bg-gold/10 border-gold/40 text-gold" : "bg-bg-elevated border-border"
@@ -186,7 +193,7 @@ export default function DiscoverPage() {
           >
             <SlidersHorizontal className="w-4 h-4" />
             {filtersActive && (
-              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-gold text-bg text-[9px] font-bold grid place-items-center px-1">
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-gold text-on-accent text-[0.6875rem] font-bold grid place-items-center px-1">
                 {countActiveFilters(filters)}
               </span>
             )}
@@ -201,7 +208,7 @@ export default function DiscoverPage() {
               onClick={() => setQuick(q)}
               className={cn(
                 "shrink-0 px-3.5 h-8 rounded-full text-xs font-medium border transition-all",
-                quick === q ? "bg-gold text-bg border-gold" : "bg-transparent text-text-muted border-border"
+                quick === q ? "bg-gold text-on-accent border-gold" : "bg-transparent text-text-muted border-border"
               )}
             >
               {q}
@@ -216,7 +223,7 @@ export default function DiscoverPage() {
               <button
                 key={ss.id}
                 onClick={() => loadSavedSearch(ss)}
-                className="shrink-0 h-7 px-3 rounded-full text-[11px] font-medium border border-gold/30 text-gold bg-gold/8 flex items-center gap-1.5"
+                className="shrink-0 h-7 px-3 rounded-full text-[0.6875rem] font-medium border border-gold/30 text-gold bg-gold/8 flex items-center gap-1.5"
               >
                 <BookmarkCheck className="w-3 h-3" />
                 {ss.name}
@@ -252,7 +259,7 @@ export default function DiscoverPage() {
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs text-text-muted tnum">{results.length} {t("disc.talents")}</p>
           {filtersActive && (
-            <button onClick={() => setFilters(DEFAULT_FILTERS)} className="text-[11px] text-gold font-medium">
+            <button onClick={() => setFilters(DEFAULT_FILTERS)} className="text-[0.6875rem] text-gold font-medium">
               {t("disc.clearFilters")}
             </button>
           )}
@@ -260,11 +267,19 @@ export default function DiscoverPage() {
 
         {results.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3 text-text-muted">
-            <Search className="w-10 h-10 opacity-30" />
-            <p className="text-sm">No matches found</p>
-            <button onClick={() => setFilters(DEFAULT_FILTERS)} className="text-xs text-gold mt-2">
-              Reset filters
-            </button>
+            <Search className="w-10 h-10 opacity-30" aria-hidden />
+            {TALENTS.length === 0 ? (
+              <p className="text-sm text-center max-w-xs">
+                {lang === "he" ? "עוד אין כישרונות רשומים. כשאנשים יירשמו ויפרסמו פרופיל, הם יופיעו כאן." : "No talent has signed up yet. People appear here once they publish a profile."}
+              </p>
+            ) : (
+              <>
+                <p className="text-sm">{lang === "he" ? "לא נמצאו התאמות" : "No matches found"}</p>
+                <button onClick={() => setFilters(DEFAULT_FILTERS)} className="text-xs text-gold mt-2">
+                  {lang === "he" ? "איפוס סינון" : "Reset filters"}
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
@@ -280,28 +295,28 @@ export default function DiscoverPage() {
                   >
                     <div className="relative shrink-0">
                       <img
-                        src={FEATURED_TALENT.photo}
-                        alt={FEATURED_TALENT.name}
+                        src={FEATURED_TALENT!.photo}
+                        alt={FEATURED_TALENT!.name}
                         className="w-16 h-16 rounded-full object-cover border-2 border-gold/40"
                       />
-                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-gold text-bg text-[8px] font-bold uppercase tracking-wide">
+                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-gold text-on-accent text-[0.6875rem] font-bold uppercase tracking-wide">
                         Featured
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm">{FEATURED_TALENT.name}</span>
-                        {FEATURED_TALENT.verified && <VerifiedBadge />}
+                        <span className="font-semibold text-sm">{FEATURED_TALENT!.name}</span>
+                        {FEATURED_TALENT!.verified && <VerifiedBadge />}
                       </div>
-                      <p className="text-[11px] text-text-muted mt-0.5 line-clamp-2">{FEATURED_TALENT.bio}</p>
+                      <p className="text-[0.6875rem] text-text-muted mt-0.5 line-clamp-2">{FEATURED_TALENT!.bio}</p>
                       <div className="flex items-center gap-1.5 mt-2">
                         <Star className="w-3 h-3 text-gold fill-gold" />
-                        <span className="text-[10px] text-gold font-semibold">Spotlight talent this week</span>
+                        <span className="text-[0.6875rem] text-gold font-semibold">Spotlight talent this week</span>
                       </div>
                     </div>
                     <Link
-                      href={`/profile/${FEATURED_TALENT.username}`}
-                      className="shrink-0 h-9 px-3 rounded-full bg-gold text-bg text-xs font-semibold grid place-items-center"
+                      href={`/profile/${FEATURED_TALENT!.username}`}
+                      className="shrink-0 h-9 px-3 rounded-full bg-gold text-on-accent text-xs font-semibold grid place-items-center"
                     >
                       View
                     </Link>
@@ -325,9 +340,9 @@ export default function DiscoverPage() {
 
                     {filtersActive && (
                       <div className={cn(
-                        "absolute top-2 left-2 px-2 py-1 rounded-full text-[10px] font-bold tnum backdrop-blur",
+                        "absolute top-2 left-2 px-2 py-1 rounded-full text-[0.6875rem] font-bold tnum backdrop-blur",
                         score >= 80 ? "bg-success/90 text-white"
-                          : score >= 60 ? "bg-gold/90 text-bg"
+                          : score >= 60 ? "bg-gold/90 text-on-accent"
                           : "bg-bg/80 text-text border border-border"
                       )}>
                         {score}%
@@ -342,7 +357,7 @@ export default function DiscoverPage() {
 
                     <div className="absolute bottom-2 left-2 right-2 space-y-1">
                       <div className="text-sm font-semibold text-white truncate">{t.name}</div>
-                      <div className="flex items-center gap-2 text-[10px] text-white/80">
+                      <div className="flex items-center gap-2 text-[0.6875rem] text-white/80">
                         <span className="tnum">{t.typecast.heightCm}cm</span>
                         <span>·</span>
                         <span className="truncate">{t.typecast.gender}</span>
@@ -411,7 +426,7 @@ export default function DiscoverPage() {
                     }
                   }}
                   disabled={!searchName.trim()}
-                  className="flex-1 h-11 rounded-2xl bg-gold text-bg font-semibold disabled:opacity-50"
+                  className="flex-1 h-11 rounded-2xl bg-gold text-on-accent font-semibold disabled:opacity-50"
                 >
                   Save
                 </button>
@@ -456,7 +471,7 @@ function FilterSheet({
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="font-display text-xl">Typecast filters</h3>
-              <p className="text-[11px] text-text-muted mt-0.5">Match talent by physical & creative traits</p>
+              <p className="text-[0.6875rem] text-text-muted mt-0.5">Match talent by physical & creative traits</p>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-full hover:bg-bg-muted">
               <X className="w-5 h-5" />
@@ -469,7 +484,7 @@ function FilterSheet({
               <div className="space-y-2">
                 {["heightMin", "heightMax"].map((key) => (
                   <div key={key} className="flex items-center gap-3">
-                    <span className="text-[10px] text-text-muted w-8">{key === "heightMin" ? "Min" : "Max"}</span>
+                    <span className="text-[0.6875rem] text-text-muted w-8">{key === "heightMin" ? "Min" : "Max"}</span>
                     <input
                       type="range" min={140} max={210}
                       value={filters[key as "heightMin" | "heightMax"]}
@@ -560,7 +575,7 @@ function FilterSheet({
             </button>
             <button
               onClick={onClose}
-              className="flex-1 h-12 rounded-2xl bg-gold text-bg font-semibold"
+              className="flex-1 h-12 rounded-2xl bg-gold text-on-accent font-semibold"
             >
               Show {resultCount} talent{resultCount === 1 ? "" : "s"}
             </button>
@@ -577,7 +592,7 @@ function Section({ title, hint, value, children }: { title: string; hint?: strin
       <div className="flex items-baseline justify-between mb-2.5">
         <div>
           <div className="text-xs uppercase tracking-wider text-text font-semibold">{title}</div>
-          {hint && <div className="text-[10px] text-text-subtle mt-0.5">{hint}</div>}
+          {hint && <div className="text-[0.6875rem] text-text-subtle mt-0.5">{hint}</div>}
         </div>
         {value && <div className="text-xs tnum text-gold font-semibold">{value}</div>}
       </div>
@@ -592,7 +607,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       onClick={onClick}
       className={cn(
         "px-3.5 h-9 rounded-full text-xs font-medium border transition-all",
-        active ? "bg-gold text-bg border-gold" : "bg-bg border-border text-text hover:border-border-strong"
+        active ? "bg-gold text-on-accent border-gold" : "bg-bg border-border text-text hover:border-border-strong"
       )}
     >
       {children}

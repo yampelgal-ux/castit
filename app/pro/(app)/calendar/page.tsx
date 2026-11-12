@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Calendar as CalIcon, Clock, Film, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Calendar as CalIcon, Clock, Film, CheckCircle2, AlertTriangle, CalendarPlus } from "lucide-react";
+import { addToCalendar, absUrl } from "@/lib/ics";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
@@ -11,6 +12,7 @@ import {
   type Project, type Role, type Submission,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 type Event = {
   date: Date;
@@ -26,6 +28,9 @@ export default function ProCalendarPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [subs, setSubs] = useState<Submission[]>([]);
+  const { lang } = useT();
+  const he = lang === "he";
+  const L = (h: string, e: string) => (he ? h : e);
 
   useEffect(() => {
     setProjects(loadProjects());
@@ -48,7 +53,7 @@ export default function ProCalendarPage() {
           out.push({
             date: d,
             kind: "deadline",
-            title: `Tape due — ${r.name}`,
+            title: `${L("הגשת טייפ", "Tape due")} — ${r.name}`,
             subtitle: p.title,
             href: `/pro/projects/${p.id}/role/${r.id}`,
             urgent: d.getTime() - Date.now() < 86400000 * 3,
@@ -63,7 +68,7 @@ export default function ProCalendarPage() {
           out.push({
             date: d,
             kind: "shoot",
-            title: `Shoot — ${r.name}`,
+            title: `${L("צילומים", "Shoot")} — ${r.name}`,
             subtitle: `${p.title} · ${r.shootDates}`,
             href: `/pro/projects/${p.id}/role/${r.id}`,
           });
@@ -80,7 +85,7 @@ export default function ProCalendarPage() {
         out.push({
           date: new Date(s.decidedAt),
           kind: "callback",
-          title: `Callback — ${s.talentName}`,
+          title: `${L("קולבק", "Callback")} — ${s.talentName}`,
           subtitle: `${r.name} · ${p.title}`,
           href: `/pro/projects/${p.id}/role/${r.id}/submission/${s.id}`,
         });
@@ -89,7 +94,7 @@ export default function ProCalendarPage() {
         out.push({
           date: new Date(s.decidedAt),
           kind: "booked",
-          title: `Booked — ${s.talentName}`,
+          title: `${L("נבחר/ה", "Booked")} — ${s.talentName}`,
           subtitle: `${r.name} · ${p.title}`,
           href: `/pro/projects/${p.id}/role/${r.id}/submission/${s.id}`,
         });
@@ -115,27 +120,27 @@ export default function ProCalendarPage() {
 
   return (
     <div className="min-h-dvh bg-bg pb-24">
-      <Header back title="Calendar" />
+      <Header back title={L("יומן", "Calendar")} />
 
       <div className="px-5 pt-3 space-y-4">
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-gold">Optional</div>
-          <h1 className="font-display text-3xl tracking-editorial">Your schedule</h1>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{L("אופציונלי", "Optional")}</div>
+          <h1 className="font-display text-3xl tracking-editorial">{L("הלו״ז שלך", "Your schedule")}</h1>
           <p className="text-text-muted text-sm mt-1">
-            Deadlines, shoots, callbacks and bookings — auto-pulled from your projects.
+            {L("דדליינים, צילומים, קולבקים ובחירות. נמשכים אוטומטית מהפרויקטים שלך.", "Deadlines, shoots, callbacks and bookings — auto-pulled from your projects.")}
           </p>
         </div>
 
         {events.length === 0 ? (
           <EmptyState
             icon={CalIcon}
-            title="Nothing scheduled"
-            description="Add tape deadlines or shoot dates to your roles — they'll appear here automatically."
+            title={L("אין כלום ביומן", "Nothing scheduled")}
+            description={L("הוסיפו דדליין לטייפ או תאריכי צילום לתפקידים, והם יופיעו כאן אוטומטית.", "Add tape deadlines or shoot dates to your roles — they'll appear here automatically.")}
           />
         ) : (
           <>
-            <div className="rounded-2xl bg-gold/8 border border-gold/20 p-3 text-[11px] text-gold">
-              <strong className="tnum">{upcoming}</strong> upcoming · {events.length} total
+            <div className="rounded-2xl bg-gold/8 border border-gold/20 p-3 text-[0.6875rem] text-gold">
+              <strong className="tnum">{upcoming}</strong> {L("קרובים", "upcoming")} · {events.length} {L("סה״כ", "total")}
             </div>
             <div className="space-y-4">
               {grouped.map(([day, evs]) => (
@@ -150,6 +155,7 @@ export default function ProCalendarPage() {
 }
 
 function DayGroup({ day, events }: { day: string; events: Event[] }) {
+  const { lang } = useT();
   const d = new Date(day);
   const isToday = d.toDateString() === new Date().toDateString();
   const isPast = +d < Date.now() - 86400000;
@@ -160,8 +166,8 @@ function DayGroup({ day, events }: { day: string; events: Event[] }) {
           "text-xs font-semibold uppercase tracking-wider",
           isToday ? "text-gold" : isPast ? "text-text-subtle" : "text-text-muted"
         )}>
-          {d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
-          {isToday && " · Today"}
+          {d.toLocaleDateString(lang === "he" ? "he-IL" : "en-US", { weekday: "short", month: "short", day: "numeric" })}
+          {isToday && (lang === "he" ? " · היום" : " · Today")}
         </div>
       </div>
       <div className="space-y-1.5">
@@ -171,7 +177,10 @@ function DayGroup({ day, events }: { day: string; events: Event[] }) {
   );
 }
 
+const localDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
 function EventRow({ e, i }: { e: Event; i: number }) {
+  const he = useT().lang === "he";
   const tone = {
     deadline: { icon: Clock,         cls: "bg-gold/10 text-gold border-gold/30" },
     shoot:    { icon: Film,          cls: "bg-violet/15 text-violet border-violet/30" },
@@ -181,14 +190,26 @@ function EventRow({ e, i }: { e: Event; i: number }) {
   const Icon = tone.icon;
   return (
     <motion.div initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
-      <Link href={e.href} className={cn("flex items-center gap-2.5 p-2.5 rounded-xl border", tone.cls)}>
-        <Icon className="w-4 h-4 shrink-0" />
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold truncate">{e.title}</div>
-          <div className="text-[10px] opacity-80 truncate">{e.subtitle}</div>
-        </div>
-        {e.urgent && <AlertTriangle className="w-3.5 h-3.5 shrink-0" />}
-      </Link>
+      <div className={cn("flex items-center rounded-xl border", tone.cls)}>
+        <Link href={e.href} className="flex items-center gap-2.5 p-2.5 flex-1 min-w-0">
+          <Icon className="w-4 h-4 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold truncate">{e.title}</div>
+            <div className="text-[0.6875rem] opacity-80 truncate">{e.subtitle}</div>
+          </div>
+          {e.urgent && <AlertTriangle className="w-3.5 h-3.5 shrink-0" />}
+        </Link>
+        <button
+          onClick={() => addToCalendar([{
+            uid: `${e.kind}_${e.href}_${e.date.getTime()}`, title: e.title, description: e.subtitle, url: absUrl(e.href),
+            start: e.kind === "callback" ? e.date.toISOString() : localDay(e.date),
+          }], e.title)}
+          aria-label={he ? "הוספה ליומן של הטלפון" : "Add to my phone's calendar"}
+          className="w-11 h-11 grid place-items-center shrink-0 opacity-80"
+        >
+          <CalendarPlus className="w-4 h-4" />
+        </button>
+      </div>
     </motion.div>
   );
 }

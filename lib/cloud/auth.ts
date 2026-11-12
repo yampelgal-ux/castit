@@ -6,6 +6,7 @@ import { useStore } from "@/lib/store";
 import { CLOUD_UID_KEY, isCloudConfigured } from "./config";
 import { isSyncedKey, stopSync, writeLocalSilently } from "./sync";
 import { stopShared } from "./shared";
+import { forgetPushOnThisPhone } from "./push";
 
 type DbRole = "talent" | "casting_pro";
 export const toDbRole = (r: "Talent" | "Casting Pro"): DbRole => (r === "Casting Pro" ? "casting_pro" : "talent");
@@ -66,6 +67,7 @@ export async function sendPasswordReset(email: string) {
 
 /** Sign out: push pending changes, stop sync, wipe this account's data from the device. */
 export async function signOutEverywhere() {
+  await forgetPushOnThisPhone();
   try { stopShared(); await stopSync({ wipeLocal: true }); } catch {}
   if (isCloudConfigured()) {
     try { await supabase.auth.signOut(); } catch {}

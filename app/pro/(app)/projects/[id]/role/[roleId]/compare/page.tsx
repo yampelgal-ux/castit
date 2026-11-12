@@ -9,11 +9,14 @@ import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
 import { getRole, getSubmissionsByRole, type Submission, type Role } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+import { TalentPhoto } from "@/components/TalentPhoto";
 
 // Optional side-by-side compare view for a role.
 // Pro picks 2–4 submissions to see their tapes & details next to each other.
 export default function ComparePage() {
   const { id, roleId } = useParams<{ id: string; roleId: string }>();
+  const { lang } = useT();
   const [role, setRole] = useState<Role | null>(null);
   const [subs, setSubs] = useState<Submission[]>([]);
   const [picked, setPicked] = useState<string[]>([]);
@@ -36,8 +39,8 @@ export default function ComparePage() {
   if (!role) {
     return (
       <div className="min-h-dvh bg-bg">
-        <Header back title="Compare" />
-        <EmptyState icon={Users} title="Not found" />
+        <Header back title={lang === "en" ? "Compare" : "השוואה"} />
+        <EmptyState icon={Users} title={lang === "en" ? "Not found" : "לא נמצא"} />
       </div>
     );
   }
@@ -46,33 +49,33 @@ export default function ComparePage() {
     <div className="min-h-dvh bg-bg pb-24">
       <Header
         back
-        title="Compare"
+        title={lang === "en" ? "Compare" : "השוואה"}
         right={picked.length > 0 && (
-          <button onClick={() => setPicked([])} className="text-[11px] text-text-muted underline">Clear</button>
+          <button onClick={() => setPicked([])} className="text-[0.6875rem] text-text-muted underline">{lang === "en" ? "Clear" : "ניקוי"}</button>
         )}
       />
 
       <div className="px-5 pt-3 space-y-4">
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-gold">Side-by-side</div>
+          <div className="text-[0.6875rem] uppercase tracking-widest text-gold">{lang === "en" ? "Side by side" : "זה לצד זה"}</div>
           <h1 className="font-display text-2xl tracking-editorial leading-tight">{role.name}</h1>
           <p className="text-text-muted text-sm mt-1">
-            Pick 2–4 tapes to compare them next to each other.
+            {lang === "en" ? "Pick 2 to 4 tapes to compare them next to each other." : "בוחרים 2 עד 4 טייפים להשוואה."}
           </p>
         </div>
 
         {subs.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="No submissions yet"
-            description="Once tapes start coming in, you can compare them here."
+            title={lang === "en" ? "No submissions yet" : "עוד אין הגשות"}
+            description={lang === "en" ? "Once tapes start coming in, you can compare them here." : "כשיגיעו טייפים, אפשר יהיה להשוות אותם כאן."}
           />
         ) : (
           <>
             {/* Picker */}
             <div className="rounded-2xl border border-border bg-bg-elevated p-3">
-              <div className="text-[10px] uppercase tracking-widest text-text-muted mb-2 px-1">
-                Tap to add ({picked.length}/4)
+              <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-2 px-1">
+                {lang === "en" ? "Tap to add" : "הקשה להוספה"} ({picked.length}/4)
               </div>
               <div className="space-y-1.5 max-h-[35dvh] overflow-y-auto">
                 {subs.map((s) => {
@@ -84,15 +87,15 @@ export default function ComparePage() {
                       onClick={() => toggle(s.id)}
                       disabled={disabled}
                       className={cn(
-                        "w-full flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all",
+                        "w-full flex items-center gap-2.5 p-2 rounded-xl border text-start transition-all",
                         on ? "border-gold bg-gold/10" : "border-border bg-bg",
                         disabled ? "opacity-40" : ""
                       )}
                     >
-                      <img src={s.talentPhoto} alt="" className="w-9 h-9 rounded-lg object-cover shrink-0" />
+                      <TalentPhoto src={s.talentPhoto} name={s.talentName} className="w-9 h-9 rounded-lg shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-semibold truncate">{s.talentName}</div>
-                        <div className="text-[10px] text-text-muted truncate">
+                        <div className="text-[0.6875rem] text-text-muted truncate">
                           {s.tapes.length > 0 ? `${s.tapes.length} tape${s.tapes.length > 1 ? "s" : ""}` : "no tape"}
                         </div>
                       </div>
@@ -121,7 +124,7 @@ export default function ComparePage() {
             {compared.length < 2 && (
               <div className="rounded-2xl border border-dashed border-border bg-bg-elevated p-5 text-center">
                 <Users className="w-8 h-8 text-text-muted mx-auto opacity-50" />
-                <p className="text-sm text-text-muted mt-2">Pick at least 2 talents above.</p>
+                <p className="text-sm text-text-muted mt-2">{lang === "en" ? "Pick at least 2 talents above." : "צריך לבחור לפחות 2 למעלה."}</p>
               </div>
             )}
           </>
@@ -157,12 +160,12 @@ function CompareCard({ s, i, onRemove }: { s: Submission; i: number; onRemove: (
       </div>
       <div className="p-3 space-y-1.5">
         <div className="flex items-center gap-2">
-          <img src={s.talentPhoto} alt="" className="w-7 h-7 rounded-full object-cover" />
+          <TalentPhoto src={s.talentPhoto} name={s.talentName} className="w-7 h-7 rounded-full" />
           <span className="text-sm font-semibold truncate flex-1">{s.talentName}</span>
         </div>
         <StageBadge stage={s.stage} />
         {s.tapes.length > 1 && (
-          <div className="text-[10px] text-text-muted">{s.tapes.length} rounds</div>
+          <div className="text-[0.6875rem] text-text-muted">{s.tapes.length} rounds</div>
         )}
       </div>
     </motion.div>

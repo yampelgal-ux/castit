@@ -15,8 +15,12 @@ import { installStorageHooks, onSyncedKeyChange, startSync, stopSync } from "@/l
 import { refreshShared, startShared, stopShared } from "@/lib/cloud/shared";
 import { loadAccountIntoStore } from "@/lib/cloud/auth";
 import { publishMyProfile } from "@/lib/cloud/profile";
+import { useMyReels } from "@/lib/reels-store";
+import { useClaimPendingInvite } from "@/lib/cloud/invites";
+import { refreshPushOwner } from "@/lib/cloud/push";
 
 export function CloudSync() {
+  useClaimPendingInvite();
   const [remoteChange, setRemoteChange] = useState(false);
   const [offline, setOffline] = useState(false);
   const activeUser = useRef<string | null>(null);
@@ -59,7 +63,10 @@ export function CloudSync() {
       const { data } = await supabase.auth.getUser();
       if (data.user) await loadAccountIntoStore(data.user);
       await startShared(userId);
+      void refreshPushOwner();
       if (changed) setRemoteChange(true);
+      // Videos recorded while the upload couldn't reach the cloud: try again now.
+      void useMyReels.getState().retryAll();
     }
 
     async function deactivate() {
@@ -103,11 +110,12 @@ export function CloudSync() {
   // Publish profile / typecast changes so casting pros can find this talent.
   const profile = useStore((s) => s.profile);
   const userId = useStore((s) => s.userId);
+  const reels = useMyReels((s) => s.reels);
   useEffect(() => {
     if (!isCloudConfigured() || !isRealUserId(userId)) return;
-    const t = setTimeout(() => { void publishMyProfile(userId, profile); }, 1500);
+    const t = setTimeout(() => { void publishMyProfile(userId, profile, reels); }, 1500);
     return () => clearTimeout(t);
-  }, [profile, userId]);
+  }, [profile, userId, reels]);
 
   return (
     <AnimatePresence>
@@ -118,7 +126,7 @@ export function CloudSync() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -16 }}
           onClick={() => window.location.reload()}
-          className="fixed top-[calc(env(safe-area-inset-top)+64px)] inset-x-0 mx-auto w-max max-w-[90vw] z-[60] flex items-center gap-2 rounded-full bg-gold text-bg px-4 py-2 text-xs font-semibold shadow-2xl"
+          className="fixed top-[calc(env(safe-area-inset-top)+64px)] inset-x-0 mx-auto w-max max-w-[90vw] z-[60] flex items-center gap-2 rounded-full bg-gold text-on-accent px-4 py-2 text-xs font-semibold shadow-2xl"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           עדכונים חדשים · לחץ לרענון
