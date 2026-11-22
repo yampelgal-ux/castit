@@ -53,6 +53,9 @@ export type Tape = {
   submittedAt: string;
   // Key for IndexedDB blob storage (persists across sessions, unlike blob: URLs)
   tapeBlobKey?: string;
+  // Trim chosen by the talent before sending (seconds); players start/stop there.
+  trimStart?: number;
+  trimEnd?: number;
   // Aria tape analysis (filled in lazily by /api/aria/analyze-tape)
   ariaAnalysis?: TapeAnalysis;
 };
@@ -91,6 +94,9 @@ export type Submission = {
   callbackType?: CallbackType;
   callbackScheduledAt?: string;   // ISO — when the in-person callback is
   callbackLocation?: string;      // e.g. "Tagada Studios, Tel Aviv"
+  // Times the pro opened for this talent to choose from (ISO). Cleared once one is picked.
+  callbackSlots?: string[];
+  callbackPickedByTalent?: boolean;
   callbackCompleted?: boolean;    // pro confirms the session happened
   callbackOutcome?: string;       // optional note from the in-person session
 
@@ -307,20 +313,68 @@ export function moveToCallback(
     type?: CallbackType;
     scheduledAt?: string;
     location?: string;
+    /** Let the talent pick one of these times instead of a fixed time. */
+    slots?: string[];
   },
 ) {
   const type = opts?.type ?? "in_person";
+  const slots = type === "in_person" && opts?.slots?.length ? opts.slots : undefined;
   patchSubmission(id, {
     stage: "callback",
     proMessage: opts?.message,
     callbackType: type,
-    callbackScheduledAt: type === "in_person" ? opts?.scheduledAt : undefined,
+    callbackScheduledAt: type === "in_person" && !slots ? opts?.scheduledAt : undefined,
+    callbackSlots: slots,
+    callbackPickedByTalent: undefined,
     callbackLocation: type === "in_person" ? opts?.location : undefined,
     // Tape callbacks are "done" only when a new tape arrives (see addTape).
     // In-person callbacks are explicitly marked done by the pro.
     callbackCompleted: false,
     callbackOutcome: undefined,
   });
+}
+
+// Talent books one of the callback times the pro opened.
+export function pickCallbackSlot(id: string, iso: string) {
+  const sub = getSubmission(id);
+  if (!sub || !sub.callbackSlots?.includes(iso)) return;
+  patchSubmission(id, { callbackScheduledAt: iso, callbackSlots: undefined, callbackPickedByTalent: true });
+}
+
+/** Callback times already booked by other talents for this role (ISO). */
+export function takenCallbackTimes(roleId: string, exceptId?: string): Set<string> {
+  return new Set(
+    loadSubmissions()
+      .filter((s) => s.roleId === roleId && s.id !== exceptId && s.stage === "callback" && s.callbackType === "in_person" && !s.callbackCompleted && s.callbackScheduledAt)
+      .map((s) => new Date(s.callbackScheduledAt!).toISOString()),
+  );
+}
+
+/**
+ * Pro device: once a talent books a time, take it off everyone else's list
+ * for the same role, so two people can't book the same slot.
+ */
+export function pruneTakenCallbackSlots(): boolean {
+  const list = loadSubmissions();
+  let dirty = false;
+  const taken = new Map<string, Set<string>>();
+  for (const s of list) {
+    if (s.stage === "callback" && s.callbackType === "in_person" && !s.callbackCompleted && s.callbackScheduledAt) {
+      if (!taken.has(s.roleId)) taken.set(s.roleId, new Set());
+      taken.get(s.roleId)!.add(new Date(s.callbackScheduledAt).toISOString());
+    }
+  }
+  const next = list.map((s) => {
+    if (!s.callbackSlots?.length) return s;
+    const t = taken.get(s.roleId);
+    if (!t) return s;
+    const left = s.callbackSlots.filter((x) => !t.has(new Date(x).toISOString()));
+    if (left.length === s.callbackSlots.length) return s;
+    dirty = true;
+    return { ...s, callbackSlots: left };
+  });
+  if (dirty) safeSave(KEY_S, next);
+  return dirty;
 }
 
 // Pro confirms the in-person callback session happened.
@@ -457,6 +511,8 @@ export function addTape(id: string, tape: Omit<Tape, "round" | "submittedAt"> & 
     posterUrl: tape.posterUrl,
     note: tape.note,
     tapeBlobKey: tape.tapeBlobKey,
+    trimStart: tape.trimStart,
+    trimEnd: tape.trimEnd,
     submittedAt: tape.submittedAt ?? new Date().toISOString(),
   };
   // Tape-mode callback: a new tape arriving auto-completes the callback.

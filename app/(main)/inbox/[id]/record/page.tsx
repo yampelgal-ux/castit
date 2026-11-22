@@ -59,6 +59,10 @@ export default function SelfTapeStudioPage() {
   const [shrink, setShrink] = useState<number | null>(null);
   const [uploadPct, setUploadPct] = useState<number | null>(null);
   const [showSides, setShowSides] = useState(true);
+  // Trim for the selected take: [start, end] in seconds (null = whole take).
+  const [trim, setTrim] = useState<[number, number] | null>(null);
+  const reviewRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => setTrim(null), [selected, takes.length]);
 
   const [coaching, setCoaching] = useState<string | null>(null);
   const [coachingOpen, setCoachingOpen] = useState(false);
@@ -236,6 +240,7 @@ export default function SelfTapeStudioPage() {
       addTape(sub.id, {
         videoUrl: where === "cloud" ? (mediaPublicUrl(`tapes/${blobKey}`) ?? take.url) : take.url,
         tapeBlobKey: blobKey,
+        ...(trim && (trim[0] > 0.2 || trim[1] < take.duration - 0.2) ? { trimStart: trim[0], trimEnd: trim[1] } : {}),
         note: take.uploaded
           ? `${L("הועלה", "Uploaded")}${take.filename ? `: ${take.filename}` : ""} · ${formatTime(take.duration)}`
           : `${L("סלף-טייפ שצולם באפליקציה", "Self-tape recorded in studio")} · ${formatTime(take.duration)}`,
@@ -439,8 +444,22 @@ export default function SelfTapeStudioPage() {
         {/* ── Review / send ── */}
         {(mode === "review" || mode === "sending") && take && (
           <div className="space-y-3">
-            <video key={take.url} src={take.url} controls playsInline
+            <video key={take.url} ref={reviewRef} src={take.url} controls playsInline
+              onTimeUpdate={(e) => { const v = e.currentTarget; if (trim && v.currentTime >= trim[1]) { v.pause(); v.currentTime = trim[0]; } }}
+              onPlay={(e) => { const v = e.currentTarget; if (trim && (v.currentTime < trim[0] || v.currentTime >= trim[1])) v.currentTime = trim[0]; }}
               className="mx-auto w-full max-w-[360px] max-h-[52dvh] rounded-xl bg-black border-2 border-border-strong" />
+            {take.duration >= 3 && mode === "review" && (
+              <TrimControls
+                duration={take.duration}
+                value={trim ?? [0, take.duration]}
+                L={L}
+                onChange={(v, edge) => {
+                  setTrim(v);
+                  const el = reviewRef.current;
+                  if (el) { el.pause(); el.currentTime = edge === "end" ? v[1] : v[0]; }
+                }}
+              />
+            )}
             {takes.length > 1 && (
               <div role="radiogroup" aria-label={L("בחירת טייק", "Choose a take")} className="flex gap-2 flex-wrap justify-center">
                 {takes.map((tk, i) => (
@@ -538,6 +557,40 @@ export default function SelfTapeStudioPage() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// Two sliders to cut the slate/dead air at the start and the end of a take.
+function TrimControls({ duration, value, onChange, L }: {
+  duration: number;
+  value: [number, number];
+  onChange: (v: [number, number], edge: "start" | "end") => void;
+  L: (he: string, en: string) => string;
+}) {
+  const [a, b] = value;
+  const step = duration > 60 ? 0.5 : 0.1;
+  return (
+    <div className="rounded-xl border border-border bg-bg-elevated p-3 space-y-2">
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-semibold">{L("קיצוץ הטייק", "Trim the take")}</span>
+        <span className="tnum text-text-muted">{formatTime(Math.round(a))} – {formatTime(Math.round(b))} · {formatTime(Math.max(0, Math.round(b - a)))}</span>
+      </div>
+      <label className="flex items-center gap-3 text-xs text-text-muted">
+        <span className="w-10 shrink-0">{L("התחלה", "Start")}</span>
+        <input type="range" min={0} max={duration} step={step} value={a} dir="ltr"
+          aria-label={L("נקודת התחלה", "Start point")}
+          onChange={(e) => onChange([Math.min(Number(e.target.value), b - 1), b], "start")}
+          className="flex-1 accent-[var(--color-gold,#f5c518)]" />
+      </label>
+      <label className="flex items-center gap-3 text-xs text-text-muted">
+        <span className="w-10 shrink-0">{L("סוף", "End")}</span>
+        <input type="range" min={0} max={duration} step={step} value={b} dir="ltr"
+          aria-label={L("נקודת סיום", "End point")}
+          onChange={(e) => onChange([a, Math.max(Number(e.target.value), a + 1)], "end")}
+          className="flex-1 accent-[var(--color-gold,#f5c518)]" />
+      </label>
+      <p className="text-[0.6875rem] text-text-subtle">{L("המלהק/ת יראו רק את החלק שבחרת.", "The casting team will only see the part you chose.")}</p>
     </div>
   );
 }

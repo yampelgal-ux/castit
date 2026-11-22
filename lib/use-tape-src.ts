@@ -7,7 +7,7 @@ import { getTapePlaybackUrl } from "@/lib/tape-storage";
  * one, otherwise the cloud copy. The stored videoUrl is often a blob: URL
  * that only ever worked on the talent's phone, so never rely on it alone.
  */
-export function useTapeSrc(tape: { videoUrl?: string; tapeBlobKey?: string } | null | undefined): string | undefined {
+export function useTapeSrc(tape: { videoUrl?: string; tapeBlobKey?: string; trimStart?: number; trimEnd?: number } | null | undefined): string | undefined {
   const videoUrl = tape?.videoUrl;
   const blobKey = tape?.tapeBlobKey;
   const [src, setSrc] = useState<string | undefined>(() =>
@@ -20,9 +20,16 @@ export function useTapeSrc(tape: { videoUrl?: string; tapeBlobKey?: string } | n
     getTapePlaybackUrl({ videoUrl, blobKey }).then((r) => {
       if (!alive) { r.revoke?.(); return; }
       revoke = r.revoke;
-      setSrc(r.url ?? undefined);
+      setSrc(r.url ? r.url + trimFragment(tape?.trimStart, tape?.trimEnd) : undefined);
     });
     return () => { alive = false; revoke?.(); };
-  }, [videoUrl, blobKey]);
+  }, [videoUrl, blobKey, tape?.trimStart, tape?.trimEnd]);
   return src;
+}
+
+/** Media fragment (#t=start,end): every browser then plays only that part. */
+export function trimFragment(start?: number, end?: number): string {
+  if (!start && !end) return "";
+  const a = Math.max(0, Math.round((start ?? 0) * 10) / 10);
+  return end ? `#t=${a},${Math.round(end * 10) / 10}` : `#t=${a}`;
 }

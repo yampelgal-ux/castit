@@ -203,6 +203,17 @@ export function notifyProAvailResponse(talentName: string, roleName: string, ava
   });
 }
 
+export function notifyProSlotPicked(talentName: string, roleName: string, iso: string, subId: string, projectId: string, roleId: string) {
+  const when = new Date(iso).toLocaleString("he-IL", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  addNotification({
+    audience: "pro",
+    kind: "callback",
+    title: `🗓️ ${talentName} קבע/ה קולבק`,
+    body: `${roleName} · ${when}`,
+    href: `/pro/projects/${projectId}/role/${roleId}/submission/${subId}`,
+  });
+}
+
 export function notifyProOfferResponse(talentName: string, roleName: string, accepted: boolean) {
   addNotification({
     audience: "pro",

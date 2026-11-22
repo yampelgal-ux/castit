@@ -15,11 +15,12 @@ import { EmptyState } from "@/components/EmptyState";
 import { StageBadge } from "@/components/StageBadge";
 import {
   getAuditionsForTalent, loadSubmissions, acceptOffer, declineOffer,
-  confirmAvailable, markUnavailable,
+  confirmAvailable, markUnavailable, pickCallbackSlot,
   type Submission, type Role, type Project,
 } from "@/lib/projects-store";
 import { notifyProOfferResponse, notifyProAvailResponse } from "@/lib/notifications-store";
 import { cn } from "@/lib/utils";
+import { addToCalendar, absUrl } from "@/lib/ics";
 import { useStore } from "@/lib/store";
 import { isRealUserId } from "@/lib/cloud/config";
 import { useT } from "@/lib/i18n";
@@ -182,9 +183,11 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
   const [offerState, setOfferState] = useState<"idle" | "accepted" | "declined">("idle");
   const [availState, setAvailState] = useState<"idle" | "available" | "unavailable">("idle");
   const { he, L } = useL();
+  const [picked, setPicked] = useState<string | null>(null);
   if (!role || !project) return null;
   const needsTape = s.stage === "invited";
-  const callbackTape = s.stage === "callback";
+  const callbackTape = s.stage === "callback" && s.callbackType !== "in_person" && !s.callbackCompleted;
+  const inPerson = s.stage === "callback" && s.callbackType === "in_person" && !s.callbackCompleted;
   const offerPending = s.stage === "offered" && s.offerResponse !== "accepted" && s.offerResponse !== "declined" && offerState === "idle";
   const availPending = s.stage === "avail_check" && s.availResponse !== "available" && s.availResponse !== "unavailable" && availState === "idle";
 
@@ -299,6 +302,13 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
               </button>
             </div>
           </div>
+        ) : inPerson ? (
+          <InPersonCallback
+            s={s}
+            picked={picked}
+            onPick={(iso) => { pickCallbackSlot(s.id, iso); setPicked(iso); }}
+            title={`${project.title} · ${role.name}`}
+          />
         ) : needsTape || callbackTape ? (
           <Link
             href={`/inbox/${s.id}/record`}
@@ -317,6 +327,54 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
         )}
       </div>
     </motion.div>
+  );
+}
+
+// In-person callback: pick one of the times the casting team opened, or see the booked time.
+function InPersonCallback({ s, picked, onPick, title }: { s: Submission; picked: string | null; onPick: (iso: string) => void; title: string }) {
+  const { he, L } = useL();
+  const [choice, setChoice] = useState<string | null>(null);
+  const when = picked ?? s.callbackScheduledAt ?? null;
+  const fmtDay = (d: Date) => d.toLocaleDateString(he ? "he-IL" : "en-US", { weekday: "long", day: "numeric", month: "long" });
+  const fmtTime = (d: Date) => d.toLocaleTimeString(he ? "he-IL" : "en-US", { hour: "2-digit", minute: "2-digit" });
+  if (when) {
+    const d = new Date(when);
+    return (
+      <div className="text-center space-y-1.5 py-0.5">
+        <div className="text-[0.6875rem] uppercase tracking-widest text-plum-light font-semibold">{L("קולבק בפגישה", "In-person callback")}</div>
+        <div className="text-sm font-semibold inline-flex items-center gap-1.5"><CalendarDays className="w-4 h-4" aria-hidden /> {fmtDay(d)} · {fmtTime(d)}</div>
+        {s.callbackLocation && <div className="text-xs text-text-muted">{s.callbackLocation}</div>}
+        <button
+          onClick={() => addToCalendar([{ uid: `cb_${s.id}`, title: L(`קולבק: ${title}`, `Callback: ${title}`), start: when, location: s.callbackLocation, url: absUrl("/inbox") }], L("קולבק", "Callback"))}
+          className="h-9 px-3 rounded-full border border-border text-xs font-semibold inline-flex items-center gap-1.5"
+        >
+          <CalendarDays className="w-3.5 h-3.5" aria-hidden /> {L("הוספה ליומן", "Add to calendar")}
+        </button>
+      </div>
+    );
+  }
+  const slots = (s.callbackSlots ?? []).filter((x) => new Date(x).getTime() > Date.now());
+  if (slots.length === 0) {
+    return <div className="text-[0.6875rem] text-text-muted text-center px-2">{L("הוזמנת לקולבק. המלהק/ת יעדכנו מועד בקרוב.", "You're invited to a callback. Casting will share the time soon.")}</div>;
+  }
+  const day = fmtDay(new Date(slots[0]));
+  return (
+    <div className="space-y-2">
+      <div className="text-[0.6875rem] uppercase tracking-widest text-plum-light font-semibold text-center">{L("בחר/י שעה לקולבק", "Pick a callback time")} · {day}</div>
+      {s.callbackLocation && <div className="text-xs text-text-muted text-center">{s.callbackLocation}</div>}
+      <div role="radiogroup" aria-label={L("שעות פנויות", "Open times")} className="flex flex-wrap gap-1.5 justify-center">
+        {slots.map((iso) => (
+          <button key={iso} role="radio" aria-checked={choice === iso} onClick={() => setChoice(iso)}
+            className={cn("h-9 px-3 rounded-full text-sm tnum border", choice === iso ? "bg-gold text-on-accent border-gold font-semibold" : "border-border")}>
+            {fmtTime(new Date(iso))}
+          </button>
+        ))}
+      </div>
+      <button disabled={!choice} onClick={() => choice && onPick(choice)}
+        className="w-full h-10 rounded-xl bg-success text-on-accent text-sm font-semibold disabled:opacity-40">
+        {choice ? L(`לקבוע ל-${fmtTime(new Date(choice))}`, `Book ${fmtTime(new Date(choice))}`) : L("בחר/י שעה", "Choose a time")}
+      </button>
+    </div>
   );
 }
 
