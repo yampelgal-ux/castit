@@ -120,7 +120,7 @@ function Scenes() {
                       s.difficulty === "Beginner" && "bg-success/15 text-success"
                     )}
                   >
-                    {s.difficulty}
+                    {s.difficulty === "Advanced" ? L("מתקדם", "Advanced") : s.difficulty === "Intermediate" ? L("בינוני", "Intermediate") : L("מתחילים", "Beginner")}
                   </span>
                   <span className="text-[0.6875rem] text-text-muted tnum">{s.duration}</span>
                   <span className="text-[0.6875rem] text-text-muted">· {s.characters.length} {L("דמויות", "chars")}</span>

@@ -43,14 +43,14 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error ?? "AI parsing failed");
+        throw new Error(err.error ?? "הזיהוי נכשל, נסה שוב");
       }
       const data: { roles: ParsedRole[] } = await res.json();
       if (!data.roles?.length) throw new Error("לא זיהיתי תפקידים. נסה טקסט ברור יותר.");
       setParsed(data.roles);
       setKeep(new Set(data.roles.map((_, i) => i)));
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed");
+      setError(e instanceof Error ? e.message : "משהו השתבש, נסה שוב");
     } finally {
       setParsing(false);
     }
@@ -123,7 +123,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
           <>
             <div className="flex items-center gap-2 mb-1">
               <Wand2 className="w-4 h-4 text-gold" />
-              <h2 className="font-display text-2xl">AI Bulk Roles</h2>
+              <h2 className="font-display text-2xl">יצירת תפקידים עם Aria</h2>
             </div>
             <p className="text-xs text-text-muted mb-4">
               העלה casting breakdown או הדבק טקסט — Aria תזהה את כל התפקידים.
