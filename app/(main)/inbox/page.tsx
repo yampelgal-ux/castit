@@ -244,6 +244,9 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
                 : `${L("דדליין", "Deadline")} ${deadline.toLocaleDateString(he ? "he-IL" : undefined, { month: "short", day: "numeric" })}`}
             </span>
           )}
+          {needsTape && s.remindedAt && Date.now() - new Date(s.remindedAt).getTime() < 3 * 86400000 && (
+            <span className="inline-flex items-center gap-1 text-gold font-semibold"><AlertCircle className="w-3 h-3" aria-hidden /> {L("המלהק/ת מחכה לטייפ שלך", "Casting is waiting for your tape")}</span>
+          )}
           {role.shootDates && <span className="text-text-muted">{L("צילומים:", "Shoot:")} {role.shootDates}</span>}
           {role.payRange && <span className="text-success font-semibold">{role.payRange}</span>}
         </div>

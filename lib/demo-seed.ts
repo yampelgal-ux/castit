@@ -286,4 +286,6 @@ export function seedDemo(): void {
 
   // Done
   localStorage.setItem(SEED_FLAG, "1");
+  // Screens that already read the (empty) stores pick up the demo data.
+  window.dispatchEvent(new Event("castit:remote-update"));
 }

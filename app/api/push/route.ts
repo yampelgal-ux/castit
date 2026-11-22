@@ -12,7 +12,7 @@ export const runtime = 'nodejs'
 
 const BodySchema = z.object({
   to: z.string().uuid(),
-  kind: z.enum(['message', 'invite', 'callback', 'avail_check', 'offered', 'booked', 'tape', 'avail', 'offer', 'joined', 'agency']),
+  kind: z.enum(['message', 'invite', 'callback', 'avail_check', 'offered', 'booked', 'tape', 'avail', 'offer', 'joined', 'agency', 'reminder']),
   href: z.string().regex(/^\/(?!\/)[^\s]*$/).max(300).default('/'),
   text: z.string().max(400).optional(),
   role: z.string().max(80).optional(),
@@ -34,6 +34,7 @@ function compose(kind: Kind, he: boolean, sender: string, role: string, text: st
     case 'avail': return { title: he ? 'תשובה על זמינות' : 'Availability answer', body: he ? `${who} ענה/תה${r}` : `${who} answered${r}` }
     case 'offer': return { title: he ? 'תשובה להצעה' : 'Offer answer', body: he ? `${who} ענה/תה על ההצעה${r}` : `${who} answered your offer${r}` }
     case 'joined': return { title: he ? 'שחקן/ית הצטרף/ה מהקישור' : 'An actor joined from your link', body: `${who}${r}` }
+    case 'reminder': return { title: he ? 'תזכורת: הטייפ מחכה לך' : 'Reminder: your tape', body: he ? `${who} מחכה לטייפ שלך${r}` : `${who} is waiting for your tape${r}` }
     case 'agency': return { title: he ? 'בקשת ייצוג' : 'Representation request', body: he ? `${who} רוצה לייצג אותך` : `${who} wants to represent you` }
   }
 }

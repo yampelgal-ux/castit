@@ -10,6 +10,7 @@ import {
   Inbox, Zap, AlertTriangle, ClipboardCheck, BarChart3, Building2,
 } from "lucide-react";
 import { Header } from "@/components/Header";
+import { ProDigestCard } from "@/components/ProDigestCard";
 import { AccountButton } from "@/components/AccountButton";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
@@ -103,6 +104,8 @@ export default function ProDashboardPage() {
           </h1>
           <p className="text-text-muted text-sm mt-1">{t("pd.workspace")}</p>
         </div>
+
+        <ProDigestCard />
 
         {/* Action Inbox CTA — when there's work to do */}
         {inboxCounts.total > 0 && (
