@@ -16,12 +16,13 @@ import { isCloudConfigured, isRealUserId } from "./config";
 import { onSyncedKeyChange } from "./sync";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { Project, Role, Submission } from "@/lib/projects-store";
+import { pruneTakenCallbackSlots } from "@/lib/projects-store";
 import type { SharePacket } from "@/lib/share-store";
 import type { ApprovalSession } from "@/lib/approval-store";
 import type { Talent } from "@/lib/mock-data";
 import {
   notifyProTapeIn, notifyProAvailResponse, notifyProOfferResponse,
-  notifyTalentInvited, notifyTalentStageChange, notifyProDirectorVote, notifyProJoinedViaLink,
+  notifyTalentInvited, notifyTalentStageChange, notifyProDirectorVote, notifyProJoinedViaLink, notifyProSlotPicked,
 } from "@/lib/notifications-store";
 import { getCachedRealTalents } from "./talents";
 import { sendPush } from "./push";
@@ -255,6 +256,9 @@ async function pullSubmissions(rows?: Row[]) {
       if (incoming.offerResponse && incoming.offerResponse !== prev.offerResponse && incoming.offerResponse !== "pending") {
         notes.push(() => notifyProOfferResponse(incoming.talentName, roleName, incoming.offerResponse === "accepted"));
       }
+      if (incoming.callbackPickedByTalent && incoming.callbackScheduledAt && incoming.callbackScheduledAt !== prev.callbackScheduledAt && role) {
+        notes.push(() => notifyProSlotPicked(incoming.talentName, roleName, incoming.callbackScheduledAt!, incoming.id, role.projectId, role.id));
+      }
     } else {
       const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
       const next = { ...incoming, _ownerId: row.owner_id, _remote: true };
@@ -293,6 +297,8 @@ async function pullSubmissions(rows?: Row[]) {
   } finally {
     merging = false;
   }
+  // A talent booked a callback time: take it off the other talents' lists (that change syncs to them).
+  if (dirtyS && pruneTakenCallbackSlots()) schedulePublish();
   if (dirtyS || dirtyR || dirtyP) changed();
 }
 

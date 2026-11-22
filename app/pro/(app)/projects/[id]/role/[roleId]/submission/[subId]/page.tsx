@@ -18,7 +18,7 @@ import { TapeCommentsViewer } from "@/components/TapeCommentsViewer";
 import {
   getSubmission, getRole, getProject, addTape,
   moveToCallback, moveToHold, moveToAvailCheck, sendOffer, confirmBooked,
-  rejectSubmission, reopenSubmission, markCallbackDone, cancelCallback,
+  rejectSubmission, reopenSubmission, markCallbackDone, cancelCallback, takenCallbackTimes,
   type Submission, type Role, type Project, type Stage, type CallbackType,
 } from "@/lib/projects-store";
 import { notifyTalentStageChange } from "@/lib/notifications-store";
@@ -74,6 +74,11 @@ export default function SubmissionPage() {
   const [callbackDate, setCallbackDate] = useState("");
   const [callbackTime, setCallbackTime] = useState("");
   const [callbackLocation, setCallbackLocation] = useState("");
+  // "Let the talent pick a time": a window on one day, split into slots.
+  const [letPick, setLetPick] = useState(false);
+  const [slotFrom, setSlotFrom] = useState("10:00");
+  const [slotTo, setSlotTo] = useState("13:00");
+  const [slotMins, setSlotMins] = useState(15);
   const [callbackOutcome, setCallbackOutcome] = useState("");
 
   function reload() {
@@ -117,13 +122,17 @@ export default function SubmissionPage() {
     switch (action.kind) {
       case "callback": {
         // Build optional scheduling info
-        const scheduledAt = callbackType === "in_person" && callbackDate
+        const scheduledAt = callbackType === "in_person" && callbackDate && !letPick
           ? new Date(`${callbackDate}T${callbackTime || "10:00"}`).toISOString()
+          : undefined;
+        const slots = callbackType === "in_person" && letPick && callbackDate
+          ? makeSlots(callbackDate, slotFrom, slotTo, slotMins, takenCallbackTimes(sub!.roleId, sub!.id))
           : undefined;
         moveToCallback(subId, {
           message: msg,
           type: callbackType,
           scheduledAt,
+          slots,
           location: callbackType === "in_person" ? (callbackLocation.trim() || undefined) : undefined,
         });
         break;
@@ -341,6 +350,7 @@ export default function SubmissionPage() {
                             className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
                           />
                         </Field>
+                        {!letPick && (
                         <Field label={tr("שעה", "Time")}>
                           <input
                             type="time"
@@ -349,7 +359,38 @@ export default function SubmissionPage() {
                             className="w-full h-11 px-3 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
                           />
                         </Field>
+                        )}
                       </div>
+                      <label className="flex items-start gap-2.5 rounded-2xl border border-border bg-bg p-3 cursor-pointer">
+                        <input type="checkbox" checked={letPick} onChange={(e) => setLetPick(e.target.checked)} className="mt-0.5 w-4 h-4 accent-[var(--color-gold,#f5c518)]" />
+                        <span className="text-sm leading-snug">
+                          <span className="font-semibold">{tr("השחקן/ית בוחר/ת שעה", "Let the talent pick a time")}</span>
+                          <span className="block text-[0.6875rem] text-text-muted">{tr("פותחים חלון שעות, והשחקן/ית קובע/ת לבד. שעה שנתפסה נעלמת לשאר.", "Open a time window and the talent books a slot. Taken slots disappear for others.")}</span>
+                        </span>
+                      </label>
+                      {letPick && (
+                        <div className="grid grid-cols-3 gap-2.5">
+                          <Field label={tr("מ-", "From")}>
+                            <input type="time" value={slotFrom} onChange={(e) => setSlotFrom(e.target.value)}
+                              className="w-full h-11 px-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60" />
+                          </Field>
+                          <Field label={tr("עד", "To")}>
+                            <input type="time" value={slotTo} onChange={(e) => setSlotTo(e.target.value)}
+                              className="w-full h-11 px-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60" />
+                          </Field>
+                          <Field label={tr("כל", "Every")}>
+                            <select value={slotMins} onChange={(e) => setSlotMins(Number(e.target.value))}
+                              className="w-full h-11 px-2 rounded-2xl bg-bg border border-border text-sm outline-none focus:border-gold/60">
+                              {[10, 15, 20, 30, 45, 60].map((m) => <option key={m} value={m}>{tr(`${m} דק׳`, `${m} min`)}</option>)}
+                            </select>
+                          </Field>
+                          {callbackDate && (
+                            <p className="col-span-3 text-[0.6875rem] text-text-muted">
+                              {tr(`${makeSlots(callbackDate, slotFrom, slotTo, slotMins, takenCallbackTimes(sub.roleId, sub.id)).length} שעות פנויות לבחירה`, `${makeSlots(callbackDate, slotFrom, slotTo, slotMins, takenCallbackTimes(sub.roleId, sub.id)).length} open slots`)}
+                            </p>
+                          )}
+                        </div>
+                      )}
                       <Field label={tr("מיקום", "Location")}>
                         <input
                           value={callbackLocation}
@@ -927,8 +968,13 @@ function CallbackStatusBanner({ sub }: { sub: Submission }) {
             </button>
           )}
         </div>
+      ) : sub.callbackSlots?.length ? (
+        <p className="text-xs text-text-muted">{tr(`מחכים ש${sub.talentName.split(" ")[0]} יבחר/תבחר שעה (${sub.callbackSlots.length} שעות פתוחות). תקבל/י התראה כשתיקבע.`, `Waiting for ${sub.talentName.split(" ")[0]} to pick a time (${sub.callbackSlots.length} open). You'll be notified.`)}</p>
       ) : (
         <p className="text-xs text-text-muted">{tr("לא נקבע תאריך. אפשר לקבוע פגישה ולהתקדם.", "No date set. Schedule the meeting and move on.")}</p>
+      )}
+      {sched && sub.callbackPickedByTalent && (
+        <p className="text-[0.6875rem] text-sage font-semibold mt-1.5">{tr("השעה נבחרה על ידי השחקן/ית", "Time picked by the talent")}</p>
       )}
       <p className="text-[0.6875rem] text-gold mt-3 leading-relaxed">
         {tr("אפשר להתקדם להחזקה, בדיקת זמינות או הצעה רק אחרי שמסמנים שהפגישה התקיימה.", "You can move to hold, availability or offer once the meeting is marked as done.")}
@@ -1032,4 +1078,17 @@ function AriaDraftButton({
       ))}
     </div>
   );
+}
+
+/** Callback slots on one day between two times, skipping ones already booked. */
+function makeSlots(date: string, from: string, to: string, everyMin: number, taken: Set<string>): string[] {
+  const start = new Date(`${date}T${from || "10:00"}`).getTime();
+  const end = new Date(`${date}T${to || "13:00"}`).getTime();
+  const out: string[] = [];
+  if (!Number.isFinite(start) || !Number.isFinite(end) || everyMin <= 0) return out;
+  for (let t = start; t + everyMin * 60000 <= end && out.length < 48; t += everyMin * 60000) {
+    const iso = new Date(t).toISOString();
+    if (t > Date.now() && !taken.has(iso)) out.push(iso);
+  }
+  return out;
 }
