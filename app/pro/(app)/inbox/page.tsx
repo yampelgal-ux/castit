@@ -12,6 +12,7 @@ import {
   loadInbox, type InboxItem,
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 const REASON_META: Record<InboxItem["reason"], {
   label: string;
@@ -56,6 +57,7 @@ function formatUrgency(reason: InboxItem["reason"], ms?: number): string {
 }
 
 export default function ProInboxPage() {
+  const { lang } = useT();
   const [items, setItems] = useState<InboxItem[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [filter, setFilter] = useState<"all" | "urgent" | "review">("all");
@@ -95,7 +97,7 @@ export default function ProInboxPage() {
     <div className="min-h-dvh bg-bg pb-24">
       <Header
         back
-        title={`Action Inbox (${counts.all})`}
+        title={`${lang === "he" ? "תיבת פעולות" : "Action Inbox"} (${counts.all})`}
         right={counts.review > 0 && (
           <Link
             href="/pro/triage"

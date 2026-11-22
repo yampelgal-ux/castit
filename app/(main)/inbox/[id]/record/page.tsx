@@ -216,8 +216,8 @@ export default function SelfTapeStudioPage() {
         videoUrl: take.url,
         tapeBlobKey: blobKey,
         note: take.uploaded
-          ? `Uploaded${take.filename ? `: ${take.filename}` : ""} · ${formatTime(take.duration)}`
-          : `Self-tape recorded in studio · ${formatTime(take.duration)}`,
+          ? `${L("הועלה", "Uploaded")}${take.filename ? `: ${take.filename}` : ""} · ${formatTime(take.duration)}`
+          : `${L("סלף-טייפ שצולם באפליקציה", "Self-tape recorded in studio")} · ${formatTime(take.duration)}`,
       });
       setSendResult(where);
       setMode("sent");

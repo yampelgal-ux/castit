@@ -11,10 +11,17 @@ import {
   type VoiceType, type ToneType,
 } from "@/lib/voice";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+
+function useL() {
+  const { lang } = useT();
+  return (h: string, e: string) => (lang === "he" ? h : e);
+}
 
 type CharVoice = { voice: VoiceType; tone: ToneType };
 
 export default function ScenePage() {
+  const L = useL();
   const { id } = useParams<{ id: string }>();
   const scene = SCENES.find((s) => s.id === id) ?? SCENES[0];
   const [activeLine, setActiveLine] = useState(-1);
@@ -108,7 +115,7 @@ export default function ScenePage() {
           <button
             onClick={() => setShowVoicePicker("__all__")}
             className="text-text-muted hover:text-gold p-1"
-            aria-label="Voice settings"
+            aria-label={L("הגדרות קול", "Voice settings")}
           >
             <Settings2 className="w-4 h-4" />
           </button>
@@ -143,7 +150,7 @@ export default function ScenePage() {
               )}
             >
               <span className="text-base leading-none">{voiceLabel.emoji}</span>
-              <span className="text-xs font-medium">{c.name}{i === 0 && " (you)"}</span>
+              <span className="text-xs font-medium">{c.name}{i === 0 && L(" (את/ה)", " (you)")}</span>
               <span className="text-[0.6875rem] opacity-70">·</span>
               <span className="text-[0.6875rem]">{toneLabel.emoji}</span>
             </button>
@@ -183,12 +190,12 @@ export default function ScenePage() {
                   </span>
                   {line.isYou && (
                     <span className="text-[0.6875rem] px-1.5 py-0.5 rounded-full bg-plum/20 text-plum-light font-semibold">
-                      YOU
+                      {L("את/ה", "YOU")}
                     </span>
                   )}
                   {!line.isYou && (
                     <span className={cn("text-[0.6875rem] font-medium", tone.color)}>
-                      {tone.emoji} {tone.en}
+                      {tone.emoji} {L(tone.he, tone.en)}
                     </span>
                   )}
                 </div>
@@ -228,7 +235,7 @@ export default function ScenePage() {
             )}
           >
             {playingAll ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-            <span className="text-xs">{playingAll ? "Stop" : "Play scene"}</span>
+            <span className="text-xs">{playingAll ? L("עצור", "Stop") : L("נגן סצנה", "Play scene")}</span>
           </button>
           <button
             onClick={() => setRecording(!recording)}
@@ -240,7 +247,7 @@ export default function ScenePage() {
             )}
           >
             <Mic className="w-5 h-5" />
-            <span className="text-sm">{recording ? "Recording…" : "Hold to read your part"}</span>
+            <span className="text-sm">{recording ? L("מקליט…", "Recording…") : L("החזק כדי לקרוא את החלק שלך", "Hold to read your part")}</span>
           </button>
         </div>
       </div>
@@ -274,6 +281,7 @@ function VoicePickerSheet({
   onClose: () => void;
   onPreview: (text: string, voice: VoiceType, tone: ToneType) => void;
 }) {
+  const L = useL();
   const showAll = target === "__all__";
   const targets = showAll ? characters : characters.filter((c) => c.name === target);
 
@@ -297,8 +305,8 @@ function VoicePickerSheet({
           <div className="w-10 h-1 rounded-full bg-border mx-auto mb-3" />
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-display text-xl">Character voices</h3>
-              <p className="text-[0.6875rem] text-text-muted">Pick the voice and tone for each character</p>
+              <h3 className="font-display text-xl">{L("קולות הדמויות", "Character voices")}</h3>
+              <p className="text-[0.6875rem] text-text-muted">{L("בחר קול וטון לכל דמות", "Pick the voice and tone for each character")}</p>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-full hover:bg-bg-muted">
               <X className="w-5 h-5" />
@@ -328,7 +336,7 @@ function VoicePickerSheet({
                 </div>
 
                 {/* Voice type */}
-                <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5">Voice</div>
+                <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5">{L("קול", "Voice")}</div>
                 <div className="grid grid-cols-4 gap-2 mb-4">
                   {(Object.keys(VOICE_LABELS) as VoiceType[]).map((v) => (
                     <button
@@ -342,13 +350,13 @@ function VoicePickerSheet({
                       )}
                     >
                       <span className="text-lg leading-none">{VOICE_LABELS[v].emoji}</span>
-                      <span className="text-[0.6875rem] font-medium">{VOICE_LABELS[v].en}</span>
+                      <span className="text-[0.6875rem] font-medium">{L(VOICE_LABELS[v].he, VOICE_LABELS[v].en)}</span>
                     </button>
                   ))}
                 </div>
 
                 {/* Tone */}
-                <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5">Tone</div>
+                <div className="text-[0.6875rem] uppercase tracking-wider text-text-muted mb-1.5">{L("טון", "Tone")}</div>
                 <div className="grid grid-cols-4 gap-2">
                   {(Object.keys(TONE_LABELS) as ToneType[]).map((t) => (
                     <button
@@ -362,7 +370,7 @@ function VoicePickerSheet({
                       )}
                     >
                       <span className="text-lg leading-none">{TONE_LABELS[t].emoji}</span>
-                      <span className="text-[0.6875rem] font-medium">{TONE_LABELS[t].en}</span>
+                      <span className="text-[0.6875rem] font-medium">{L(TONE_LABELS[t].he, TONE_LABELS[t].en)}</span>
                     </button>
                   ))}
                 </div>
@@ -376,7 +384,7 @@ function VoicePickerSheet({
             onClick={onClose}
             className="w-full h-12 rounded-2xl bg-gold text-on-accent font-semibold"
           >
-            Done
+            {L("סיום", "Done")}
           </button>
         </div>
       </motion.div>

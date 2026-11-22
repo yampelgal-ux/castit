@@ -560,40 +560,41 @@ const DEMO_STARS_OF_WEEK: StarRanking[] = [
   { rank: 6, talentId: "t6", category: "Comedy", weeklyLikes: 18400, growth: 56 },
 ];
 
+// Original practice scenes written for CastIt (no copyrighted film dialogue).
 export const SCENES: Scene[] = [
   {
     id: "s1",
-    title: "The Breakup",
-    source: "Marriage Story (2019)",
+    title: "הפרידה במטבח",
+    source: "סצנה מקורית · דרמה",
     difficulty: "Advanced",
     duration: "4:20",
     thumbnail: UNSPLASH("1485846234645-a62644f84728", 600),
     characters: [
-      { name: "Charlie", lines: ["You hated being married.", "I never said that.", "Then why are you doing this?"] },
-      { name: "Nicole", lines: ["I needed to become someone else.", "I'm sorry I can't be that for you.", "I think we should stop."] },
+      { name: "יואב", lines: ["את אורזת כבר שלושה ימים ולא אמרת מילה.", "אז תגידי עכשיו. אני מקשיב.", "אם זה בגללי, לפחות תני לי לתקן."] },
+      { name: "מאיה", lines: ["כי כל פעם שאני מתחילה, אתה מסיים לי את המשפט.", "זה לא בגללך. זה בגלל מי שהפכתי להיות לידך.", "אני צריכה לגלות אם היא עדיין קיימת בלעדיך."] },
     ],
   },
   {
     id: "s2",
-    title: "Diner Confession",
-    source: "Heat (1995)",
+    title: "משמרת לילה",
+    source: "סצנה מקורית · מתח",
     difficulty: "Intermediate",
     duration: "3:10",
     thumbnail: UNSPLASH("1517816743773-6e0fd518b4a6", 600),
     characters: [
-      { name: "Vincent", lines: ["You know, we're sitting here, you and I.", "Like a couple of regular fellas.", "But if it's between you and some poor bastard..."] },
-      { name: "Neil", lines: ["I'm alone, I am not lonely.", "You stay on a guy long enough, you get to know him.", "There's a flip side to that coin."] },
+      { name: "רונן", lines: ["הקפה פה גרוע, אבל לפחות הוא חם.", "אני יודע שלא היית בבית ביום שלישי.", "אני לא שואל כשוטר. אני שואל כאח."] },
+      { name: "נטע", lines: ["אז תפסיק להסתכל עליי כמו על חשודה.", "הייתי איפה שהייתי צריכה להיות.", "אם תמשיך לחפור, תמצא דברים שלא תרצה לדעת."] },
     ],
   },
   {
     id: "s3",
-    title: "Garden Bench",
-    source: "Good Will Hunting (1997)",
-    difficulty: "Intermediate",
+    title: "האודישן הראשון",
+    source: "סצנה מקורית · קומדיה",
+    difficulty: "Beginner",
     duration: "2:45",
     thumbnail: UNSPLASH("1502920917128-1aa500764cbd", 600),
     characters: [
-      { name: "Sean", lines: ["So if I asked you about art, you'd probably give me the skinny on every art book ever written.", "But I bet you can't tell me what it smells like in the Sistine Chapel.", "You don't know real loss."] },
+      { name: "שירה", lines: ["שלום, אני שירה, ואני... כן, אני פה בשביל התפקיד של הספרנית.", "אה, זה התפקיד של הדרקון? אין בעיה, אני גמישה.", "רגע, אפשר להתחיל מההתחלה? הפעם עם יותר אש."] },
     ],
   },
 ];

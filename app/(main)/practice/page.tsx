@@ -263,7 +263,7 @@ export default function PracticePage() {
                     title: s.title,
                     yourCharacter: s.characters[0]?.name || "Character A",
                     partnerCharacter: s.characters[1]?.name || "Character B",
-                    context: `Scene from ${s.source}.`,
+                    context: `Original practice scene: ${s.title} (${s.source}).`,
                     difficulty: s.difficulty,
                   })}
                   className="w-full flex items-center gap-3 p-3 rounded-2xl bg-bg-elevated border border-border hover:border-gold/40"

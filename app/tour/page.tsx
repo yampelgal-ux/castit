@@ -35,7 +35,7 @@ const SLIDES: Slide[] = [
           </div>
         </div>
         <div className="text-center text-xs text-text-muted uppercase tracking-[0.3em]">
-          Demo · Live Build · 2026
+          הדגמה · 2026
         </div>
       </div>
     ),
@@ -197,7 +197,7 @@ export default function TourPage() {
               : "bg-bg-elevated/80 border-border text-text-muted"
           }`}
         >
-          {autoplay ? <><Pause className="w-3 h-3" /> Pause</> : <><Play className="w-3 h-3" /> Auto-play</>}
+          {autoplay ? <><Pause className="w-3 h-3" /> השהיה</> : <><Play className="w-3 h-3" /> הפעלה אוטומטית</>}
         </button>
       </div>
 
@@ -385,7 +385,7 @@ function ProVisual() {
       <div className="p-3 space-y-2">
         <div className="flex items-center gap-2 mb-1">
           <Zap className="w-3.5 h-3.5 text-gold" />
-          <span className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">Action Inbox</span>
+          <span className="text-[0.6875rem] uppercase tracking-widest text-gold font-semibold">תיבת פעולות</span>
         </div>
         <div className="rounded-xl bg-danger/10 border border-danger/40 p-2">
           <div className="text-[0.6875rem] uppercase tracking-widest text-danger font-semibold">⚡ Hold expiring</div>

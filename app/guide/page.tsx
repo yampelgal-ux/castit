@@ -88,7 +88,7 @@ const STEPS: Step[] = [
       "ההצבעות מסתנכרנות אלייך בזמן אמת.",
     ],
     href: "/pro/approvals",
-    cta: "Director Reviews",
+    cta: "אישורי במאי",
   },
 ];
 
