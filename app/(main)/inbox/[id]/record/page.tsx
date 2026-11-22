@@ -1,4 +1,5 @@
 "use client";
+import { ariaFetch } from "@/lib/aria-fetch";
 import { compressVideo, MAX_TAPE_SECONDS } from "@/lib/video-compress";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -264,7 +265,7 @@ export default function SelfTapeStudioPage() {
         role.description ? `Brief: ${role.description}` : null,
         role.sides ? `Sides:\n${role.sides}` : null,
       ].filter(Boolean).join("\n\n");
-      const res = await fetch("/api/aria", {
+      const res = await ariaFetch("/api/aria", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

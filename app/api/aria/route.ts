@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { getAriaClient } from '@/lib/aria-client'
+import { getAriaClient, ariaGuard } from '@/lib/aria-client'
 import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -202,6 +202,8 @@ ${b.briefing || '(no data yet)'}`
 }
 
 export async function POST(req: Request) {
+  const denied = await ariaGuard(req)
+  if (denied) return denied
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     ?? req.headers.get('x-real-ip')
     ?? 'unknown'

@@ -1,4 +1,5 @@
 "use client";
+import { ariaFetch } from "@/lib/aria-fetch";
 import { useT } from "@/lib/i18n";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,7 +45,7 @@ export function AriaBriefBuilder({ onApply, onOpenManual }: Props) {
     setError(null);
     setParsed(null);
     try {
-      const res = await fetch("/api/aria/parse-brief", {
+      const res = await ariaFetch("/api/aria/parse-brief", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ brief: brief.trim() }),

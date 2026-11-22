@@ -61,3 +61,25 @@ export async function ariaReady(): Promise<{ ready: boolean; via?: string; reaso
   gatewayCheck = { at: Date.now(), ok }
   return { ready: ok, via: 'gateway', reason }
 }
+
+/**
+ * Only signed-in CastIt users may use Aria (it costs money per call).
+ * Returns a 401 Response to send back, or null when the caller is allowed.
+ */
+export async function ariaGuard(req: Request): Promise<Response | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !anon) return null // local demo mode, no accounts exist
+  const token = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
+  if (token) {
+    try {
+      const res = await fetch(`${url}/auth/v1/user`, {
+        headers: { apikey: anon, Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000),
+      })
+      if (res.ok) return null
+    } catch {}
+  }
+  return Response.json({ error: 'sign-in required' }, { status: 401 })
+}

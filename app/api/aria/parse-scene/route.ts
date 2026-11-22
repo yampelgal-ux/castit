@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { getAriaClient } from '@/lib/aria-client'
+import { getAriaClient, ariaGuard } from '@/lib/aria-client'
 import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -43,6 +43,8 @@ const PARSE_TOOL: Anthropic.Tool = {
 }
 
 export async function POST(req: Request) {
+  const denied = await ariaGuard(req)
+  if (denied) return denied
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
   const rl = rateLimit(`parse-scene:${ip}`, { max: 10, windowMs: 60_000 })
   if (!rl.ok) {

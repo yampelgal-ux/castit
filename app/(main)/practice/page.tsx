@@ -1,4 +1,5 @@
 "use client";
+import { ariaFetch } from "@/lib/aria-fetch";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Volume2, VolumeX, Sparkles, Send, Square, RotateCcw, Award, Pause } from "lucide-react";
@@ -100,7 +101,7 @@ export default function PracticePage() {
           content: l.text,
         }));
 
-      const res = await fetch("/api/aria", {
+      const res = await ariaFetch("/api/aria", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

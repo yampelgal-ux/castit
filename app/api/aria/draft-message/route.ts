@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { getAriaClient } from '@/lib/aria-client'
+import { getAriaClient, ariaGuard } from '@/lib/aria-client'
 import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -41,6 +41,8 @@ const TONE_NOTES: Record<z.infer<typeof BodySchema>['tone'], string> = {
 }
 
 export async function POST(req: Request) {
+  const denied = await ariaGuard(req)
+  if (denied) return denied
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
   const rl = rateLimit(`draft-message:${ip}`, { max: 30, windowMs: 60_000 })
   if (!rl.ok) {

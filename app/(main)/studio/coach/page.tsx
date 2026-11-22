@@ -1,4 +1,5 @@
 "use client";
+import { ariaFetch } from "@/lib/aria-fetch";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -296,7 +297,7 @@ export default function CoachPage() {
     const clean = text.replace(/^\[[^\]]+\]\s*/, "").trim();
     if (!clean) return;
     try {
-      const res = await fetch("/api/aria/speak", {
+      const res = await ariaFetch("/api/aria/speak", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: clean, voiceProfile, tone, intensity }),
@@ -360,7 +361,7 @@ export default function CoachPage() {
   async function loadHints(forScene: ParsedScene, character: string) {
     setHintsLoading(true);
     try {
-      const res = await fetch("/api/aria/coach-directions", {
+      const res = await ariaFetch("/api/aria/coach-directions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -517,7 +518,7 @@ export default function CoachPage() {
     setParsing(true);
     setParseError(null);
     try {
-      const res = await fetch("/api/aria/parse-scene", {
+      const res = await ariaFetch("/api/aria/parse-scene", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -681,7 +682,7 @@ export default function CoachPage() {
         role: t.role,
         content: t.text.replace(/^\[[^\]]+\]\s*/, ""),
       }));
-      const res = await fetch("/api/aria", {
+      const res = await ariaFetch("/api/aria", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
