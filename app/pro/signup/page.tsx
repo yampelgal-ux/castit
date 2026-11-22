@@ -1,4 +1,6 @@
 "use client";
+
+import { friendlyAuthError } from "@/lib/cloud/errors";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -52,7 +54,7 @@ export default function ProSignupPage() {
         },
       });
       if (signErr) {
-        setError(/already registered|already exists/i.test(signErr.message) ? L("כבר יש חשבון עם המייל הזה. אפשר להתחבר.", "An account with this email already exists. Sign in instead.") : signErr.message);
+        setError(friendlyAuthError(signErr, L));
         setLoading(false); return;
       }
       if (data.user && !data.session) {

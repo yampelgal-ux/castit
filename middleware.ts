@@ -16,7 +16,10 @@ const UNFINISHED: Record<string, string> = {
 
 export function middleware(req: NextRequest) {
   if (!isCloudConfigured()) return NextResponse.next();
-  const to = UNFINISHED[req.nextUrl.pathname.replace(/\/$/, "")];
+  const path = req.nextUrl.pathname.replace(/\/$/, "");
+  // The old demo audition pages (fake "Boost" pricing, local-only broadcast) are
+  // replaced by real open auditions inside projects.
+  const to = UNFINISHED[path] ?? (path.startsWith("/pro/audition/") ? "/pro/projects" : undefined);
   if (!to) return NextResponse.next();
   const url = req.nextUrl.clone();
   url.pathname = to;
@@ -25,5 +28,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/opportunities", "/practice", "/avatar", "/casting-pro", "/verify", "/pro/sourcing", "/pro/audition/new"],
+  matcher: ["/opportunities", "/practice", "/avatar", "/casting-pro", "/verify", "/pro/sourcing", "/pro/audition/:path*"],
 };
