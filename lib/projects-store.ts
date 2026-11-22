@@ -96,6 +96,10 @@ export type Submission = {
   callbackLocation?: string;      // e.g. "Tagada Studios, Tel Aviv"
   // Times the pro opened for this talent to choose from (ISO). Cleared once one is picked.
   callbackSlots?: string[];
+  /** Last time the pro sent a "send your tape" reminder (ISO). */
+  remindedAt?: string;
+  /** Set when an agency submitted this actor. */
+  agent?: { id: string; name: string; agency?: string };
   callbackPickedByTalent?: boolean;
   callbackCompleted?: boolean;    // pro confirms the session happened
   callbackOutcome?: string;       // optional note from the in-person session
@@ -332,6 +336,15 @@ export function moveToCallback(
     callbackCompleted: false,
     callbackOutcome: undefined,
   });
+}
+
+// Pro nudged the actor to send their tape (no stage change, no decidedAt bump).
+export function markReminded(id: string) {
+  const list = loadSubmissions();
+  const idx = list.findIndex((s) => s.id === id);
+  if (idx === -1) return;
+  list[idx] = { ...list[idx], remindedAt: new Date().toISOString() };
+  safeSave(KEY_S, list);
 }
 
 // Talent books one of the callback times the pro opened.

@@ -1,6 +1,7 @@
 "use client";
 import { GuardianBanner } from "@/components/TrustBanners";
 import { PushPrompt } from "@/components/PushPrompt";
+import { AgencyRequests } from "@/components/AgencyRequests";
 import { ProfileCompleteness } from "@/components/ProfileCompleteness";
 import { useTrust } from "@/lib/cloud/trust";
 import { ShieldCheck, Megaphone, ChevronLeft } from "lucide-react";
@@ -102,6 +103,7 @@ export default function InboxPage() {
       />
       <GuardianBanner />
       <PushPrompt />
+      <div className="px-4 pt-3 empty:hidden"><AgencyRequests compact /></div>
 
       <div className="px-5 pt-3 space-y-4">
         <div>
@@ -241,6 +243,9 @@ function AuditionCard({ item, i }: { item: AuditionItem; i: number }) {
                 ? daysToDeadline! < 0 ? L("הדדליין עבר", "Deadline passed") : daysToDeadline === 0 ? L("להגיש היום", "Due today") : he ? `להגיש בעוד ${daysToDeadline} ימים` : `Due in ${daysToDeadline}d`
                 : `${L("דדליין", "Deadline")} ${deadline.toLocaleDateString(he ? "he-IL" : undefined, { month: "short", day: "numeric" })}`}
             </span>
+          )}
+          {needsTape && s.remindedAt && Date.now() - new Date(s.remindedAt).getTime() < 3 * 86400000 && (
+            <span className="inline-flex items-center gap-1 text-gold font-semibold"><AlertCircle className="w-3 h-3" aria-hidden /> {L("המלהק/ת מחכה לטייפ שלך", "Casting is waiting for your tape")}</span>
           )}
           {role.shootDates && <span className="text-text-muted">{L("צילומים:", "Shoot:")} {role.shootDates}</span>}
           {role.payRange && <span className="text-success font-semibold">{role.payRange}</span>}

@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { haptic } from "@/lib/haptics";
 import { SidesFileInput, SidesFileViewer } from "@/components/SidesFileInput";
 import { InviteLinkSheet } from "@/components/InviteLinkSheet";
+import { TapeReminderCard } from "@/components/TapeReminderCard";
 import { useT } from "@/lib/i18n";
 
 // Pipeline columns — full mode has all 8 stages, quick mode has 3
@@ -171,6 +172,8 @@ export default function RoleDetailPage() {
             </details>
           )}
         </div>
+
+        <TapeReminderCard role={role} project={project} subs={subs} onChanged={reload} />
 
         {/* Invite actors who aren't on CastIt yet */}
         <button

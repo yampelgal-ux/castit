@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Camera, Upload, Trash2, Bell, Accessibility, Globe, User, Film, Cloud, CloudOff,
-  LogOut, LogIn, Smartphone, Check, Type, Shield, Ban, FileText, AlertTriangle, MessageSquareText,
-} from "lucide-react";
+  LogOut, LogIn, Smartphone, Check, Type, Shield, Ban, FileText, AlertTriangle, MessageSquareText, Building2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { deleteMyAccount, refreshHidden, unblockUser, useHidden } from "@/lib/cloud/safety";
 import { useTrust } from "@/lib/cloud/trust";
@@ -27,6 +26,7 @@ import { photoToDataUrl } from "@/lib/image";
 import { isCloudConfigured, isRealUserId } from "@/lib/cloud/config";
 import { signOutEverywhere } from "@/lib/cloud/auth";
 import { FeedbackSheet } from "@/components/FeedbackSheet";
+import { AgencyRequests } from "@/components/AgencyRequests";
 import { ProfileCompleteness } from "@/components/ProfileCompleteness";
 import { disablePush, enablePush, pushStatus, type PushStatus } from "@/lib/cloud/push";
 import { useT } from "@/lib/i18n";
@@ -45,6 +45,7 @@ export default function SettingsPage() {
         <ProfileCompleteness />
         <ProfileSection L={L} />
         <VideosSection L={L} />
+        <AgencySection L={L} />
         <RemindersSection L={L} />
         <AccessibilitySection L={L} />
         <Section icon={Globe} title={L("שפה", "Language")}>
@@ -61,6 +62,17 @@ export default function SettingsPage() {
 }
 
 type LFn = (he: string, en: string) => string;
+
+function AgencySection({ L }: { L: LFn }) {
+  const role = useStore((s) => s.profile.role);
+  const userId = useStore((s) => s.userId);
+  if (role !== "Talent" || !isCloudConfigured() || !isRealUserId(userId)) return null;
+  return (
+    <Section id="agency" icon={Building2} title={L("סוכנות", "Agency")}>
+      <AgencyRequests />
+    </Section>
+  );
+}
 
 function Section({ id, icon: Icon, title, children }: {
   id?: string; icon: React.ComponentType<{ className?: string }>; title: string; children: React.ReactNode;

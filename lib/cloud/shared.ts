@@ -17,6 +17,9 @@ import { onSyncedKeyChange } from "./sync";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { Project, Role, Submission } from "@/lib/projects-store";
 import { pruneTakenCallbackSlots } from "@/lib/projects-store";
+
+const KEY_AGENCY = "castit_agency_subs_v1";
+type AgencySub = { submission: Submission; role: Role | null; project: Project | null; ownerId: string };
 import type { SharePacket } from "@/lib/share-store";
 import type { ApprovalSession } from "@/lib/approval-store";
 import type { Talent } from "@/lib/mock-data";
@@ -141,7 +144,7 @@ async function publishSubmissions() {
     const own = ownerId === me;
     const { error } = own
       ? await supabase.from("shared_records").upsert(
-          { id, kind: "submission", owner_id: me, member_ids: [s.talentId], data },
+          { id, kind: "submission", owner_id: me, member_ids: s.agent?.id && isRealUserId(s.agent.id) ? [s.talentId, s.agent.id] : [s.talentId], data },
           { onConflict: "id" },
         )
       : await supabase.from("shared_records").update({ data }).eq("id", id);
@@ -216,7 +219,8 @@ async function pullSubmissions(rows?: Row[]) {
   const roles = read<(Role & SharedMarks)[]>(KEY_R, []);
   const projects = read<(Project & SharedMarks)[]>(KEY_P, []);
   const m = meta();
-  let dirtyS = false, dirtyR = false, dirtyP = false;
+  const agency = read<AgencySub[]>(KEY_AGENCY, []);
+  let dirtyS = false, dirtyR = false, dirtyP = false, dirtyA = false;
   const notes: (() => void)[] = [];
 
   for (const row of rows) {
@@ -259,6 +263,12 @@ async function pullSubmissions(rows?: Row[]) {
       if (incoming.callbackPickedByTalent && incoming.callbackScheduledAt && incoming.callbackScheduledAt !== prev.callbackScheduledAt && role) {
         notes.push(() => notifyProSlotPicked(incoming.talentName, roleName, incoming.callbackScheduledAt!, incoming.id, role.projectId, role.id));
       }
+    } else if (incoming.talentId !== me) {
+      // This account is the actor's agent: keep a read-only copy to follow it.
+      const i = agency.findIndex((x) => x.submission.id === incoming.id);
+      const entry: AgencySub = { submission: incoming, role, project, ownerId: row.owner_id };
+      if (i < 0) agency.unshift(entry); else agency[i] = entry;
+      dirtyA = true;
     } else {
       const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
       const next = { ...incoming, _ownerId: row.owner_id, _remote: true };
@@ -293,13 +303,14 @@ async function pullSubmissions(rows?: Row[]) {
     if (dirtyP) write(KEY_P, projects);
     if (dirtyR) write(KEY_R, roles);
     if (dirtyS) write(KEY_S, subs);
+    if (dirtyA) write(KEY_AGENCY, agency);
     notes.forEach((n) => n());
   } finally {
     merging = false;
   }
   // A talent booked a callback time: take it off the other talents' lists (that change syncs to them).
   if (dirtyS && pruneTakenCallbackSlots()) schedulePublish();
-  if (dirtyS || dirtyR || dirtyP) changed();
+  if (dirtyS || dirtyR || dirtyP || dirtyA) changed();
 }
 
 async function pullPublicLinks(rows?: Row[]) {

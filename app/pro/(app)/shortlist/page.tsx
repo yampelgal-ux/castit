@@ -34,7 +34,7 @@ export default function ShortlistPage() {
             onClick={() => { setShareOpen(true); haptic("light"); }}
             className="text-[0.6875rem] text-gold font-semibold inline-flex items-center gap-1"
           >
-            <Share2 className="w-3 h-3" /> Share
+            <Share2 className="w-3 h-3" /> {L("שיתוף", "Share")}
           </button>
         )}
       />
