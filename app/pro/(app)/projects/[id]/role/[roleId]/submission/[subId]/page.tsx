@@ -1,4 +1,5 @@
 "use client";
+import { ariaFetch } from "@/lib/aria-fetch";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -974,7 +975,7 @@ function AriaDraftButton({
   async function generate() {
     setLoading(true);
     try {
-      const res = await fetch("/api/aria/draft-message", {
+      const res = await ariaFetch("/api/aria/draft-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

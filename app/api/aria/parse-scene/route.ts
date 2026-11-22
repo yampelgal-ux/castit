@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { getAriaClient, ariaGuard } from '@/lib/aria-client'
 import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -42,6 +43,8 @@ const PARSE_TOOL: Anthropic.Tool = {
 }
 
 export async function POST(req: Request) {
+  const denied = await ariaGuard(req)
+  if (denied) return denied
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
   const rl = rateLimit(`parse-scene:${ip}`, { max: 10, windowMs: 60_000 })
   if (!rl.ok) {
@@ -58,8 +61,8 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey || apiKey.startsWith('YOUR_')) {
+  const aria = await getAriaClient()
+  if (!aria) {
     // Demo fallback: parse simple "NAME: line" format from text
     if (body.text) {
       const lines = body.text.split('\n').map((l) => l.trim()).filter(Boolean)
@@ -82,7 +85,7 @@ export async function POST(req: Request) {
     return Response.json({ error: 'קריאת סצנה מתמונה עוד לא זמינה. בינתיים אפשר להדביק את הטקסט, שורה לכל דמות: שם: טקסט.' }, { status: 503 })
   }
 
-  const client = new Anthropic({ apiKey })
+  const { client, model } = aria
 
   const userContent: Anthropic.ContentBlockParam[] = []
   if (body.imageBase64) {
@@ -107,7 +110,7 @@ export async function POST(req: Request) {
 
   try {
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
+      model: model('claude-sonnet-4-5-20250929'),
       max_tokens: 4096,
       tools: [PARSE_TOOL],
       tool_choice: { type: 'tool', name: 'set_scene' },

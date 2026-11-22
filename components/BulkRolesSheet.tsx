@@ -1,4 +1,5 @@
 "use client";
+import { ariaFetch } from "@/lib/aria-fetch";
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -35,7 +36,7 @@ export function BulkRolesSheet({ projectId, mode, onClose, onCreated }: Props) {
     setParsing(true);
     setError(null);
     try {
-      const res = await fetch("/api/aria/parse-breakdown", {
+      const res = await ariaFetch("/api/aria/parse-breakdown", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...payload, mode }),

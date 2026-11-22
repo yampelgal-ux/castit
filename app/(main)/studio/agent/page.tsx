@@ -1,4 +1,5 @@
 "use client";
+import { ariaFetch } from "@/lib/aria-fetch";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -128,7 +129,7 @@ export default function AgentChatPage() {
       // The API needs alternating turns starting with the user.
       const history = next.slice(next.findIndex((m) => m.from === "user")).slice(-30)
         .map((m) => ({ role: m.from === "user" ? "user" : "assistant", content: m.text }));
-      const res = await fetch("/api/aria", {
+      const res = await ariaFetch("/api/aria", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

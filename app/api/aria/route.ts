@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { getAriaClient, ariaGuard } from '@/lib/aria-client'
 import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -201,6 +202,8 @@ ${b.briefing || '(no data yet)'}`
 }
 
 export async function POST(req: Request) {
+  const denied = await ariaGuard(req)
+  if (denied) return denied
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     ?? req.headers.get('x-real-ip')
     ?? 'unknown'
@@ -219,8 +222,8 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey || apiKey.startsWith('YOUR_')) {
+  const aria = await getAriaClient()
+  if (!aria) {
     // graceful demo fallback per mode
     if (body.mode === 'custom_scene' && body.scene?.upcomingLines?.length) {
       // Demo fallback: just echo the script's upcoming lines verbatim
@@ -241,12 +244,12 @@ export async function POST(req: Request) {
     })
   }
 
-  const client = new Anthropic({ apiKey })
+  const { client, model } = aria
 
   try {
     const isScene = body.mode === 'scene_partner' || body.mode === 'custom_scene'
     const response = await client.messages.create({
-      model: 'claude-opus-5-5',
+      model: model('claude-opus-5-5'),
       max_tokens: isScene ? 8000 : 16000,
       // Scene partner / coach replies must be fast; the manager gets more room to reason.
       output_config: { effort: body.mode === 'agent' || !body.mode ? 'medium' : 'low' },
