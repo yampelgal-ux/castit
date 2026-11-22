@@ -1,8 +1,9 @@
-// Tells the app whether Aria (the Claude API key) is set up, so screens can
-// hide Aria buttons until it is.
+// Tells the app whether Aria can reach Claude (direct key or Vercel AI Gateway),
+// so screens can hide Aria buttons until it can.
+import { ariaReady } from '@/lib/aria-client'
+
 export const dynamic = 'force-dynamic'
 
-export function GET() {
-  const key = process.env.ANTHROPIC_API_KEY
-  return Response.json({ ready: !!key && !key.startsWith('YOUR_') })
+export async function GET() {
+  return Response.json(await ariaReady())
 }

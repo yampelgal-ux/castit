@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { getAriaClient } from '@/lib/aria-client'
 import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -53,8 +54,8 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey || apiKey.startsWith('YOUR_')) {
+  const aria = await getAriaClient()
+  if (!aria) {
     // Fallback canned messages so the UI still works without a key
     const CANNED: Record<typeof body.intent, string> = {
       callback: `Loved your tape — we'd like to bring you back for a callback. New sides incoming.`,
@@ -85,11 +86,11 @@ export async function POST(req: Request) {
     body.customNote ? `Additional context the pro wants included: ${body.customNote}` : null,
   ].filter(Boolean).join('\n')
 
-  const client = new Anthropic({ apiKey })
+  const { client, model } = aria
 
   try {
     const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: model('claude-haiku-4-5-20251001'),
       max_tokens: 350,
       system: `You are drafting a short professional message from a casting pro to a talent. Output ONLY the message body — no greeting envelope, no signature line, no "Subject:" header, no surrounding quotes. ${TONE_NOTES[body.tone]} ${langDirective}`,
       messages: [{

@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { getAriaClient } from '@/lib/aria-client'
 import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -98,17 +99,17 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey || apiKey.startsWith('YOUR_')) {
+  const aria = await getAriaClient()
+  if (!aria) {
     // Demo fallback — naive keyword scan so the feature still works without a key
     return Response.json({ filters: naiveParse(body.brief), demo: true })
   }
 
-  const client = new Anthropic({ apiKey })
+  const { client, model } = aria
 
   try {
     const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: model('claude-haiku-4-5-20251001'),
       max_tokens: 600,
       system: SYSTEM,
       tools: [PARSE_TOOL],

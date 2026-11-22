@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { getAriaClient } from '@/lib/aria-client'
 import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -77,7 +78,6 @@ export async function POST(req: Request) {
   }
 
   const openaiKey = process.env.OPENAI_API_KEY
-  const anthropicKey = process.env.ANTHROPIC_API_KEY
 
   if (!openaiKey || openaiKey.startsWith('YOUR_')) {
     return Response.json(
@@ -85,7 +85,8 @@ export async function POST(req: Request) {
       { status: 503 }
     )
   }
-  if (!anthropicKey || anthropicKey.startsWith('YOUR_')) {
+  const aria = await getAriaClient()
+  if (!aria) {
     return Response.json(
       { error: 'Analysis unavailable — set ANTHROPIC_API_KEY' },
       { status: 503 }
@@ -133,7 +134,7 @@ export async function POST(req: Request) {
   }
 
   // ─── Step 2: Analyze transcript with Claude ─────────
-  const client = new Anthropic({ apiKey: anthropicKey })
+  const { client, model } = aria
 
   const userPrompt = `Analyze this self-tape audition for a casting pro.
 
@@ -152,7 +153,7 @@ Evaluate against the role brief and sides. Be honest and specific — pros use t
 
   try {
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
+      model: model('claude-sonnet-4-5-20250929'),
       max_tokens: 1024,
       tools: [ANALYSIS_TOOL],
       tool_choice: { type: 'tool', name: 'set_tape_analysis' },

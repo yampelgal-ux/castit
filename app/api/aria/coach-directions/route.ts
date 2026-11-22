@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { getAriaClient } from '@/lib/aria-client'
 import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
 
@@ -67,8 +68,8 @@ export async function POST(req: Request) {
     return Response.json({ hints: [] })
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey || apiKey.startsWith('YOUR_')) {
+  const aria = await getAriaClient()
+  if (!aria) {
     // Demo fallback: generic hint per line
     return Response.json({
       hints: userLines.map((l) => ({
@@ -80,7 +81,7 @@ export async function POST(req: Request) {
     })
   }
 
-  const client = new Anthropic({ apiKey })
+  const { client, model } = aria
 
   const scriptPreview = body.scene.lines
     .map((l, i) => `${i}. ${l.character}: ${l.text}`)
@@ -92,7 +93,7 @@ export async function POST(req: Request) {
 
   try {
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
+      model: model('claude-sonnet-4-5-20250929'),
       max_tokens: 2048,
       tools: [HINT_TOOL],
       tool_choice: { type: 'tool', name: 'set_acting_hints' },
