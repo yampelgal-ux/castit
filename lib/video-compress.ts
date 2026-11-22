@@ -10,6 +10,21 @@ export const MAX_TAPE_SECONDS = 5 * 60;
 /** Videos smaller than this are uploaded as they are. */
 const SKIP_BELOW_BYTES = 8 * 1024 * 1024;
 
+/** True when this browser can actually decode the file (not just read its name). */
+export function canPlayVideo(file: Blob): Promise<boolean> {
+  return new Promise((resolve) => {
+    const v = document.createElement("video");
+    v.preload = "auto";
+    v.muted = true;
+    const url = URL.createObjectURL(file);
+    const done = (ok: boolean) => { clearTimeout(t); URL.revokeObjectURL(url); v.removeAttribute("src"); resolve(ok); };
+    const t = setTimeout(() => done(v.readyState >= 1 && v.videoWidth > 0), 8000);
+    v.onloadeddata = () => done(v.videoWidth > 0);
+    v.onerror = () => done(false);
+    v.src = url;
+  });
+}
+
 export function videoDuration(file: Blob): Promise<number> {
   return new Promise((resolve) => {
     const v = document.createElement("video");
@@ -39,10 +54,14 @@ export async function compressVideo(
   input: Blob,
   opts: { maxHeight?: number; videoBitsPerSecond?: number; onProgress?: (p: number) => void } = {},
 ): Promise<Blob> {
-  if (input.size < SKIP_BELOW_BYTES || !canCompress()) return input;
+  // iPhone .mov files are often HEVC, which many Android phones and PCs can't
+  // play: always convert those to H.264 MP4, whatever their size.
+  const quicktime = /quicktime/i.test(input.type);
+  if ((input.size < SKIP_BELOW_BYTES && !quicktime) || !canCompress()) return input;
   try {
     const out = await reencode(input, opts.maxHeight ?? 720, opts.videoBitsPerSecond ?? 2_000_000, opts.onProgress);
-    return out && out.size > 0 && out.size < input.size * 0.9 ? out : input;
+    if (!out || out.size === 0) return input;
+    return quicktime || out.size < input.size * 0.9 ? out : input;
   } catch (e) {
     console.warn("[compress] kept original", e);
     return input;
@@ -124,3 +143,9 @@ async function reencode(input: Blob, maxHeight: number, bitrate: number, onProgr
     void audioCtx?.close();
   }
 }
+
+/** What to tell someone whose video file the browser can't decode. */
+export const unplayableText = (L: (h: string, e: string) => string) => L(
+  "לא הצלחנו לפתוח את הסרטון הזה. אם צילמת באייפון: הגדרות ← מצלמה ← פורמטים ← \"הכי תואם\", או ייצא אותו מחדש כ-MP4 ונסה שוב.",
+  "We couldn't open this video. On an iPhone: Settings → Camera → Formats → \"Most Compatible\", or re-export it as MP4 and try again.",
+);

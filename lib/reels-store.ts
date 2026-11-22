@@ -2,7 +2,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { saveTapeVideo, deleteTapeVideo, newTapeKey, loadTapeVideo } from "@/lib/tape-storage";
-import { uploadMedia, removeMedia } from "@/lib/cloud/media";
+import { uploadMedia, removeMedia, MAX_UPLOAD_BYTES } from "@/lib/cloud/media";
 import { deleteReelSocial } from "@/lib/cloud/social";
 import { DEMO_MODE } from "@/lib/cloud/config";
 import { capturePoster, posterPathFor } from "@/lib/video-poster";
@@ -34,7 +34,7 @@ async function uploadPoster(r: MyReel, blob?: Blob | null): Promise<boolean> {
 
 type ReelsState = {
   reels: MyReel[];
-  add: (file: Blob, caption: string) => Promise<MyReel>;
+  add: (file: Blob, caption: string, onProgress?: (fraction: number) => void) => Promise<MyReel>;
   remove: (id: string) => Promise<void>;
   rename: (id: string, caption: string) => void;
   /** Try the cloud upload again for a video that only lives on this device. */
@@ -44,16 +44,16 @@ type ReelsState = {
 };
 
 // Supabase Storage on the free plan accepts files up to 50MB.
-export const MAX_REEL_BYTES = (DEMO_MODE ? 200 : 50) * 1024 * 1024;
+export const MAX_REEL_BYTES = DEMO_MODE ? 200 * 1024 * 1024 : MAX_UPLOAD_BYTES;
 
 export const useMyReels = create<ReelsState>()(
   persist(
     (set, get) => ({
       reels: [],
-      add: async (file, caption) => {
+      add: async (file, caption, onProgress) => {
         const id = `reel_${Date.now().toString(36)}`;
         const blobKey = newTapeKey(id);
-        const where = await saveTapeVideo(blobKey, file);
+        const where = await saveTapeVideo(blobKey, file, onProgress);
         const reel: MyReel = { id, blobKey, caption, createdAt: Date.now(), sizeBytes: file.size, cloud: where === "cloud" };
         set({ reels: [reel, ...get().reels] });
         if (reel.cloud) {

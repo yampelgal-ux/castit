@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { notifyTalentStageChange } from "@/lib/notifications-store";
 import { useT } from "@/lib/i18n";
 import { haptic } from "@/lib/haptics";
+import { useTapeSrc } from "@/lib/use-tape-src";
 
 type QueueItem = { submission: Submission; role: Role; project: Project };
 
@@ -92,6 +93,8 @@ export default function ProTriagePage() {
       videoRef.current.play().catch(() => {});
     }
   }, [idx]);
+
+  const currentTapeSrc = useTapeSrc(current?.submission.tapes.at(-1));
 
   if (!loaded) return <div className="min-h-dvh bg-bg" />;
 
@@ -222,11 +225,11 @@ export default function ProTriagePage() {
 
             {/* Video / poster */}
             <div className="relative w-full bg-black" style={{ aspectRatio: "9/16", maxHeight: "65%" }}>
-              {lastTape?.videoUrl ? (
+              {currentTapeSrc ? (
                 <video
                   ref={videoRef}
-                  src={lastTape.videoUrl}
-                  poster={lastTape.posterUrl}
+                  src={currentTapeSrc}
+                  poster={lastTape?.posterUrl}
                   className="w-full h-full object-cover"
                   autoPlay
                   loop
@@ -242,7 +245,7 @@ export default function ProTriagePage() {
               )}
 
               {/* Mute toggle */}
-              {lastTape?.videoUrl && (
+              {currentTapeSrc && (
                 <button
                   onClick={() => setMuted((m) => !m)}
                   className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-black/60 backdrop-blur grid place-items-center text-white"

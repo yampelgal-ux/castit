@@ -8,6 +8,7 @@ import {
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
 import { useT, useLangStore } from "@/lib/i18n";
+import { useTapeSrc } from "@/lib/use-tape-src";
 
 // A video viewer with timeline comment markers + add-comment-at-current-time button.
 // Used by pros to leave private time-coded feedback on a self-tape.
@@ -21,6 +22,9 @@ export function TapeCommentsViewer({
   onChange?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const src = useTapeSrc(tape);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
   const { lang } = useT();
   const L = (h: string, e: string) => (lang === "en" ? e : h);
   const [duration, setDuration] = useState(0);
@@ -75,18 +79,25 @@ export function TapeCommentsViewer({
 
       <div className="rounded-2xl overflow-hidden bg-black relative">
         <div className="aspect-[9/16] max-h-[55dvh] relative">
-          {tape.videoUrl ? (
+          {src ? (
             <video
               ref={videoRef}
-              src={tape.videoUrl}
+              src={src}
               poster={tape.posterUrl}
               controls
               playsInline
               className="w-full h-full object-cover"
+              onError={() => setFailed(true)}
               onLoadedMetadata={(e) => setDuration((e.target as HTMLVideoElement).duration)}
               onTimeUpdate={(e) => setCurrentTime((e.target as HTMLVideoElement).currentTime)}
             />
-          ) : (
+          ) : null}
+          {src && failed && (
+            <div role="alert" className="absolute inset-0 grid place-items-center p-6 text-center text-sm text-white/80 bg-black/80">
+              {L("הסרטון לא נטען. בדקו את החיבור, או נסו לפתוח בדפדפן אחר (Chrome או Safari עדכני).", "The video didn't load. Check your connection, or try another browser (an up-to-date Chrome or Safari).")}
+            </div>
+          )}
+          {!src && (
             <div className="absolute inset-0 grid place-items-center text-text-muted">
               <MessageCircle className="w-10 h-10" />
             </div>

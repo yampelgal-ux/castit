@@ -1,6 +1,6 @@
 "use client";
 import { ariaFetch } from "@/lib/aria-fetch";
-import { compressVideo, MAX_TAPE_SECONDS } from "@/lib/video-compress";
+import { compressVideo, canPlayVideo, unplayableText, MAX_TAPE_SECONDS } from "@/lib/video-compress";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,6 +15,9 @@ import {
   type Submission, type Role, type Project,
 } from "@/lib/projects-store";
 import { saveTapeVideo, newTapeKey } from "@/lib/tape-storage";
+import { lastUploadError, mediaPublicUrl, MAX_UPLOAD_BYTES } from "@/lib/cloud/media";
+import { uploadErrorText } from "@/lib/cloud/errors";
+import { DEMO_MODE } from "@/lib/cloud/config";
 import { SidesFileViewer } from "@/components/SidesFileInput";
 import { loadSidesFile } from "@/lib/sides-storage";
 import { useT } from "@/lib/i18n";
@@ -54,6 +57,7 @@ export default function SelfTapeStudioPage() {
   const [sendResult, setSendResult] = useState<"cloud" | "local" | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
   const [shrink, setShrink] = useState<number | null>(null);
+  const [uploadPct, setUploadPct] = useState<number | null>(null);
   const [showSides, setShowSides] = useState(true);
 
   const [coaching, setCoaching] = useState<string | null>(null);
@@ -133,12 +137,16 @@ export default function SelfTapeStudioPage() {
     const stream = streamRef.current;
     if (!stream) return;
     chunksRef.current = [];
-    const mime = ["video/mp4", "video/webm;codecs=vp9,opus", "video/webm"].find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
-    // 720p at ~2.5Mbps: plenty for a self-tape, and keeps uploads small.
-    const rec = new MediaRecorder(stream, { ...(mime ? { mimeType: mime } : {}), videoBitsPerSecond: 2_500_000 });
+    // H.264 MP4 first: it plays on every phone and computer (WebM doesn't on older iPhones).
+    const mime = [
+      "video/mp4;codecs=avc1.42E01F,mp4a.40.2", "video/mp4;codecs=avc1,mp4a", "video/mp4",
+      "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm",
+    ].find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
+    // 720p at ~1.8Mbps: plenty for a self-tape, and a full 3-minute take stays under the 50MB cloud limit.
+    const rec = new MediaRecorder(stream, { ...(mime ? { mimeType: mime } : {}), videoBitsPerSecond: 1_800_000, audioBitsPerSecond: 128_000 });
     rec.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
     rec.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: rec.mimeType || "video/webm" });
+      const blob = new Blob(chunksRef.current, { type: (rec.mimeType || "video/webm").split(";")[0] });
       addTake({ url: URL.createObjectURL(blob), blob, duration: elapsedRef.current });
     };
     rec.start(1000);
@@ -190,6 +198,7 @@ export default function SelfTapeStudioPage() {
     if (file.size > MAX_FILE) { setFileError(t("rec.errTooBig")); return; }
     setReading(true);
     try {
+      if (!(await canPlayVideo(file))) { setFileError(unplayableText(L)); return; }
       const duration = await getVideoDuration(file);
       if (duration > MAX_TAPE_SECONDS) {
         setFileError(L(`הסרטון ארוך מ-${MAX_TAPE_SECONDS / 60} דקות. כדאי לקצר אותו ולנסות שוב.`, `The video is longer than ${MAX_TAPE_SECONDS / 60} minutes. Trim it and try again.`));
@@ -208,12 +217,24 @@ export default function SelfTapeStudioPage() {
     setMode("sending");
     const blobKey = newTapeKey(sub.id);
     try {
-      // Files from the gallery are often 4K: shrink them first (recorded takes already are small).
-      const blob = take.uploaded ? await compressVideo(take.blob, { onProgress: (p) => setShrink(p) }) : take.blob;
+      // Files from the gallery are often 4K, and long takes can pass the cloud
+      // limit: shrink them first (short recorded takes are already small).
+      const needsShrink = take.uploaded || take.blob.size > MAX_UPLOAD_BYTES * 0.9;
+      const blob = needsShrink ? await compressVideo(take.blob, { onProgress: (p) => setShrink(p) }) : take.blob;
       setShrink(null);
-      const where = await saveTapeVideo(blobKey, blob);
+      if (!DEMO_MODE && blob.size > MAX_UPLOAD_BYTES) {
+        throw new Error(uploadErrorText("too-large", L));
+      }
+      setUploadPct(0);
+      const where = await saveTapeVideo(blobKey, blob, (f) => setUploadPct(Math.round(f * 100)));
+      setUploadPct(null);
+      // With a real backend a tape that never reached the cloud can't be watched
+      // by the casting team, so don't mark it as sent: let the talent retry.
+      if (!DEMO_MODE && where === "local") {
+        throw new Error(uploadErrorText(lastUploadError(), L));
+      }
       addTape(sub.id, {
-        videoUrl: take.url,
+        videoUrl: where === "cloud" ? (mediaPublicUrl(`tapes/${blobKey}`) ?? take.url) : take.url,
         tapeBlobKey: blobKey,
         note: take.uploaded
           ? `${L("הועלה", "Uploaded")}${take.filename ? `: ${take.filename}` : ""} · ${formatTime(take.duration)}`
@@ -223,6 +244,8 @@ export default function SelfTapeStudioPage() {
       setMode("sent");
       haptic("success");
     } catch (e) {
+      setShrink(null);
+      setUploadPct(null);
       setSendError(e instanceof Error ? e.message : L("השליחה נכשלה. נסו שוב.", "Sending failed. Try again."));
       setMode("review");
       haptic("error");
@@ -443,7 +466,7 @@ export default function SelfTapeStudioPage() {
               <button onClick={send} disabled={mode === "sending"}
                 className="h-12 rounded-lg bg-gold text-on-accent font-semibold flex items-center justify-center gap-2 disabled:opacity-70">
                 {mode === "sending"
-                  ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden /> {shrink !== null ? L(`מכווץ… ${Math.round(shrink * 100)}%`, `Compressing… ${Math.round(shrink * 100)}%`) : L("שולח…", "Sending…")}</>
+                  ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden /> {shrink !== null ? L(`מכווץ… ${Math.round(shrink * 100)}%`, `Compressing… ${Math.round(shrink * 100)}%`) : uploadPct !== null ? L(`מעלה… ${uploadPct}%`, `Uploading… ${uploadPct}%`) : L("שולח…", "Sending…")}</>
                   : <><Send className="w-4 h-4" aria-hidden /> {t("rec.sendTape")}</>}
               </button>
             </div>
