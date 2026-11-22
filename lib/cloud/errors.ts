@@ -16,3 +16,12 @@ export function friendlyAuthError(err: unknown, L: L): string {
   if (/email/i.test(msg) && /invalid|valid/i.test(msg)) return L("כתובת המייל לא תקינה.", "That email address isn't valid.");
   return msg || L("משהו השתבש. נסו שוב.", "Something went wrong. Try again.");
 }
+
+/** Why a video didn't reach the cloud, in words (reason from lastUploadError()). */
+export function uploadErrorText(why: string, L: L): string {
+  if (why === "signed-out") return L("צריך להתחבר לחשבון כדי שהסרטון יעלה לענן.", "Sign in so the video can upload to the cloud.");
+  if (why === "too-large") return L("הסרטון גדול מדי (מעל 50MB). כדאי לקצר אותו או לייצא באיכות נמוכה יותר.", "The video is too big (over 50MB). Trim it or export at a lower quality.");
+  if (why === "network") return L("החיבור לאינטרנט נפל באמצע ההעלאה. בדקו את החיבור ונסו שוב.", "The connection dropped during the upload. Check your connection and try again.");
+  if (why === "not-allowed") return L("אין הרשאה להעלות כרגע. נסו להתנתק ולהתחבר שוב.", "Upload not allowed right now. Try signing out and back in.");
+  return L("ההעלאה לענן לא הצליחה. נסו שוב בעוד רגע.", "The cloud upload didn't go through. Try again in a moment.");
+}

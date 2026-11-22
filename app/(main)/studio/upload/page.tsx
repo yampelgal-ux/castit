@@ -6,10 +6,11 @@ import { Upload, Film, X, Check, AlertCircle, Camera, Image as ImageIcon } from 
 import { Header } from "@/components/Header";
 import { useMyReels, MAX_REEL_BYTES } from "@/lib/reels-store";
 import { lastUploadError } from "@/lib/cloud/media";
+import { uploadErrorText } from "@/lib/cloud/errors";
 import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
-import { canCompress, compressVideo, videoDuration, MAX_REEL_SECONDS } from "@/lib/video-compress";
+import { canCompress, canPlayVideo, unplayableText, compressVideo, videoDuration, MAX_REEL_SECONDS } from "@/lib/video-compress";
 
 // Big files are fine when we can shrink them on the phone before upload.
 const MAX_PICK_BYTES = 400 * 1024 * 1024;
@@ -41,6 +42,10 @@ export default function UploadReelPage() {
       setError(L(`הקובץ גדול מ-${limit / 1048576}MB. כדאי לקצר אותו או לייצא באיכות נמוכה יותר ולנסות שוב.`, `The file is over ${limit / 1048576}MB. Trim it or export at a lower quality and try again.`));
       return;
     }
+    if (!(await canPlayVideo(f))) {
+      setError(unplayableText(L));
+      return;
+    }
     if ((await videoDuration(f)) > MAX_REEL_SECONDS + 0.5) {
       setError(L(`הסרטון ארוך מ-${MAX_REEL_SECONDS} שניות. כדאי לקצר אותו ולנסות שוב.`, `The video is longer than ${MAX_REEL_SECONDS} seconds. Trim it and try again.`));
       return;
@@ -67,20 +72,15 @@ export default function UploadReelPage() {
     setState("uploading");
     setProgress(0);
 
-    // Fake smooth progress while waiting (Supabase JS doesn't expose stream progress)
-    const interval = setInterval(() => {
-      setProgress((p) => Math.min(p + Math.random() * 12, 92));
-    }, 300);
 
     let upError: string | null = null;
     let onlyLocal = false;
     try {
-      const reel = await addReel(small, caption);
+      const reel = await addReel(small, caption, (f) => setProgress(Math.min(99, f * 100)));
       onlyLocal = !reel.cloud;
     } catch (e) {
       upError = e instanceof Error ? e.message : L("ההעלאה נכשלה. אפשר לנסות שוב.", "The upload failed. Try again.");
     }
-    clearInterval(interval);
     setProgress(100);
 
     if (upError) {
@@ -95,8 +95,7 @@ export default function UploadReelPage() {
       const why = lastUploadError();
       setError(
         why === "signed-out" ? L("הסרטון נשמר רק במכשיר הזה כי לא התחברת לחשבון. אחרי ההתחברות אפשר ללחוץ \"פרסום\" ליד הסרטון בהגדרות.", "The video is saved on this device only because you're not signed in. Sign in, then tap \"Publish\" next to it in settings.")
-        : why === "too-large" ? L("הסרטון נשמר רק במכשיר הזה כי הוא גדול מדי לענן. כדאי לקצר אותו ולהעלות שוב.", "The video is saved on this device only because it's too big for the cloud. Trim it and upload again.")
-        : L("הסרטון נשמר במכשיר, אבל ההעלאה לענן לא הצליחה, אז אחרים עוד לא רואים אותו. אפשר לנסות שוב מההגדרות.", "The video is saved on this device, but the cloud upload failed, so others can't see it yet. You can retry from settings.") + (why ? ` (${why})` : ""),
+        : L("הסרטון נשמר במכשיר, אבל עוד לא עלה לענן, אז אחרים לא רואים אותו. ", "The video is saved on this device but hasn't reached the cloud, so others can't see it yet. ") + uploadErrorText(why, L) + L(" אפשר לנסות שוב מההגדרות.", " You can retry from settings."),
       );
       setTimeout(() => router.push("/settings#videos"), 4000);
       return;

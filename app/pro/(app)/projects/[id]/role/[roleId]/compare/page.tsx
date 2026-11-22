@@ -11,6 +11,7 @@ import { getRole, getSubmissionsByRole, type Submission, type Role } from "@/lib
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n";
 import { TalentPhoto } from "@/components/TalentPhoto";
+import { useTapeSrc } from "@/lib/use-tape-src";
 
 // Optional side-by-side compare view for a role.
 // Pro picks 2–4 submissions to see their tapes & details next to each other.
@@ -136,6 +137,7 @@ export default function ComparePage() {
 
 function CompareCard({ s, i, onRemove }: { s: Submission; i: number; onRemove: () => void }) {
   const latest = s.tapes[s.tapes.length - 1];
+  const src = useTapeSrc(latest);
   return (
     <motion.div
       initial={{ opacity: 0, x: 12 }}
@@ -144,8 +146,8 @@ function CompareCard({ s, i, onRemove }: { s: Submission; i: number; onRemove: (
       className="rounded-2xl bg-bg-elevated border border-border overflow-hidden"
     >
       <div className="aspect-[9/16] bg-black relative">
-        {latest?.videoUrl ? (
-          <video src={latest.videoUrl} controls playsInline className="w-full h-full object-cover" />
+        {src ? (
+          <video src={src} controls playsInline className="w-full h-full object-cover" />
         ) : (
           <div className="absolute inset-0 grid place-items-center text-text-muted">
             <FileVideo className="w-8 h-8" />

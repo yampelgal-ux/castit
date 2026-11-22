@@ -90,10 +90,10 @@ export function newTapeKey(submissionId: string): string {
  * open it. Resolves once the upload finished: "cloud" when it reached Storage,
  * "local" when it only lives on this device (guest / offline / no backend).
  */
-export async function saveTapeVideo(key: string, blob: Blob): Promise<"cloud" | "local"> {
+export async function saveTapeVideo(key: string, blob: Blob, onProgress?: (fraction: number) => void): Promise<"cloud" | "local"> {
   let savedLocally = true;
   try { await saveTapeVideoLocal(key, blob); } catch (e) { savedLocally = false; console.warn("[tapes] local save failed", e); }
-  const url = await uploadMedia(`tapes/${key}`, blob);
+  const url = await uploadMedia(`tapes/${key}`, blob, { onProgress });
   if (url) return "cloud";
   if (!savedLocally) throw new Error("The video could not be saved. Check free space and your connection, then try again.");
   return "local";

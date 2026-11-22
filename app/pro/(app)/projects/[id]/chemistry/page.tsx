@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { TalentPhoto } from "@/components/TalentPhoto";
 import { useT } from "@/lib/i18n";
+import { useTapeSrc } from "@/lib/use-tape-src";
 
 function useL() {
   const { lang } = useT();
@@ -193,6 +194,7 @@ function ChemistryColumn({
   color: "gold" | "plum";
 }) {
   const L = useL();
+  const tapeSrc = useTapeSrc(picked?.tapes[picked.tapes.length - 1]);
   const colorCls = color === "gold" ? "border-gold/40 bg-gold/5" : "border-plum-light/40 bg-plum/10";
   return (
     <div className="rounded-2xl border border-border bg-bg-elevated overflow-hidden">
@@ -203,9 +205,9 @@ function ChemistryColumn({
       {picked ? (
         <div className="p-1.5">
           <div className="aspect-[9/16] bg-black rounded-xl overflow-hidden relative">
-            {picked.tapes[picked.tapes.length - 1]?.videoUrl ? (
+            {tapeSrc ? (
               <video
-                src={picked.tapes[picked.tapes.length - 1].videoUrl}
+                src={tapeSrc}
                 controls
                 playsInline
                 className="w-full h-full object-cover"
