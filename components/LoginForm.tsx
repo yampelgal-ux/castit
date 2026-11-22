@@ -1,4 +1,6 @@
 "use client";
+
+import { friendlyAuthError } from "@/lib/cloud/errors";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -52,13 +54,7 @@ export function LoginForm({ variant = "any" }: { variant?: "any" | "pro" }) {
       if (role === "Casting Pro") router.push("/pro/dashboard");
       else router.push(st.onboarded ? "/feed" : "/onboarding");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(
-        /confirm/i.test(msg) ? L("צריך לאשר את המייל קודם. בדקו את תיבת הדואר.", "Please confirm your email first. Check your inbox.")
-        : /invalid login|credentials/i.test(msg) ? L("המייל או הסיסמה לא נכונים.", "Wrong email or password.")
-        : /network|fetch/i.test(msg) ? L("אין חיבור לאינטרנט. נסו שוב.", "No connection. Try again.")
-        : msg
-      );
+      setError(friendlyAuthError(err, L));
       setLoading(false);
     }
   }
@@ -70,7 +66,7 @@ export function LoginForm({ variant = "any" }: { variant?: "any" | "pro" }) {
       await sendPasswordReset(email.trim());
       setInfo(L("שלחנו קישור לאיפוס סיסמה למייל.", "We sent a password reset link to your email."));
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(friendlyAuthError(err, L));
     }
   }
 

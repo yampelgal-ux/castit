@@ -1,4 +1,6 @@
 "use client";
+
+import { friendlyAuthError } from "@/lib/cloud/errors";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -52,13 +54,7 @@ export default function SignupPage() {
         },
       });
       if (signUpError) {
-        const m = signUpError.message;
-        setError(
-          /already registered|already exists/i.test(m) ? L("כבר יש חשבון עם המייל הזה. אפשר להתחבר.", "An account with this email already exists. Sign in instead.")
-          : /password/i.test(m) ? L("הסיסמה חלשה מדי. נסו לפחות 6 תווים.", "Password is too weak. Use at least 6 characters.")
-          : /email/i.test(m) ? L("כתובת המייל לא תקינה.", "That email address isn't valid.")
-          : m
-        );
+        setError(friendlyAuthError(signUpError, L));
         setLoading(false);
         return;
       }

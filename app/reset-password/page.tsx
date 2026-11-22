@@ -5,10 +5,14 @@ import { Lock, ArrowRight, AlertCircle } from "lucide-react";
 import { Header } from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
+import { friendlyAuthError } from "@/lib/cloud/errors";
 
 // Landing page for the "reset password" email link (Supabase recovery session).
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const { lang } = useT();
+  const L = (he: string, en: string) => (lang === "he" ? he : en);
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,22 +31,22 @@ export default function ResetPasswordPage() {
     if (password.length < 6 || saving) return;
     setSaving(true);
     const { error: err } = await supabase.auth.updateUser({ password });
-    if (err) { setError(err.message); setSaving(false); return; }
+    if (err) { setError(friendlyAuthError(err, L)); setSaving(false); return; }
     router.push("/login");
   }
 
   return (
     <div className="min-h-dvh bg-bg">
-      <Header back title="New password" />
+      <Header back title={L("סיסמה חדשה", "New password")} />
       <form onSubmit={save} className="px-6 pt-6 space-y-5">
-        <h2 className="font-display text-3xl leading-tight">Choose a new password.</h2>
-        {!ready && <p className="text-text-muted text-sm">Opening your reset link…</p>}
+        <h2 className="font-display text-3xl leading-tight">{L("בחרו סיסמה חדשה.", "Choose a new password.")}</h2>
+        {!ready && <p className="text-text-muted text-sm">{L("פותחים את הקישור לאיפוס…", "Opening your reset link…")}</p>}
         <label className="flex items-center gap-3 h-14 px-4 rounded-2xl bg-bg-elevated border border-border focus-within:border-gold/50">
           <Lock className="w-4 h-4 text-text-subtle" />
           <input
             type="password"
             autoComplete="new-password"
-            placeholder="New password (min 6 chars)"
+            placeholder={L("סיסמה חדשה (לפחות 6 תווים)", "New password (min 6 chars)")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="flex-1 bg-transparent outline-none text-sm"
@@ -61,7 +65,7 @@ export default function ResetPasswordPage() {
             ready && password.length >= 6 ? "bg-gold text-on-accent" : "bg-bg-elevated text-text-subtle"
           )}
         >
-          {saving ? "Saving…" : "Save password"} {!saving && <ArrowRight className="w-4 h-4" />}
+          {saving ? L("שומרים…", "Saving…") : L("שמירת הסיסמה", "Save password")} {!saving && <ArrowRight className="w-4 h-4 rtl:rotate-180" />}
         </button>
       </form>
     </div>

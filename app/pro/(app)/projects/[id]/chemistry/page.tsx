@@ -12,11 +12,18 @@ import {
 } from "@/lib/projects-store";
 import { cn } from "@/lib/utils";
 import { TalentPhoto } from "@/components/TalentPhoto";
+import { useT } from "@/lib/i18n";
+
+function useL() {
+  const { lang } = useT();
+  return (he: string, en: string) => (lang === "he" ? he : en);
+}
 
 // Chemistry mode: pro picks one submission from each of two different roles
 // in the same project and plays the tapes side-by-side to gauge chemistry.
 export default function ChemistryPage() {
   const { id } = useParams<{ id: string }>();
+  const L = useL();
   const [project, setProject] = useState<Project | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
 
@@ -39,8 +46,8 @@ export default function ChemistryPage() {
   if (!project) {
     return (
       <div className="min-h-dvh bg-bg">
-        <Header back title="Chemistry" />
-        <EmptyState icon={Users} title="Project not found" />
+        <Header back title={L("כימיה", "Chemistry")} />
+        <EmptyState icon={Users} title={L("הפרויקט לא נמצא", "Project not found")} />
       </div>
     );
   }
@@ -48,12 +55,12 @@ export default function ChemistryPage() {
   if (roles.length < 2) {
     return (
       <div className="min-h-dvh bg-bg">
-        <Header back title="Chemistry" />
+        <Header back title={L("כימיה", "Chemistry")} />
         <div className="px-5 pt-3">
           <EmptyState
             icon={Heart}
-            title="Need at least two roles"
-            description="Add another role to this project — then you can pair their tapes here."
+            title={L("צריך לפחות שני תפקידים", "Need at least two roles")}
+            description={L("הוסיפו עוד תפקיד לפרויקט, ואז אפשר להציב את הקלטות זו לצד זו.", "Add another role to this project, then you can pair their tapes here.")}
           />
         </div>
       </div>
@@ -65,30 +72,30 @@ export default function ChemistryPage() {
 
   return (
     <div className="min-h-dvh bg-bg pb-24">
-      <Header back title="Chemistry" />
+      <Header back title={L("כימיה", "Chemistry")} />
 
       <div className="px-5 pt-3 space-y-4">
         <div>
           <div className="text-[0.6875rem] uppercase tracking-widest text-gold flex items-center gap-1.5">
-            <Sparkles className="w-3 h-3" /> Side-by-side casting check
+            <Sparkles className="w-3 h-3" /> {L("בדיקת ליהוק זה לצד זה", "Side-by-side casting check")}
           </div>
           <h1 className="font-display text-2xl tracking-editorial leading-tight">{project.title}</h1>
           <p className="text-sm text-text-muted mt-1">
-            Pair one talent from each role to see if they fit together on screen.
+            {L("בחרו שחקן אחד מכל תפקיד כדי לראות אם הם מתאימים יחד על המסך.", "Pair one talent from each role to see if they fit together on screen.")}
           </p>
         </div>
 
         {/* Role pickers */}
         <div className="grid grid-cols-2 gap-2">
           <RolePicker
-            label="Role A"
+            label={L("תפקיד א׳", "Role A")}
             roles={roles}
             value={roleAId}
             onChange={(id) => { setRoleAId(id); setPickAId(""); }}
             disabledIds={[roleBId]}
           />
           <RolePicker
-            label="Role B"
+            label={L("תפקיד ב׳", "Role B")}
             roles={roles}
             value={roleBId}
             onChange={(id) => { setRoleBId(id); setPickBId(""); }}
@@ -99,14 +106,14 @@ export default function ChemistryPage() {
         {/* Side-by-side */}
         <div className="grid grid-cols-2 gap-3">
           <ChemistryColumn
-            label={roles.find((r) => r.id === roleAId)?.name ?? "Role A"}
+            label={roles.find((r) => r.id === roleAId)?.name ?? L("תפקיד א׳", "Role A")}
             subs={subsA}
             picked={subA}
             onPick={setPickAId}
             color="gold"
           />
           <ChemistryColumn
-            label={roles.find((r) => r.id === roleBId)?.name ?? "Role B"}
+            label={roles.find((r) => r.id === roleBId)?.name ?? L("תפקיד ב׳", "Role B")}
             subs={subsB}
             picked={subB}
             onPick={setPickBId}
@@ -123,14 +130,14 @@ export default function ChemistryPage() {
           >
             <div className="flex items-center gap-2 mb-2">
               <Heart className="w-4 h-4 text-gold" />
-              <span className="text-xs font-semibold uppercase tracking-widest text-gold">Pair preview</span>
+              <span className="text-xs font-semibold uppercase tracking-widest text-gold">{L("תצוגת זוג", "Pair preview")}</span>
             </div>
             <div className="flex items-center justify-center gap-3">
               <div className="flex items-center gap-2 min-w-0">
                 <TalentPhoto src={subA.talentPhoto} name={subA.talentName} className="w-10 h-10 rounded-full shrink-0" />
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate">{subA.talentName}</div>
-                  <div className="text-[0.6875rem] text-text-muted truncate">as {roles.find((r) => r.id === subA.roleId)?.name}</div>
+                  <div className="text-[0.6875rem] text-text-muted truncate">{L("בתפקיד", "as")} {roles.find((r) => r.id === subA.roleId)?.name}</div>
                 </div>
               </div>
               <div className="text-text-subtle">×</div>
@@ -138,7 +145,7 @@ export default function ChemistryPage() {
                 <TalentPhoto src={subB.talentPhoto} name={subB.talentName} className="w-10 h-10 rounded-full shrink-0" />
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate">{subB.talentName}</div>
-                  <div className="text-[0.6875rem] text-text-muted truncate">as {roles.find((r) => r.id === subB.roleId)?.name}</div>
+                  <div className="text-[0.6875rem] text-text-muted truncate">{L("בתפקיד", "as")} {roles.find((r) => r.id === subB.roleId)?.name}</div>
                 </div>
               </div>
             </div>
@@ -156,6 +163,7 @@ function RolePicker({ label, roles, value, onChange, disabledIds }: {
   onChange: (id: string) => void;
   disabledIds: string[];
 }) {
+  const L = useL();
   return (
     <div className="rounded-2xl bg-bg-elevated border border-border p-2">
       <div className="text-[0.6875rem] uppercase tracking-widest text-text-muted mb-1 px-1">{label}</div>
@@ -164,10 +172,10 @@ function RolePicker({ label, roles, value, onChange, disabledIds }: {
         onChange={(e) => onChange(e.target.value)}
         className="w-full h-9 px-2 rounded-xl bg-bg border border-border text-sm outline-none focus:border-gold/60"
       >
-        <option value="">Pick a role…</option>
+        <option value="">{L("בחרו תפקיד…", "Pick a role…")}</option>
         {roles.map((r) => (
           <option key={r.id} value={r.id} disabled={disabledIds.includes(r.id)}>
-            {r.name}{disabledIds.includes(r.id) ? " (in use)" : ""}
+            {r.name}{disabledIds.includes(r.id) ? L(" (בשימוש)", " (in use)") : ""}
           </option>
         ))}
       </select>
@@ -184,6 +192,7 @@ function ChemistryColumn({
   onPick: (id: string) => void;
   color: "gold" | "plum";
 }) {
+  const L = useL();
   const colorCls = color === "gold" ? "border-gold/40 bg-gold/5" : "border-plum-light/40 bg-plum/10";
   return (
     <div className="rounded-2xl border border-border bg-bg-elevated overflow-hidden">
@@ -220,7 +229,7 @@ function ChemistryColumn({
         <div className="p-2">
           {subs.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border p-4 text-center text-[0.6875rem] text-text-muted min-h-[200px] grid place-items-center">
-              No tapes yet for this role
+              {L("עוד אין קלטות לתפקיד הזה", "No tapes yet for this role")}
             </div>
           ) : (
             <div className="space-y-1 max-h-[40dvh] overflow-y-auto">
@@ -228,7 +237,7 @@ function ChemistryColumn({
                 <button
                   key={s.id}
                   onClick={() => onPick(s.id)}
-                  className="w-full flex items-center gap-2 p-1.5 rounded-lg bg-bg border border-border hover:border-gold/40 text-left"
+                  className="w-full flex items-center gap-2 p-1.5 rounded-lg bg-bg border border-border hover:border-gold/40 text-start"
                 >
                   <TalentPhoto src={s.talentPhoto} name={s.talentName} className="w-7 h-7 rounded-md shrink-0" />
                   <span className="text-[0.6875rem] font-semibold truncate flex-1">{s.talentName}</span>
