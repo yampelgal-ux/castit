@@ -96,6 +96,8 @@ export type Submission = {
   callbackLocation?: string;      // e.g. "Tagada Studios, Tel Aviv"
   // Times the pro opened for this talent to choose from (ISO). Cleared once one is picked.
   callbackSlots?: string[];
+  /** Set when an agency submitted this actor. */
+  agent?: { id: string; name: string; agency?: string };
   callbackPickedByTalent?: boolean;
   callbackCompleted?: boolean;    // pro confirms the session happened
   callbackOutcome?: string;       // optional note from the in-person session

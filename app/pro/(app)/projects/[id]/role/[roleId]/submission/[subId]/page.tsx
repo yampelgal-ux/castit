@@ -193,6 +193,9 @@ export default function SubmissionPage() {
           <TalentPhoto src={sub.talentPhoto} name={sub.talentName} className="w-14 h-14 rounded-2xl" />
           <div className="flex-1 min-w-0">
             <h1 className="font-display text-xl leading-tight truncate">{sub.talentName}</h1>
+            {sub.agent && (
+              <div className="text-[0.6875rem] text-plum-light font-semibold truncate">{tr(`הוגש/ה ע״י ${sub.agent.agency || sub.agent.name}`, `Submitted by ${sub.agent.agency || sub.agent.name}`)}</div>
+            )}
             <p className="text-[0.6875rem] text-text-muted truncate">{tr("לתפקיד:", "For:")} {role?.name}</p>
           </div>
           <StageBadge stage={sub.stage} size="md" />

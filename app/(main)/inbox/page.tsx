@@ -1,6 +1,7 @@
 "use client";
 import { GuardianBanner } from "@/components/TrustBanners";
 import { PushPrompt } from "@/components/PushPrompt";
+import { AgencyRequests } from "@/components/AgencyRequests";
 import { ProfileCompleteness } from "@/components/ProfileCompleteness";
 import { useTrust } from "@/lib/cloud/trust";
 import { ShieldCheck, Megaphone, ChevronLeft } from "lucide-react";
@@ -102,6 +103,7 @@ export default function InboxPage() {
       />
       <GuardianBanner />
       <PushPrompt />
+      <div className="px-4 pt-3 empty:hidden"><AgencyRequests compact /></div>
 
       <div className="px-5 pt-3 space-y-4">
         <div>

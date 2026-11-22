@@ -12,7 +12,7 @@ import { isCloudConfigured, isRealUserId } from "./config";
 const PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
 
 export type PushStatus = "unsupported" | "needs-install" | "denied" | "off" | "on";
-export type PushKind = "message" | "invite" | "callback" | "avail_check" | "offered" | "booked" | "tape" | "avail" | "offer" | "joined";
+export type PushKind = "message" | "invite" | "callback" | "avail_check" | "offered" | "booked" | "tape" | "avail" | "offer" | "joined" | "agency";
 
 function isIOS() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);

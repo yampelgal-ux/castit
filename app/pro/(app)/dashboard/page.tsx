@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import {
   Search, FolderOpen, PlayCircle, Bell, Users, ArrowRight,
   Clock, CheckCircle2, XCircle, Send, Plus, Wand2, Calendar, TrendingUp,
-  Inbox, Zap, AlertTriangle, ClipboardCheck, BarChart3,
+  Inbox, Zap, AlertTriangle, ClipboardCheck, BarChart3, Building2,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { AccountButton } from "@/components/AccountButton";
@@ -23,7 +23,7 @@ import { TalentPhoto } from "@/components/TalentPhoto";
 
 export default function ProDashboardPage() {
   const { profile } = useStore();
-  const { t, dir } = useT();
+  const { t, dir, lang } = useT();
   const [projects, setProjects] = useState<Project[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [inbox, setInbox] = useState<InboxItem[]>([]);
@@ -238,8 +238,9 @@ export default function ProDashboardPage() {
         </div>
 
         {/* Quick actions row */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-2">
           <QuickAction icon={Search} label={t("pd.qa.find")} tone="gold" href="/pro/search" />
+          <QuickAction icon={Building2} label={lang === "he" ? "סוכנות" : "Agency"} tone="plum" href="/pro/agency" />
           <QuickAction icon={ClipboardCheck} label={t("pd.qa.reviews")} tone="sage" href="/pro/approvals" />
           <QuickAction icon={BarChart3} label={t("pd.qa.analytics")} tone="plum" href="/pro/analytics" />
           <QuickAction icon={Bell} label={t("pd.qa.inbox")} tone="violet" href="/notifications" />
